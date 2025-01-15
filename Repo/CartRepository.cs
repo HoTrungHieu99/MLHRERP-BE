@@ -16,7 +16,8 @@ namespace Repo
     {
         new Product { ProductId = "ML001", Name = "Thuoc diet chuot", Quantity = 10000, ExpiryDate = DateTime.Parse("2025-12-31"), Price = 10500.00 },
         new Product { ProductId = "ML002", Name = "Phan Bon UR", Quantity = 2000, ExpiryDate = DateTime.Parse("2025-06-30"), Price = 20000.00 },
-        new Product { ProductId = "ML003", Name = "Phan Bon SR", Quantity = 1500, ExpiryDate = DateTime.Parse("2025-07-15"), Price = 30000.00 }
+        new Product { ProductId = "ML003", Name = "Phan Bon SR", Quantity = 1500, ExpiryDate = DateTime.Parse("2025-07-15"), Price = 30000.00 },
+        new Product { ProductId = "ML004", Name = "Phan Bon SSR", Quantity = 3500, ExpiryDate = DateTime.Parse("2025-09-15"), Price = 31000.00 }
     };
 
         public List<Product> GetAvailableProducts()
