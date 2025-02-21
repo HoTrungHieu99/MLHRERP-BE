@@ -31,10 +31,11 @@ namespace Repo.Repository
             {
                 // Kiểm tra nếu Email hoặc Phone đã tồn tại
                 var existingAccount = await _context.RegisterAccounts
-                    .FirstOrDefaultAsync(u => u.Username == registerAccount.Username || u.Email == registerAccount.Email || u.Phone == registerAccount.Phone || u.FullName == registerAccount.FullName);
+                    .FirstOrDefaultAsync(u => u.Username == registerAccount.Username || u.Email == registerAccount.Email 
+                    || u.Phone == registerAccount.Phone || u.FullName == registerAccount.FullName || u.AgencyName == registerAccount.AgencyName);
                 if (existingAccount != null)
                 {
-                    throw new ArgumentException("Email or phone number or full name or user name already exists!");
+                    throw new ArgumentException("Email or phone number or full name or user name or agency name already exists!");
                 }
 
                 // ✅ Nếu Password rỗng hoặc null, đặt giá trị mặc định là "1"
