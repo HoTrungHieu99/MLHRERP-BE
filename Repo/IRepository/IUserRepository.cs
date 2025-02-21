@@ -12,6 +12,8 @@ namespace Repo.IRepository
         Task<RegisterAccount> RegisterUserRequestAsync(RegisterAccount registerAccount);
         Task<RegisterAccount> GetRegisterAccountByIdAsync(int registerId);
         Task<bool> ApproveUserAsync(int registerId);
+        Task<User> GetUserByIdAsync(long userId);
+        Task<bool> UpdateUserAsync(User user);
     }
 
 

@@ -31,16 +31,9 @@ namespace Repo.Repository
 
         public async Task<bool> UpdateAgencyAccountAsync(AgencyAccount agencyAccount)
         {
-            var existingAgencyAccount = await _context.AgencyAccounts.FindAsync(agencyAccount.AgencyId);
-            if (existingAgencyAccount == null)
-                return false;
+            _context.AgencyAccounts.Update(agencyAccount);
+            return await _context.SaveChangesAsync() > 0;
 
-            // Cập nhật thông tin
-            existingAgencyAccount.AgencyName = agencyAccount.AgencyName;
-            existingAgencyAccount.Address = agencyAccount.Address;
-
-            await _context.SaveChangesAsync();
-            return true;
         }
     }
 }

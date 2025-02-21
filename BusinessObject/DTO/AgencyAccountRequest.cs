@@ -9,6 +9,8 @@ namespace BusinessObject.DTO
     public class AgencyAccountRequest
     {
         public string AgencyName { get; set; }
+        public string Password { get; set; }
         public string Address { get; set; }
+        public int LocationId { get; set; }
     }
 }

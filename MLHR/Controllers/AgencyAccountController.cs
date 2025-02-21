@@ -44,16 +44,16 @@ namespace MLHR.Controllers
         /// <param name="request">Thông tin mới của Employee</param>
         /// <returns>Thông báo thành công hoặc lỗi</returns>
         [HttpPut("update-agencyaccount/{agencyId}")]
-        public async Task<IActionResult> UpdateEmployee(int agencyId, [FromBody] AgencyAccountRequest request)
+        public async Task<IActionResult> UpdateEmployee(long agencyId, [FromBody] AgencyAccountRequest request)
         {
             try
             {
                 bool isUpdated = await _agencyAccount.UpdateAgencyAccountAsync(agencyId, request);
 
                 if (!isUpdated)
-                    return BadRequest(new { message = "Unable to update agency account information!" });
+                    return BadRequest(new { message = "Unable to update AgencyAccount information!" });
 
-                return Ok(new { message = "Agency account information updated successfully!" });
+                return Ok(new { message = "AgencyAccount information updated successfully!" });
             }
             catch (Exception ex)
             {

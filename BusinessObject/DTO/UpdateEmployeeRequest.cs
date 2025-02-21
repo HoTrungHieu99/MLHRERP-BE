@@ -9,8 +9,10 @@ namespace BusinessObject.DTO
     public class UpdateEmployeeRequest
     {
         public string FullName { get; set; }
-        public string Position { get; set; }
-        public string Department { get; set; }
+        public string Password { get; set; }
+        /*public string Position { get; set; }
+        public string Department { get; set; }*/
         public int LocationId { get; set; }
+
     }
 }

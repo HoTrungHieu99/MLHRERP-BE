@@ -31,21 +31,11 @@ namespace Repo.Repository
             return  _context.Employees.FirstOrDefault(e => e.EmployeeId == employeeId);
         }
 
-        // Cập nhật Employee
+        // ✅ Cập nhật Employee
         public async Task<bool> UpdateEmployeeAsync(Employee employee)
         {
-            var existingEmployee = await _context.Employees.FindAsync(employee.EmployeeId);
-            if (existingEmployee == null)
-                return false;
-
-            // Cập nhật thông tin
-            existingEmployee.FullName = employee.FullName;
-            existingEmployee.Position = employee.Position;
-            existingEmployee.Department = employee.Department;
-            existingEmployee.LocationId = employee.LocationId;
-
-            await _context.SaveChangesAsync();
-            return true;
+            _context.Employees.Update(employee);
+            return await _context.SaveChangesAsync() > 0;
         }
     }
 

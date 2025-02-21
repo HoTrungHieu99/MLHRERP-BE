@@ -38,13 +38,10 @@ namespace MLHR.Controllers
         }
 
         /// <summary>
-        /// Cập nhật thông tin Employee theo UserId
+        /// Cập nhật thông tin Employee
         /// </summary>
-        /// <param name="userId">ID của User</param>
-        /// <param name="request">Thông tin mới của Employee</param>
-        /// <returns>Thông báo thành công hoặc lỗi</returns>
         [HttpPut("update-employee/{employeeId}")]
-        public async Task<IActionResult> UpdateEmployee(int employeeId, [FromBody] UpdateEmployeeRequest request)
+        public async Task<IActionResult> UpdateEmployee(long employeeId, [FromBody] UpdateEmployeeRequest request)
         {
             try
             {
