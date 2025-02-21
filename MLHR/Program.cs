@@ -1,12 +1,22 @@
 using DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
+using Repo.IRepository;
+using Repo.Repository;
+using Services.IService;
+using Services.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<MinhLongDbContext>(options =>
     options.UseSqlServer(connectionString));
 // Add services to the container.
-
+// Add services to the container.
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+});
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
