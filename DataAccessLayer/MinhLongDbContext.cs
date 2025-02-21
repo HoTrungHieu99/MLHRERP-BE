@@ -42,6 +42,7 @@ namespace DataAccessLayer
         public DbSet<AgencyAccount> AgencyAccounts { get; set; }
         public DbSet<AgencyLevel> AgencyLevels { get; set; }
         public DbSet<AgencyAccountLevel> AgencyAccountLevels { get; set; }
+        public DbSet<RegisterAccount> RegisterAccounts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -134,6 +135,10 @@ namespace DataAccessLayer
             // Cấu hình tự động tăng cho UserRoleId
             modelBuilder.Entity<UserRole>()
                 .Property(rp => rp.UserRoleId)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<RegisterAccount>()
+                .Property(rp => rp.RegisterId)
                 .ValueGeneratedOnAdd();
 
             // Cấu hình quan hệ User-Role (N-N)

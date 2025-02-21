@@ -10,8 +10,9 @@ namespace Services.IService
 {
     public interface IUserService
     {
-        Task<User> RegisterAsync(RegisterRequest request);
-        Task<bool> ApproveUserAsync(long userId);
+        Task<RegisterAccount> RegisterUserRequestAsync(RegisterRequest request);
+        Task<bool> ApproveUserAsync(int registerId);
     }
+
 
 }

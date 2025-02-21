@@ -2,6 +2,7 @@
 using BusinessObject.Models;
 using Microsoft.AspNetCore.Mvc;
 using Services.IService;
+using Services.Service;
 
 namespace MLHR.Controllers
 {
@@ -17,40 +18,35 @@ namespace MLHR.Controllers
         }
 
         /// <summary>
-        /// Đăng ký tài khoản mới (User)
+        /// Người dùng gửi yêu cầu đăng ký
         /// </summary>
-        /// <param name="request">Thông tin người dùng</param>
-        /// <returns>Trả về UserId nếu đăng ký thành công</returns>
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             try
             {
-                var user = await _userService.RegisterAsync(request);
-                return Ok(new { message = "Registration successful, please wait for admin approval!", userId = user.UserId });
+                var registerAccount = await _userService.RegisterUserRequestAsync(request);
+                return Ok(new { message = "Registration successful, please wait for admin approval!", registerId = registerAccount.RegisterId });
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { error = ex.Message });
             }
         }
 
         /// <summary>
-        /// Duyệt tài khoản: Cập nhật trạng thái và lưu vào Employee hoặc AgencyAccount
+        /// Admin duyệt tài khoản đăng ký
         /// </summary>
-        /// <param name="userId">ID của tài khoản cần duyệt</param>
-        /// <returns>Trả về thông báo thành công hoặc lỗi</returns>
-        [HttpPut("approve-user/{userId}")]
-        public async Task<IActionResult> ApproveUser(long userId)
+        [HttpPut("approve-user/{registerId}")]
+        public async Task<IActionResult> ApproveUser(int registerId)
         {
             try
             {
-                bool isApproved = await _userService.ApproveUserAsync(userId);
-
+                bool isApproved = await _userService.ApproveUserAsync(registerId);
                 if (!isApproved)
-                    return BadRequest(new { message = "Cannot update user status or User does not exist!" });
+                    return BadRequest(new { message = "Account cannot be approved or account does not exist!" });
 
-                return Ok(new { message = "Account has been approved and saved to the respective table!" });
+                return Ok(new { message = "Account approved successfully!" });
             }
             catch (Exception ex)
             {
@@ -58,4 +54,5 @@ namespace MLHR.Controllers
             }
         }
     }
+
 }

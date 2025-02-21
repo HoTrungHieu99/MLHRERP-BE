@@ -13,6 +13,11 @@ builder.Services.AddDbContext<MinhLongDbContext>(options =>
 // Add services to the container.
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+
+builder.Services.AddScoped<IAgencyAccountRepository, AgencyAccountRepository>();
+builder.Services.AddScoped<IAgencyAccountService, AgencyAccountService>();
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
