@@ -81,6 +81,10 @@ namespace DataAccessLayer
                 .Property(al => al.DiscountPercentage)
                 .HasColumnType("decimal(18, 2)");
 
+            modelBuilder.Entity<User>()
+                .Property(u => u.Status)
+                .HasDefaultValue(false);
+
             // Cấu hình tự động tăng cho tất cả các ID trong cơ sở dữ liệu
             // Cấu hình tự động tăng cho AgencyAccountId
             modelBuilder.Entity<AgencyAccount>()
