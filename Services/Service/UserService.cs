@@ -27,50 +27,87 @@ namespace Services.Service
         // ✅ Lưu yêu cầu đăng ký vào RegisterAccount
         public async Task<RegisterAccount> RegisterUserRequestAsync(RegisterRequest request)
         {
-            // ✅ Kiểm tra Email hợp lệ
+            // ✅ Kiểm tra Email hợp lệ (chỉ khi có dữ liệu)
             if (string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains("@"))
             {
                 throw new ArgumentException("Invalid email! Must contain '@'!");
             }
 
-            // ✅ Kiểm tra số điện thoại hợp lệ (10 chữ số, bắt đầu bằng '0')
+            // ✅ Kiểm tra số điện thoại hợp lệ (chỉ khi có dữ liệu)
             if (string.IsNullOrWhiteSpace(request.Phone) || !Regex.IsMatch(request.Phone, @"^0\d{9}$"))
             {
                 throw new ArgumentException("Invalid phone number! Must be 10 digits and start with '0'.");
             }
 
-            // ✅ Chuẩn hóa dữ liệu
-            request.FullName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(request.FullName.Trim().ToLower());
-            request.Position = request.Position.Trim().ToUpper();
-            request.Department = request.Department.Trim().ToUpper();
+            // ✅ Kiểm tra UserType hợp lệ
+            if (string.IsNullOrWhiteSpace(request.UserType) ||
+                (request.UserType.ToUpper() != "EMPLOYEE" && request.UserType.ToUpper() != "AGENCY"))
+            {
+                throw new ArgumentException("UserType must be either 'EMPLOYEE' or 'AGENCY'!");
+            }
+
+            // ✅ Nếu UserType là EMPLOYEE -> Bắt buộc nhập FullName, Position, Department
+            if (request.UserType.ToUpper() == "EMPLOYEE")
+            {
+                if (string.IsNullOrWhiteSpace(request.FullName))
+                {
+                    throw new ArgumentException("FullName is required for EMPLOYEE.");
+                }
+                if (string.IsNullOrWhiteSpace(request.Position) ||
+                    (request.Position.ToUpper() != "STAFF" && request.Position.ToUpper() != "MANAGER"))
+                {
+                    throw new ArgumentException("Position must be 'STAFF' or 'MANAGER' for EMPLOYEE.");
+                }
+                if (string.IsNullOrWhiteSpace(request.Department) ||
+                    (request.Department.ToUpper() != "WAREHOUSE MANAGER" && request.Department.ToUpper() != "SALES MANAGER"))
+                {
+                    throw new ArgumentException("Department must be 'WAREHOUSE MANAGER' or 'SALES MANAGER' for EMPLOYEE.");
+                }
+
+                // ✅ Nếu là Employee thì AgencyName có thể null
+                request.AgencyName = "unknow";
+            }
+
+            // ✅ Nếu UserType là AGENCY -> Bắt buộc nhập AgencyName, các trường khác có thể null
+            if (request.UserType.ToUpper() == "AGENCY")
+            {
+                if (string.IsNullOrWhiteSpace(request.AgencyName))
+                {
+                    throw new ArgumentException("AgencyName is required for AGENCY.");
+                }
+
+                // ✅ Nếu là Agency thì FullName, Position, Department có thể null
+                request.FullName = "unknow";
+                request.Position = "unknow";
+                request.Department = "unknow";
+            }
+
+            // ✅ Chuẩn hóa dữ liệu (chỉ khi có giá trị)
+            request.FullName = !string.IsNullOrWhiteSpace(request.FullName)
+                ? CultureInfo.CurrentCulture.TextInfo.ToTitleCase(request.FullName.Trim().ToLower())
+                : null;
+
+            request.Position = !string.IsNullOrWhiteSpace(request.Position)
+                ? request.Position.Trim().ToUpper()
+                : null;
+
+            request.Department = !string.IsNullOrWhiteSpace(request.Department)
+                ? request.Department.Trim().ToUpper()
+                : null;
+
             request.UserType = request.UserType.Trim().ToUpper();
             request.Street = request.Street?.Trim();
             request.WardName = request.WardName?.Trim();
             request.DistrictName = request.DistrictName?.Trim();
             request.ProvinceName = request.ProvinceName?.Trim();
-
-            // ✅ Kiểm tra giá trị hợp lệ
-            if (request.Position != "STAFF" && request.Position != "MANAGER")
-            {
-                throw new ArgumentException("Position can only be 'STAFF' or 'MANAGER'!");
-            }
-
-            if (request.Department != "WAREHOUSE MANAGER" && request.Department != "SALES MANAGER")
-            {
-                throw new ArgumentException("Department can only be 'WAREHOUSE MANAGER' or 'SALES MANAGER'!");
-            }
-
-            if (request.UserType != "EMPLOYEE" && request.UserType != "AGENCY")
-            {
-                throw new ArgumentException("UserType can only be 'EMPLOYEE' or 'AGENCY'!");
-            }
+            request.AgencyName = request.AgencyName?.Trim();
 
             // ✅ Tạo đối tượng RegisterAccount
             var registerAccount = new RegisterAccount
             {
-                Username = request.Username.Trim(),
-                Email = request.Email.Trim(),
-                Phone = request.Phone.Trim(),
+                Username = request.Username?.Trim(),
+                Email = request.Email?.Trim(),
+                Phone = request.Phone?.Trim(),
                 UserType = request.UserType,
                 FullName = request.FullName,
                 Position = request.Position,
@@ -79,7 +116,7 @@ namespace Services.Service
                 WardName = request.WardName,
                 DistrictName = request.DistrictName,
                 ProvinceName = request.ProvinceName,
-                AgencyName = request.AgencyName?.Trim()
+                AgencyName = request.AgencyName
             };
 
             // ✅ Gọi Repo để lưu RegisterAccount
@@ -92,6 +129,7 @@ namespace Services.Service
             // ✅ Gọi Repo để duyệt tài khoản
             return await _userRepository.ApproveUserAsync(registerId);
         }
+
     }
 
 }
