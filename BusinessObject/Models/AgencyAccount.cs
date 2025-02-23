@@ -19,7 +19,7 @@ namespace BusinessObject.Models
         public string Address { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public long UserId { get; set; }
+        public Guid UserId { get; set; }
         [ForeignKey("UserId")]
         public User User { get; set; }
 

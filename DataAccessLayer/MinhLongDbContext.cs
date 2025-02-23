@@ -43,6 +43,10 @@ namespace DataAccessLayer
         public DbSet<AgencyLevel> AgencyLevels { get; set; }
         public DbSet<AgencyAccountLevel> AgencyAccountLevels { get; set; }
         public DbSet<RegisterAccount> RegisterAccounts { get; set; }
+        public DbSet<Province> Provinces { get; set; }
+        public DbSet<District> Districts { get; set; }
+        public DbSet<Ward> Wards { get; set; }
+        public DbSet<Address> Addresses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -57,6 +61,10 @@ namespace DataAccessLayer
             modelBuilder.Entity<AgencyAccount>().ToTable("AgencyAccount");
             modelBuilder.Entity<AgencyLevel>().ToTable("AgencyLevel");
             modelBuilder.Entity<AgencyAccountLevel>().ToTable("AgencyAccountLevel");
+            modelBuilder.Entity<Province>().ToTable("Provinces");
+            modelBuilder.Entity<District>().ToTable("Districts");
+            modelBuilder.Entity<Ward>().ToTable("Wards");
+            modelBuilder.Entity<Address>().ToTable("Addresses");
             // Cấu hình decimal(18, 2) cho các thuộc tính kiểu decimal
             modelBuilder.Entity<AgencyAccountLevel>()
                 .Property(aal => aal.MonthlyRevenue)
@@ -130,7 +138,7 @@ namespace DataAccessLayer
             // Cấu hình tự động tăng cho UserId
             modelBuilder.Entity<User>()
                 .Property(rp => rp.UserId)
-                .ValueGeneratedOnAdd();
+                .HasDefaultValueSql("NEWID()");
 
             // Cấu hình tự động tăng cho UserRoleId
             modelBuilder.Entity<UserRole>()
@@ -141,11 +149,16 @@ namespace DataAccessLayer
                 .Property(rp => rp.RegisterId)
                 .ValueGeneratedOnAdd();
 
+            modelBuilder.Entity<Address>()
+                .Property(rp => rp.AddressId)
+                .ValueGeneratedOnAdd();
+
             // Cấu hình quan hệ User-Role (N-N)
             modelBuilder.Entity<UserRole>()
                 .HasOne(ur => ur.User)
                 .WithMany(u => u.UserRoles)
-                .HasForeignKey(ur => ur.UserId);
+                .HasForeignKey(ur => ur.UserId)
+                .HasPrincipalKey(u => u.UserId);
 
             modelBuilder.Entity<UserRole>()
                 .HasOne(ur => ur.Role)
@@ -199,6 +212,36 @@ namespace DataAccessLayer
                 .WithMany(al => al.AgencyAccountLevels)
                 .HasForeignKey(aal => aal.LevelId);
 
+            //Quan hệ Location
+            modelBuilder.Entity<Ward>()
+                .HasOne(w => w.District)
+                .WithMany(d => d.Wards)
+                .HasForeignKey(w => w.DistrictId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<District>()
+                .HasOne(d => d.Province)
+                .WithMany(p => p.Districts)
+                .HasForeignKey(d => d.ProvinceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Address>()
+                .HasOne(a => a.Ward)
+                .WithMany(w => w.Addresses)
+                .HasForeignKey(a => a.WardId)
+                .OnDelete(DeleteBehavior.Cascade); // ✅ Vẫn để Cascade
+
+            modelBuilder.Entity<Address>()
+                .HasOne(a => a.District)
+                .WithMany(d => d.Addresses)
+                .HasForeignKey(a => a.DistrictId)
+                .OnDelete(DeleteBehavior.NoAction); // ❌ Đổi từ CASCADE ➝ NO ACTION
+
+            modelBuilder.Entity<Address>()
+                .HasOne(a => a.Province)
+                .WithMany(p => p.Addresses)
+                .HasForeignKey(a => a.ProvinceId)
+                .OnDelete(DeleteBehavior.NoAction); // ❌ Đổi từ CASCADE ➝ NO ACTION
         }
     }
 }

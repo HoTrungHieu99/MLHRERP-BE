@@ -15,7 +15,7 @@ namespace BusinessObject.Models
         public string Position { get; set; }
         public string Department { get; set; }
 
-        public long UserId { get; set; }
+        public Guid UserId { get; set; }
         [ForeignKey("UserId")]
         public User User { get; set; }
 

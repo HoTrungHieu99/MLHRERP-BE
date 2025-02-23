@@ -137,17 +137,19 @@ namespace Repo.Repository
                 throw new Exception("Error while approving user: " + ex.Message);
             }
         }
-        // ✅ Tìm User theo UserId
-        public async Task<User> GetUserByIdAsync(long userId)
-        {
-            return await _context.Users.FindAsync(userId);
-        }
+        
 
         // ✅ Cập nhật User (bao gồm mật khẩu)
         public async Task<bool> UpdateUserAsync(User user)
         {
             _context.Users.Update(user);
             return await _context.SaveChangesAsync() > 0;
+        }
+        // ✅ Tìm User theo UserId
+
+        public async Task<User> GetUserByIdAsync(Guid userId)
+        {
+            return await _context.Users.FindAsync(userId);
         }
     }
 

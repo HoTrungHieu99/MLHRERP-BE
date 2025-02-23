@@ -13,7 +13,7 @@ namespace BusinessObject.Models
     public class User
     {
         [Key]
-        public long UserId { get; set; }
+        public Guid UserId { get; set; } = Guid.NewGuid(); // fix GUID
 
         [Required]
         [StringLength(255)]

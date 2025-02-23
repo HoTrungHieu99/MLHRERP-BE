@@ -19,5 +19,6 @@ namespace BusinessObject.Models
 
         public ICollection<Employee> Employees { get; set; }
         public ICollection<AgencyAccount> AgencyAccounts { get; set; }
+        // sua thanh 4 bang moi( tinh, huyen, xa, dia chi-duong va so nha) 
     }
 }
