@@ -13,7 +13,7 @@ namespace BusinessObject.Models
     public class User
     {
         [Key]
-        public long UserId { get; set; }
+        public Guid UserId { get; set; } = Guid.NewGuid(); // fix GUID
 
         [Required]
         [StringLength(255)]
@@ -30,7 +30,7 @@ namespace BusinessObject.Models
         public string UserType { get; set; } // EMPLOYEE or AGENT
 
         public string Phone { get; set; }
-        public bool Status { get; set; } = true;
+        public bool Status { get; set; } = false;
 
         public ICollection<UserRole> UserRoles { get; set; }
         public Employee Employee { get; set; }

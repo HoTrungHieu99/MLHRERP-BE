@@ -15,12 +15,15 @@ namespace BusinessObject.Models
         public string Position { get; set; }
         public string Department { get; set; }
 
-        public long UserId { get; set; }
+        public Guid UserId { get; set; }
         [ForeignKey("UserId")]
         public User User { get; set; }
 
-        public int LocationId { get; set; }
+        public int AddressId { get; set; }
+        [ForeignKey("AddressId")]
+        public Address Address { get; set; }
+        /*public int LocationId { get; set; }
         [ForeignKey("LocationId")]
-        public Location Location { get; set; }
+        public Location Location { get; set; }*/
     }
 }

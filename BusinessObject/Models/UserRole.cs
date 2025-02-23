@@ -9,7 +9,7 @@ namespace BusinessObject.Models
         [Key]
         public long UserRoleId { get; set; }
 
-        public long UserId { get; set; }
+        public Guid UserId { get; set; }
         [ForeignKey("UserId")]
         public User User { get; set; }
 

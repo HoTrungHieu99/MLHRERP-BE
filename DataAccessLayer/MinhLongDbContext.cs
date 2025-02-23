@@ -32,7 +32,6 @@ namespace DataAccessLayer
         }
 
         // Khai báo DbSet cho các bảng
-        public DbSet<Location> Locations { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Role> Roles { get; set; }
@@ -47,7 +46,6 @@ namespace DataAccessLayer
         {
             // Đặt tên bảng để nhất quán với database
             modelBuilder.Entity<User>().ToTable("User");
-            modelBuilder.Entity<Location>().ToTable("Location");
             modelBuilder.Entity<Employee>().ToTable("Employee");
             modelBuilder.Entity<Role>().ToTable("Role");
             modelBuilder.Entity<UserRole>().ToTable("UserRole");
@@ -56,6 +54,10 @@ namespace DataAccessLayer
             modelBuilder.Entity<AgencyAccount>().ToTable("AgencyAccount");
             modelBuilder.Entity<AgencyLevel>().ToTable("AgencyLevel");
             modelBuilder.Entity<AgencyAccountLevel>().ToTable("AgencyAccountLevel");
+            modelBuilder.Entity<Province>().ToTable("Province");
+            modelBuilder.Entity<District>().ToTable("District");
+            modelBuilder.Entity<Ward>().ToTable("Ward");
+            modelBuilder.Entity<Address>().ToTable("Address");
             // Cấu hình decimal(18, 2) cho các thuộc tính kiểu decimal
             modelBuilder.Entity<AgencyAccountLevel>()
                 .Property(aal => aal.MonthlyRevenue)
@@ -81,6 +83,10 @@ namespace DataAccessLayer
                 .Property(al => al.DiscountPercentage)
                 .HasColumnType("decimal(18, 2)");
 
+            modelBuilder.Entity<User>()
+                .Property(u => u.Status)
+                .HasDefaultValue(false);
+
             // Cấu hình tự động tăng cho tất cả các ID trong cơ sở dữ liệu
             // Cấu hình tự động tăng cho AgencyAccountId
             modelBuilder.Entity<AgencyAccount>()
@@ -102,11 +108,6 @@ namespace DataAccessLayer
                 .Property(rp => rp.EmployeeId)
                 .ValueGeneratedOnAdd();
 
-            // Cấu hình tự động tăng cho LocationId
-            modelBuilder.Entity<Location>()
-                .Property(rp => rp.LocationId)
-                .ValueGeneratedOnAdd();
-
             // Cấu hình tự động tăng cho PermissionId
             modelBuilder.Entity<Permission>()
                 .Property(rp => rp.PermissionId)
@@ -125,18 +126,27 @@ namespace DataAccessLayer
             // Cấu hình tự động tăng cho UserId
             modelBuilder.Entity<User>()
                 .Property(rp => rp.UserId)
-                .ValueGeneratedOnAdd();
+                .HasDefaultValueSql("NEWID()");
 
             // Cấu hình tự động tăng cho UserRoleId
             modelBuilder.Entity<UserRole>()
                 .Property(rp => rp.UserRoleId)
                 .ValueGeneratedOnAdd();
 
+            modelBuilder.Entity<RegisterAccount>()
+                .Property(rp => rp.RegisterId)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Address>()
+                .Property(rp => rp.AddressId)
+                .ValueGeneratedOnAdd();
+
             // Cấu hình quan hệ User-Role (N-N)
             modelBuilder.Entity<UserRole>()
                 .HasOne(ur => ur.User)
                 .WithMany(u => u.UserRoles)
-                .HasForeignKey(ur => ur.UserId);
+                .HasForeignKey(ur => ur.UserId)
+                .HasPrincipalKey(u => u.UserId);
 
             modelBuilder.Entity<UserRole>()
                 .HasOne(ur => ur.Role)
@@ -160,11 +170,11 @@ namespace DataAccessLayer
                 .WithOne(u => u.Employee)
                 .HasForeignKey<Employee>(e => e.UserId);
 
-            // Cấu hình quan hệ Employee-Location (N-1)
+            // Cấu hình quan hệ Employee-Address (N-1)
             modelBuilder.Entity<Employee>()
-                .HasOne(e => e.Location)
+                .HasOne(e => e.Address)
                 .WithMany(l => l.Employees)
-                .HasForeignKey(e => e.LocationId);
+                .HasForeignKey(e => e.AddressId);
 
             // Cấu hình quan hệ AgencyAccount-User (1-1)
             modelBuilder.Entity<AgencyAccount>()
@@ -174,9 +184,9 @@ namespace DataAccessLayer
 
             // Cấu hình quan hệ AgencyAccount-Location (N-1)
             modelBuilder.Entity<AgencyAccount>()
-                .HasOne(a => a.Location)
+                .HasOne(a => a.Address)
                 .WithMany(l => l.AgencyAccounts)
-                .HasForeignKey(a => a.LocationId);
+                .HasForeignKey(a => a.AddressId);
 
             // Cấu hình quan hệ AgencyAccountLevel-AgencyAccount (N-1)
             modelBuilder.Entity<AgencyAccountLevel>()
@@ -189,6 +199,37 @@ namespace DataAccessLayer
                 .HasOne(aal => aal.Level)
                 .WithMany(al => al.AgencyAccountLevels)
                 .HasForeignKey(aal => aal.LevelId);
+
+            //Quan hệ Location
+            modelBuilder.Entity<Ward>()
+                .HasOne(w => w.District)
+                .WithMany(d => d.Wards)
+                .HasForeignKey(w => w.DistrictId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<District>()
+                .HasOne(d => d.Province)
+                .WithMany(p => p.Districts)
+                .HasForeignKey(d => d.ProvinceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Address>()
+                .HasOne(a => a.Ward)
+                .WithMany(w => w.Addresses)
+                .HasForeignKey(a => a.WardId)
+                .OnDelete(DeleteBehavior.Cascade); // ✅ Vẫn để Cascade
+
+            modelBuilder.Entity<Address>()
+                .HasOne(a => a.District)
+                .WithMany(d => d.Addresses)
+                .HasForeignKey(a => a.DistrictId)
+                .OnDelete(DeleteBehavior.NoAction); // ❌ Đổi từ CASCADE ➝ NO ACTION
+
+            modelBuilder.Entity<Address>()
+                .HasOne(a => a.Province)
+                .WithMany(p => p.Addresses)
+                .HasForeignKey(a => a.ProvinceId)
+                .OnDelete(DeleteBehavior.NoAction); // ❌ Đổi từ CASCADE ➝ NO ACTION
 
         }
     }
