@@ -52,11 +52,11 @@ namespace Services.Service
                 employee.FullName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(request.FullName.ToLower());
             }
 
-            // ✅ Cập nhật LocationId (nếu không phải 0)
+            /*// ✅ Cập nhật LocationId (nếu không phải 0)
             if (request.LocationId != 0)
             {
                 employee.LocationId = request.LocationId;
-            }
+            }*/
 
             
             // ✅ Nếu có mật khẩu mới, hash trước khi lưu vào User

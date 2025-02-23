@@ -28,19 +28,6 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Location",
-                columns: table => new
-                {
-                    LocationId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CityName = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Location", x => x.LocationId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Permission",
                 columns: table => new
                 {
@@ -54,7 +41,7 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Provinces",
+                name: "Province",
                 columns: table => new
                 {
                     ProvinceId = table.Column<int>(type: "int", nullable: false),
@@ -65,7 +52,7 @@ namespace DataAccessLayer.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Provinces", x => x.ProvinceId);
+                    table.PrimaryKey("PK_Province", x => x.ProvinceId);
                 });
 
             migrationBuilder.CreateTable(
@@ -82,11 +69,12 @@ namespace DataAccessLayer.Migrations
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Position = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Department = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LocationId = table.Column<int>(type: "int", nullable: true),
                     AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsApproved = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Street = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    WardName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DistrictName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ProvinceName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsApproved = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -124,7 +112,7 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Districts",
+                name: "District",
                 columns: table => new
                 {
                     DistrictId = table.Column<int>(type: "int", nullable: false),
@@ -135,11 +123,11 @@ namespace DataAccessLayer.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Districts", x => x.DistrictId);
+                    table.PrimaryKey("PK_District", x => x.DistrictId);
                     table.ForeignKey(
-                        name: "FK_Districts_Provinces_ProvinceId",
+                        name: "FK_District_Province_ProvinceId",
                         column: x => x.ProvinceId,
-                        principalTable: "Provinces",
+                        principalTable: "Province",
                         principalColumn: "ProvinceId",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -172,64 +160,6 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AgencyAccount",
-                columns: table => new
-                {
-                    AgencyId = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LocationId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AgencyAccount", x => x.AgencyId);
-                    table.ForeignKey(
-                        name: "FK_AgencyAccount_Location_LocationId",
-                        column: x => x.LocationId,
-                        principalTable: "Location",
-                        principalColumn: "LocationId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_AgencyAccount_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "User",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Employee",
-                columns: table => new
-                {
-                    EmployeeId = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Position = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Department = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LocationId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Employee", x => x.EmployeeId);
-                    table.ForeignKey(
-                        name: "FK_Employee_Location_LocationId",
-                        column: x => x.LocationId,
-                        principalTable: "Location",
-                        principalColumn: "LocationId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Employee_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "User",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "UserRole",
                 columns: table => new
                 {
@@ -256,7 +186,7 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Wards",
+                name: "Ward",
                 columns: table => new
                 {
                     WardId = table.Column<int>(type: "int", nullable: false),
@@ -267,12 +197,100 @@ namespace DataAccessLayer.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Wards", x => x.WardId);
+                    table.PrimaryKey("PK_Ward", x => x.WardId);
                     table.ForeignKey(
-                        name: "FK_Wards_Districts_DistrictId",
+                        name: "FK_Ward_District_DistrictId",
                         column: x => x.DistrictId,
-                        principalTable: "Districts",
+                        principalTable: "District",
                         principalColumn: "DistrictId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Address",
+                columns: table => new
+                {
+                    AddressId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Street = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    WardId = table.Column<int>(type: "int", nullable: false),
+                    DistrictId = table.Column<int>(type: "int", nullable: false),
+                    ProvinceId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Address", x => x.AddressId);
+                    table.ForeignKey(
+                        name: "FK_Address_District_DistrictId",
+                        column: x => x.DistrictId,
+                        principalTable: "District",
+                        principalColumn: "DistrictId");
+                    table.ForeignKey(
+                        name: "FK_Address_Province_ProvinceId",
+                        column: x => x.ProvinceId,
+                        principalTable: "Province",
+                        principalColumn: "ProvinceId");
+                    table.ForeignKey(
+                        name: "FK_Address_Ward_WardId",
+                        column: x => x.WardId,
+                        principalTable: "Ward",
+                        principalColumn: "WardId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AgencyAccount",
+                columns: table => new
+                {
+                    AgencyId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AddressId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AgencyAccount", x => x.AgencyId);
+                    table.ForeignKey(
+                        name: "FK_AgencyAccount_Address_AddressId",
+                        column: x => x.AddressId,
+                        principalTable: "Address",
+                        principalColumn: "AddressId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AgencyAccount_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Employee",
+                columns: table => new
+                {
+                    EmployeeId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Position = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Department = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AddressId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Employee", x => x.EmployeeId);
+                    table.ForeignKey(
+                        name: "FK_Employee_Address_AddressId",
+                        column: x => x.AddressId,
+                        principalTable: "Address",
+                        principalColumn: "AddressId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Employee_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -307,57 +325,25 @@ namespace DataAccessLayer.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Addresses",
-                columns: table => new
-                {
-                    AddressId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Street = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    WardId = table.Column<int>(type: "int", nullable: false),
-                    DistrictId = table.Column<int>(type: "int", nullable: false),
-                    ProvinceId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Addresses", x => x.AddressId);
-                    table.ForeignKey(
-                        name: "FK_Addresses_Districts_DistrictId",
-                        column: x => x.DistrictId,
-                        principalTable: "Districts",
-                        principalColumn: "DistrictId");
-                    table.ForeignKey(
-                        name: "FK_Addresses_Provinces_ProvinceId",
-                        column: x => x.ProvinceId,
-                        principalTable: "Provinces",
-                        principalColumn: "ProvinceId");
-                    table.ForeignKey(
-                        name: "FK_Addresses_Wards_WardId",
-                        column: x => x.WardId,
-                        principalTable: "Wards",
-                        principalColumn: "WardId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
-                name: "IX_Addresses_DistrictId",
-                table: "Addresses",
+                name: "IX_Address_DistrictId",
+                table: "Address",
                 column: "DistrictId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Addresses_ProvinceId",
-                table: "Addresses",
+                name: "IX_Address_ProvinceId",
+                table: "Address",
                 column: "ProvinceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Addresses_WardId",
-                table: "Addresses",
+                name: "IX_Address_WardId",
+                table: "Address",
                 column: "WardId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AgencyAccount_LocationId",
+                name: "IX_AgencyAccount_AddressId",
                 table: "AgencyAccount",
-                column: "LocationId");
+                column: "AddressId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AgencyAccount_UserId",
@@ -376,14 +362,14 @@ namespace DataAccessLayer.Migrations
                 column: "LevelId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Districts_ProvinceId",
-                table: "Districts",
+                name: "IX_District_ProvinceId",
+                table: "District",
                 column: "ProvinceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Employee_LocationId",
+                name: "IX_Employee_AddressId",
                 table: "Employee",
-                column: "LocationId");
+                column: "AddressId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Employee_UserId",
@@ -412,17 +398,14 @@ namespace DataAccessLayer.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Wards_DistrictId",
-                table: "Wards",
+                name: "IX_Ward_DistrictId",
+                table: "Ward",
                 column: "DistrictId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Addresses");
-
             migrationBuilder.DropTable(
                 name: "AgencyAccountLevel");
 
@@ -439,9 +422,6 @@ namespace DataAccessLayer.Migrations
                 name: "UserRole");
 
             migrationBuilder.DropTable(
-                name: "Wards");
-
-            migrationBuilder.DropTable(
                 name: "AgencyAccount");
 
             migrationBuilder.DropTable(
@@ -454,16 +434,19 @@ namespace DataAccessLayer.Migrations
                 name: "Role");
 
             migrationBuilder.DropTable(
-                name: "Districts");
-
-            migrationBuilder.DropTable(
-                name: "Location");
+                name: "Address");
 
             migrationBuilder.DropTable(
                 name: "User");
 
             migrationBuilder.DropTable(
-                name: "Provinces");
+                name: "Ward");
+
+            migrationBuilder.DropTable(
+                name: "District");
+
+            migrationBuilder.DropTable(
+                name: "Province");
         }
     }
 }

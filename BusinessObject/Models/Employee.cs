@@ -11,16 +11,17 @@ namespace BusinessObject.Models
 
         [Required]
         public string FullName { get; set; }
-
+        [Required]
         public string Position { get; set; }
+        [Required]
         public string Department { get; set; }
 
         public Guid UserId { get; set; }
         [ForeignKey("UserId")]
         public User User { get; set; }
 
-        public int LocationId { get; set; }
-        [ForeignKey("LocationId")]
-        public Location Location { get; set; }
+        public int AddressId { get; set; }
+        [ForeignKey("AddressId")]
+        public Address Address { get; set; }
     }
 }

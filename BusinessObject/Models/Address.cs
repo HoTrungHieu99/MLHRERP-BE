@@ -33,8 +33,9 @@ namespace BusinessObject.Models
 
         [ForeignKey("ProvinceId")]
         public Province Province { get; set; } // 👈 Liên kết với tỉnh/thành phố
+
+        public ICollection<Employee> Employees { get; set; }
+        public ICollection<AgencyAccount> AgencyAccounts { get; set; }
     }
-
-
 
 }

@@ -6,13 +6,13 @@ using Services.Service;
 
 namespace MLHR.Controllers
 {
-    [Route("api/auth")]
+    [Route("api/register")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class RegisterController : ControllerBase
     {
         private readonly IUserService _userService;
 
-        public AuthController(IUserService userService)
+        public RegisterController(IUserService userService)
         {
             _userService = userService;
         }
@@ -34,10 +34,11 @@ namespace MLHR.Controllers
             }
         }
 
+
         /// <summary>
         /// Admin duyệt tài khoản đăng ký
         /// </summary>
-        [HttpPut("approve-user/{registerId}")]
+        [HttpPut("approve-account/{registerId}")]
         public async Task<IActionResult> ApproveUser(int registerId)
         {
             try

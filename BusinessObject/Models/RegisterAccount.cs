@@ -9,33 +9,35 @@ namespace BusinessObject.Models
 {
     public class RegisterAccount
     {
-        [Key] // Định nghĩa khóa chính
+        [Key]
         public int RegisterId { get; set; }
 
+        [Required]
         public string Username { get; set; }
 
+        [Required]
         public string Email { get; set; }
 
+        [Required]
         public string Password { get; set; }
 
+        [Required]
         public string Phone { get; set; }
 
-        public string UserType { get; set; } // "Agent" hoặc "Employee"
+        public string UserType { get; set; } // "EMPLOYEE" hoặc "AGENCY"
 
-        // Chỉ dành cho Employee
-        public string FullName { get; set; }
-        public string Position { get; set; }
-        public string Department { get; set; }
-        public int? LocationId { get; set; } // Cho phép null nếu là Agent
+        public string? FullName { get; set; }
+        public string? Position { get; set; }  // Chỉ dùng cho Employee
+        public string? Department { get; set; }  // Chỉ dùng cho Employee
 
-        // Chỉ dành cho Agent
-        public string AgencyName { get; set; }
-        public string Address { get; set; }
+        public string? AgencyName { get; set; } // Chỉ dùng cho Agency
 
-        // Cột kiểm tra tài khoản đã được duyệt hay chưa
-        public bool IsApproved { get; set; } = false;
+        // ✅ Thay thế `LocationId` bằng thông tin địa chỉ
+        public string Street { get; set; }
+        public string WardName { get; set; }
+        public string DistrictName { get; set; }
+        public string ProvinceName { get; set; }
 
-        public DateTime CreatedAt { get; set; }
+        public bool IsApproved { get; set; } = false;  // Mặc định chưa duyệt
     }
-
 }

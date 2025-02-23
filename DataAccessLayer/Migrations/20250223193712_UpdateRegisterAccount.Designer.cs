@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MinhLongDbContext))]
-    [Migration("20250223153519_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250223193712_UpdateRegisterAccount")]
+    partial class UpdateRegisterAccount
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,7 +54,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("WardId");
 
-                    b.ToTable("Addresses", (string)null);
+                    b.ToTable("Address", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Models.AgencyAccount", b =>
@@ -65,9 +65,8 @@ namespace DataAccessLayer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("AgencyId"));
 
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("AddressId")
+                        .HasColumnType("int");
 
                     b.Property<string>("AgencyName")
                         .IsRequired()
@@ -76,15 +75,12 @@ namespace DataAccessLayer.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("LocationId")
-                        .HasColumnType("int");
-
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("AgencyId");
 
-                    b.HasIndex("LocationId");
+                    b.HasIndex("AddressId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -180,7 +176,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("ProvinceId");
 
-                    b.ToTable("Districts", (string)null);
+                    b.ToTable("District", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Employee", b =>
@@ -191,6 +187,9 @@ namespace DataAccessLayer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("EmployeeId"));
 
+                    b.Property<int>("AddressId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Department")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -198,9 +197,6 @@ namespace DataAccessLayer.Migrations
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("LocationId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Position")
                         .IsRequired()
@@ -211,29 +207,12 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("EmployeeId");
 
-                    b.HasIndex("LocationId");
+                    b.HasIndex("AddressId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
 
                     b.ToTable("Employee", (string)null);
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.Location", b =>
-                {
-                    b.Property<int>("LocationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LocationId"));
-
-                    b.Property<string>("CityName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("LocationId");
-
-                    b.ToTable("Location", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Permission", b =>
@@ -275,7 +254,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("ProvinceId");
 
-                    b.ToTable("Provinces", (string)null);
+                    b.ToTable("Province", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Models.RegisterAccount", b =>
@@ -286,18 +265,13 @@ namespace DataAccessLayer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RegisterId"));
 
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("AgencyName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Department")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DistrictName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -306,14 +280,10 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsApproved")
                         .HasColumnType("bit");
-
-                    b.Property<int?>("LocationId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -324,6 +294,13 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Position")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProvinceName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Street")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -332,6 +309,10 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("WardName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -468,7 +449,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("DistrictId");
 
-                    b.ToTable("Wards", (string)null);
+                    b.ToTable("Ward", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Address", b =>
@@ -488,7 +469,7 @@ namespace DataAccessLayer.Migrations
                     b.HasOne("BusinessObject.Models.Ward", "Ward")
                         .WithMany("Addresses")
                         .HasForeignKey("WardId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("District");
@@ -500,9 +481,9 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("BusinessObject.Models.AgencyAccount", b =>
                 {
-                    b.HasOne("BusinessObject.Models.Location", "Location")
+                    b.HasOne("BusinessObject.Models.Address", "Address")
                         .WithMany("AgencyAccounts")
-                        .HasForeignKey("LocationId")
+                        .HasForeignKey("AddressId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -512,7 +493,7 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Location");
+                    b.Navigation("Address");
 
                     b.Navigation("User");
                 });
@@ -549,9 +530,9 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("BusinessObject.Models.Employee", b =>
                 {
-                    b.HasOne("BusinessObject.Models.Location", "Location")
+                    b.HasOne("BusinessObject.Models.Address", "Address")
                         .WithMany("Employees")
-                        .HasForeignKey("LocationId")
+                        .HasForeignKey("AddressId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -561,7 +542,7 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Location");
+                    b.Navigation("Address");
 
                     b.Navigation("User");
                 });
@@ -615,6 +596,13 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("District");
                 });
 
+            modelBuilder.Entity("BusinessObject.Models.Address", b =>
+                {
+                    b.Navigation("AgencyAccounts");
+
+                    b.Navigation("Employees");
+                });
+
             modelBuilder.Entity("BusinessObject.Models.AgencyLevel", b =>
                 {
                     b.Navigation("AgencyAccountLevels");
@@ -625,13 +613,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Addresses");
 
                     b.Navigation("Wards");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.Location", b =>
-                {
-                    b.Navigation("AgencyAccounts");
-
-                    b.Navigation("Employees");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Permission", b =>

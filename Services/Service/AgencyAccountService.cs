@@ -49,16 +49,16 @@ namespace Services.Service
             {
                 agencyAccount.AgencyName = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(request.AgencyName.ToLower());
             }
-            // ✅ Validate Address - Viết hoa chữ cái đầu
+            /*// ✅ Validate Address - Viết hoa chữ cái đầu
             if (!string.IsNullOrWhiteSpace(request.Address))
             {
                 agencyAccount.Address = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(request.Address.ToLower());
-            }
-            // ✅ Cập nhật LocationId (nếu không phải 0)
+            }*/
+            /*// ✅ Cập nhật LocationId (nếu không phải 0)
             if (request.LocationId != 0)
             {
                 agencyAccount.LocationId = request.LocationId;
-            }
+            }*/
             // ✅ Nếu có mật khẩu mới, hash trước khi lưu vào User
             if (!string.IsNullOrWhiteSpace(request.Password))
             {

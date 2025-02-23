@@ -7,14 +7,23 @@ using System.Threading.Tasks;
 
 namespace Repo.IRepository
 {
+
     public interface IUserRepository
     {
+        // ✅ Lưu yêu cầu đăng ký vào RegisterAccount
         Task<RegisterAccount> RegisterUserRequestAsync(RegisterAccount registerAccount);
-        Task<RegisterAccount> GetRegisterAccountByIdAsync(int registerId);
-        Task<bool> ApproveUserAsync(int registerId);
-        Task<User> GetUserByIdAsync(Guid userId);
-        Task<bool> UpdateUserAsync(User user);
-    }
 
+        // ✅ Lấy thông tin RegisterAccount theo ID
+        Task<RegisterAccount> GetRegisterAccountByIdAsync(int registerId);
+
+        // ✅ Duyệt tài khoản và lưu vào bảng User + Employee hoặc Agency (thay LocationId bằng AddressId)
+        Task<bool> ApproveUserAsync(int registerId);
+
+        // ✅ Cập nhật User (bao gồm mật khẩu)
+        Task<bool> UpdateUserAsync(User user);
+
+        // ✅ Tìm User theo UserId
+        Task<User> GetUserByIdAsync(Guid userId);
+    }
 
 }

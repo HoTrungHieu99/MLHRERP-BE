@@ -16,15 +16,19 @@ namespace BusinessObject.Models
         [Required]
         public string AgencyName { get; set; }
 
-        public string Address { get; set; }
+        //public string Address { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public Guid UserId { get; set; }
         [ForeignKey("UserId")]
         public User User { get; set; }
 
-        public int LocationId { get; set; }
+        public int AddressId { get; set; }
+        [ForeignKey("AddressId")]
+        public Address Address { get; set; }
+
+        /*public int LocationId { get; set; }
         [ForeignKey("LocationId")]
-        public Location Location { get; set; }
+        public Location Location { get; set; }*/
     }
 }

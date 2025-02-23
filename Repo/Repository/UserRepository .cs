@@ -19,37 +19,33 @@ namespace Repo.Repository
             _context = context;
         }
 
-        // Lưu yêu cầu đăng ký vào RegisterAccount
+        // ✅ Lưu yêu cầu đăng ký vào RegisterAccount
         public async Task<RegisterAccount> RegisterUserRequestAsync(RegisterAccount registerAccount)
         {
-            // ✅ Tạo mật khẩu ngẫu nhiên 9 ký tự
-            string rawPassword = PasswordHelper.GenerateRandomPassword();
-
-            // ✅ Hash mật khẩu trước khi lưu vào DB
-            //string hashedPassword = BCrypt.Net.BCrypt.HashPassword(rawPassword);
             try
             {
-                // Kiểm tra nếu Email hoặc Phone đã tồn tại
+                // ✅ Tạo mật khẩu ngẫu nhiên 9 ký tự
+                string rawPassword = PasswordHelper.GenerateRandomPassword();
+                // ✅ Kiểm tra nếu Username, Email hoặc Phone đã tồn tại
                 var existingAccount = await _context.RegisterAccounts
-                    .FirstOrDefaultAsync(u => u.Username == registerAccount.Username || u.Email == registerAccount.Email 
-                    || u.Phone == registerAccount.Phone || u.FullName == registerAccount.FullName || u.AgencyName == registerAccount.AgencyName);
+                    .FirstOrDefaultAsync(u => u.Username == registerAccount.Username ||
+                                              u.Email == registerAccount.Email ||
+                                              u.Phone == registerAccount.Phone);
                 if (existingAccount != null)
                 {
-                    throw new ArgumentException("Email or phone number or full name or user name or agency name already exists!");
+                    throw new ArgumentException("Username, Email, or Phone already exists!");
                 }
 
+              
                 // ✅ Nếu Password rỗng hoặc null, đặt giá trị mặc định là "1"
                 if (string.IsNullOrWhiteSpace(registerAccount.Password))
                 {
                     registerAccount.Password = rawPassword;
                 }
-
-                // ✅ Hash mật khẩu trước khi lưu vào database
-                //registerAccount.Password = BCrypt.Net.BCrypt.HashPassword(registerAccount.Password);
-
-                // ✅ Lưu vào database
+                // ✅ Lưu tài khoản đăng ký vào RegisterAccount
                 _context.RegisterAccounts.Add(registerAccount);
                 await _context.SaveChangesAsync();
+
                 return registerAccount;
             }
             catch (Exception ex)
@@ -59,77 +55,77 @@ namespace Repo.Repository
             }
         }
 
-
-        // Lấy thông tin RegisterAccount theo ID
-        public async Task<RegisterAccount> GetRegisterAccountByIdAsync(int registerId)
-        {
-            return await _context.RegisterAccounts.FindAsync(registerId);
-        }
-
-
-        // Duyệt tài khoản và lưu vào bảng User + Employee hoặc Agency
+        // ✅ Admin duyệt tài khoản và lưu vào bảng User + Employee hoặc Agency
         public async Task<bool> ApproveUserAsync(int registerId)
         {
             try
             {
                 var registerAccount = await _context.RegisterAccounts.FindAsync(registerId);
                 if (registerAccount == null || registerAccount.IsApproved)
-                    return false; // Tài khoản không tồn tại hoặc đã duyệt
+                    return false; // Tài khoản không tồn tại hoặc đã được duyệt trước đó
 
-                
+                // ✅ Tạo Address dựa trên thông tin từ RegisterAccount
+                (Province province, District district, Ward ward) = await GetLocationIdsAsync(
+                    registerAccount.ProvinceName, registerAccount.DistrictName, registerAccount.WardName
+                );
 
-                // ✅ Tạo User trước
+                var newAddress = new Address
+                {
+                    Street = registerAccount.Street,
+                    WardId = ward.WardId,
+                    DistrictId = district.DistrictId,
+                    ProvinceId = province.ProvinceId
+                };
+
+                _context.Addresses.Add(newAddress);
+                await _context.SaveChangesAsync(); // Lưu để lấy AddressId
+
+                // ✅ Tạo User
                 var user = new User
                 {
                     Username = registerAccount.Username,
                     Email = registerAccount.Email,
                     Phone = registerAccount.Phone,
                     UserType = registerAccount.UserType,
-                    Password = registerAccount.Password, // ✅ Lưu mật khẩu đã hash
+                    Password = registerAccount.Password, // Có thể hash trước khi lưu
                     Status = true
                 };
 
                 _context.Users.Add(user);
-                await _context.SaveChangesAsync(); // ✅ Lưu trước để có UserId
+                await _context.SaveChangesAsync(); // Lưu trước để có UserId
 
-                // ✅ Nếu là Employee, lưu vào bảng Employee
+                // ✅ Nếu UserType là EMPLOYEE, lưu vào bảng Employee
                 if (registerAccount.UserType.Equals("EMPLOYEE", StringComparison.OrdinalIgnoreCase))
                 {
                     var employee = new Employee
                     {
-                        UserId = user.UserId, // ✅ UserId đã có sau khi lưu User
+                        UserId = user.UserId,
                         FullName = registerAccount.FullName,
                         Position = registerAccount.Position,
                         Department = registerAccount.Department,
-                        LocationId = registerAccount.LocationId ?? 1 // ✅ Đặt mặc định nếu null
+                        AddressId = newAddress.AddressId // Sử dụng AddressId thay vì LocationId
                     };
 
                     _context.Employees.Add(employee);
                 }
-                // ✅ Nếu là Agency, lưu vào bảng AgencyAccount
+                // ✅ Nếu UserType là AGENCY, lưu vào bảng AgencyAccount
                 else if (registerAccount.UserType.Equals("AGENCY", StringComparison.OrdinalIgnoreCase))
                 {
                     var agency = new AgencyAccount
                     {
-                        UserId = user.UserId, // ✅ UserId đã có sau khi lưu User
+                        UserId = user.UserId,
                         AgencyName = registerAccount.AgencyName,
-                        Address = registerAccount.Address ?? "N/A", // ✅ Đảm bảo không null
-                        LocationId = registerAccount.LocationId ?? 1
+                        AddressId = newAddress.AddressId
                     };
 
                     _context.AgencyAccounts.Add(agency);
                 }
 
-                // ✅ Đánh dấu tài khoản đã duyệt
+                // ✅ Đánh dấu tài khoản đã được duyệt
                 registerAccount.IsApproved = true;
                 await _context.SaveChangesAsync();
 
                 return true;
-            }
-            catch (DbUpdateException dbEx)
-            {
-                Console.WriteLine($"Database Error: {dbEx.InnerException?.Message}");
-                throw new Exception("Database error: " + dbEx.InnerException?.Message);
             }
             catch (Exception ex)
             {
@@ -137,7 +133,22 @@ namespace Repo.Repository
                 throw new Exception("Error while approving user: " + ex.Message);
             }
         }
-        
+
+        // ✅ Phương thức lấy Province, District, Ward dựa trên tên
+        private async Task<(Province, District, Ward)> GetLocationIdsAsync(string provinceName, string districtName, string wardName)
+        {
+            var province = await _context.Provinces.FirstOrDefaultAsync(p => p.ProvinceName == provinceName);
+            if (province == null) throw new Exception($"Province '{provinceName}' not found.");
+
+            var district = await _context.Districts.FirstOrDefaultAsync(d => d.DistrictName == districtName && d.ProvinceId == province.ProvinceId);
+            if (district == null) throw new Exception($"District '{districtName}' not found in Province '{provinceName}'.");
+
+            var ward = await _context.Wards.FirstOrDefaultAsync(w => w.WardName == wardName && w.DistrictId == district.DistrictId);
+            if (ward == null) throw new Exception($"Ward '{wardName}' not found in District '{districtName}'.");
+
+            return (province, district, ward);
+        }
+
 
         // ✅ Cập nhật User (bao gồm mật khẩu)
         public async Task<bool> UpdateUserAsync(User user)
@@ -150,6 +161,11 @@ namespace Repo.Repository
         public async Task<User> GetUserByIdAsync(Guid userId)
         {
             return await _context.Users.FindAsync(userId);
+        }
+        // Lấy thông tin RegisterAccount theo ID
+        public async Task<RegisterAccount> GetRegisterAccountByIdAsync(int registerId)
+        {
+            return await _context.RegisterAccounts.FindAsync(registerId);
         }
     }
 
@@ -166,6 +182,4 @@ namespace Repo.Repository
                                         .Select(s => s[random.Next(s.Length)]).ToArray());
         }
     }
-
-
 }
