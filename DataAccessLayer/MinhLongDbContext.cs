@@ -14,13 +14,13 @@ namespace DataAccessLayer
 {
     public class MinhLongDbContext : DbContext
     {
-        public MinhLongDbContext(DbContextOptions<MinhLongDbContext> options) : base(options) { }
+        public MinhLongDbContext(DbContextOptions options) : base(options) { }
         public MinhLongDbContext() { }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                // Đọc chuỗi kết nối từ appsettings.json
                 var configuration = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
                     .AddJsonFile("appsettings.json")
@@ -31,7 +31,7 @@ namespace DataAccessLayer
             }
         }
 
-        // Khai báo DbSet cho các bảng
+        // 🔥 Định nghĩa DbSet cho các bảng 
         public DbSet<User> Users { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Role> Roles { get; set; }
@@ -41,10 +41,15 @@ namespace DataAccessLayer
         public DbSet<AgencyAccount> AgencyAccounts { get; set; }
         public DbSet<AgencyLevel> AgencyLevels { get; set; }
         public DbSet<AgencyAccountLevel> AgencyAccountLevels { get; set; }
+        public DbSet<RegisterAccount> RegisterAccounts { get; set; }
+        public DbSet<Province> Provinces { get; set; }
+        public DbSet<District> Districts { get; set; }
+        public DbSet<Ward> Wards { get; set; }
+        public DbSet<Address> Addresses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Đặt tên bảng để nhất quán với database
+            // 🏷️ **Định danh bảng** 
             modelBuilder.Entity<User>().ToTable("User");
             modelBuilder.Entity<Employee>().ToTable("Employee");
             modelBuilder.Entity<Role>().ToTable("Role");
@@ -58,7 +63,110 @@ namespace DataAccessLayer
             modelBuilder.Entity<District>().ToTable("District");
             modelBuilder.Entity<Ward>().ToTable("Ward");
             modelBuilder.Entity<Address>().ToTable("Address");
-            // Cấu hình decimal(18, 2) cho các thuộc tính kiểu decimal
+
+            // 🔥 **Cấu hình quan hệ** 
+            modelBuilder.Entity<Ward>()
+                .HasOne(w => w.District)
+                .WithMany(d => d.Wards)
+                .HasForeignKey(w => w.DistrictId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<District>()
+                .HasOne(d => d.Province)
+                .WithMany(p => p.Districts)
+                .HasForeignKey(d => d.ProvinceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ❌ **Fix lỗi "Multiple Cascade Paths"** 
+            modelBuilder.Entity<Address>()
+                .HasOne(a => a.Ward)
+                .WithMany(w => w.Addresses)
+                .HasForeignKey(a => a.WardId)
+                .OnDelete(DeleteBehavior.NoAction); // 🔥 Fix lỗi 
+
+            modelBuilder.Entity<Address>()
+                .HasOne(a => a.District)
+                .WithMany(d => d.Addresses)
+                .HasForeignKey(a => a.DistrictId)
+                .OnDelete(DeleteBehavior.NoAction); // 🔥 Fix lỗi 
+
+            modelBuilder.Entity<Address>()
+                .HasOne(a => a.Province)
+                .WithMany(p => p.Addresses)
+                .HasForeignKey(a => a.ProvinceId)
+                .OnDelete(DeleteBehavior.NoAction); // 🔥 Fix lỗi 
+
+            // ✅ **Cấu hình khóa chính tự động tăng** 
+            modelBuilder.Entity<User>()
+                .Property(u => u.UserId)
+                .HasDefaultValueSql("NEWID()");
+
+            modelBuilder.Entity<Employee>()
+                .Property(e => e.EmployeeId)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<AgencyAccount>()
+                .Property(a => a.AgencyId)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Address>()
+                .Property(a => a.AddressId)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Role>()
+                .Property(r => r.RoleId)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Permission>()
+                .Property(p => p.PermissionId)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<RolePermission>()
+                .Property(rp => rp.RolePermissionId)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<UserRole>()
+                .Property(ur => ur.UserRoleId)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<RegisterAccount>()
+                .Property(ra => ra.RegisterId)
+                .ValueGeneratedOnAdd();
+
+            // 🔥 **Cấu hình quan hệ nhiều - nhiều** 
+            modelBuilder.Entity<UserRole>()
+                .HasOne(ur => ur.User)
+                .WithMany(u => u.UserRoles)
+                .HasForeignKey(ur => ur.UserId);
+
+            modelBuilder.Entity<UserRole>()
+                .HasOne(ur => ur.Role)
+                .WithMany(r => r.UserRoles)
+                .HasForeignKey(ur => ur.RoleId);
+
+            modelBuilder.Entity<RolePermission>()
+                .HasOne(rp => rp.Role)
+                .WithMany(r => r.RolePermissions)
+                .HasForeignKey(rp => rp.RoleId);
+
+            modelBuilder.Entity<RolePermission>()
+                .HasOne(rp => rp.Permission)
+                .WithMany(p => p.RolePermissions)
+                .HasForeignKey(rp => rp.PermissionId);
+
+            // 🔥 **Quan hệ User - Employee (1-1)** 
+            modelBuilder.Entity<Employee>()
+                .HasOne(e => e.User)
+                .WithOne(u => u.Employee)
+                .HasForeignKey<Employee>(e => e.UserId);
+
+            // 🔥 **Quan hệ User - AgencyAccount (1-1)** 
+            modelBuilder.Entity<AgencyAccount>()
+                .HasOne(a => a.User)
+                .WithOne(u => u.AgencyAccount)
+                .HasForeignKey<AgencyAccount>(a => a.UserId);
+
+            // 🔥 **Cấu hình giá trị decimal** 
             modelBuilder.Entity<AgencyAccountLevel>()
                 .Property(aal => aal.MonthlyRevenue)
                 .HasColumnType("decimal(18, 2)");
@@ -86,151 +194,7 @@ namespace DataAccessLayer
             modelBuilder.Entity<User>()
                 .Property(u => u.Status)
                 .HasDefaultValue(false);
-
-            // Cấu hình tự động tăng cho tất cả các ID trong cơ sở dữ liệu
-            // Cấu hình tự động tăng cho AgencyAccountId
-            modelBuilder.Entity<AgencyAccount>()
-                .Property(rp => rp.AgencyId)
-                .ValueGeneratedOnAdd();
-
-            // Cấu hình tự động tăng cho AgencyLevelId
-            modelBuilder.Entity<AgencyAccountLevel>()
-                .Property(rp => rp.AgencyLevelId)
-                .ValueGeneratedOnAdd();
-
-            // Cấu hình tự động tăng cho LevelId
-            modelBuilder.Entity<AgencyLevel>()
-                .Property(rp => rp.LevelId)
-                .ValueGeneratedOnAdd();
-
-            // Cấu hình tự động tăng cho EmployeeId
-            modelBuilder.Entity<Employee>()
-                .Property(rp => rp.EmployeeId)
-                .ValueGeneratedOnAdd();
-
-            // Cấu hình tự động tăng cho PermissionId
-            modelBuilder.Entity<Permission>()
-                .Property(rp => rp.PermissionId)
-                .ValueGeneratedOnAdd();
-
-            // Cấu hình tự động tăng cho RoleId
-            modelBuilder.Entity<Role>()
-                .Property(rp => rp.RoleId)
-                .ValueGeneratedOnAdd();
-
-            // Cấu hình tự động tăng cho RolePermissionId
-            modelBuilder.Entity<RolePermission>()
-                .Property(rp => rp.RolePermissionId)
-                .ValueGeneratedOnAdd();
-
-            // Cấu hình tự động tăng cho UserId
-            modelBuilder.Entity<User>()
-                .Property(rp => rp.UserId)
-                .HasDefaultValueSql("NEWID()");
-
-            // Cấu hình tự động tăng cho UserRoleId
-            modelBuilder.Entity<UserRole>()
-                .Property(rp => rp.UserRoleId)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<RegisterAccount>()
-                .Property(rp => rp.RegisterId)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<Address>()
-                .Property(rp => rp.AddressId)
-                .ValueGeneratedOnAdd();
-
-            // Cấu hình quan hệ User-Role (N-N)
-            modelBuilder.Entity<UserRole>()
-                .HasOne(ur => ur.User)
-                .WithMany(u => u.UserRoles)
-                .HasForeignKey(ur => ur.UserId)
-                .HasPrincipalKey(u => u.UserId);
-
-            modelBuilder.Entity<UserRole>()
-                .HasOne(ur => ur.Role)
-                .WithMany(r => r.UserRoles)
-                .HasForeignKey(ur => ur.RoleId);
-
-            // Cấu hình quan hệ Role-Permission (N-N)
-            modelBuilder.Entity<RolePermission>()
-                .HasOne(rp => rp.Role)
-                .WithMany(r => r.RolePermissions)
-                .HasForeignKey(rp => rp.RoleId);
-
-            modelBuilder.Entity<RolePermission>()
-                .HasOne(rp => rp.Permission)
-                .WithMany(p => p.RolePermissions)
-                .HasForeignKey(rp => rp.PermissionId);
-
-            // Cấu hình quan hệ Employee-User (1-1)
-            modelBuilder.Entity<Employee>()
-                .HasOne(e => e.User)
-                .WithOne(u => u.Employee)
-                .HasForeignKey<Employee>(e => e.UserId);
-
-            // Cấu hình quan hệ Employee-Address (N-1)
-            modelBuilder.Entity<Employee>()
-                .HasOne(e => e.Address)
-                .WithMany(l => l.Employees)
-                .HasForeignKey(e => e.AddressId);
-
-            // Cấu hình quan hệ AgencyAccount-User (1-1)
-            modelBuilder.Entity<AgencyAccount>()
-                .HasOne(a => a.User)
-                .WithOne(u => u.AgencyAccount)
-                .HasForeignKey<AgencyAccount>(a => a.UserId);
-
-            // Cấu hình quan hệ AgencyAccount-Location (N-1)
-            modelBuilder.Entity<AgencyAccount>()
-                .HasOne(a => a.Address)
-                .WithMany(l => l.AgencyAccounts)
-                .HasForeignKey(a => a.AddressId);
-
-            // Cấu hình quan hệ AgencyAccountLevel-AgencyAccount (N-1)
-            modelBuilder.Entity<AgencyAccountLevel>()
-                .HasOne(aal => aal.Agency)
-                .WithMany()
-                .HasForeignKey(aal => aal.AgencyId);
-
-            // Cấu hình quan hệ AgencyAccountLevel-AgencyLevel (N-1)
-            modelBuilder.Entity<AgencyAccountLevel>()
-                .HasOne(aal => aal.Level)
-                .WithMany(al => al.AgencyAccountLevels)
-                .HasForeignKey(aal => aal.LevelId);
-
-            //Quan hệ Location
-            modelBuilder.Entity<Ward>()
-                .HasOne(w => w.District)
-                .WithMany(d => d.Wards)
-                .HasForeignKey(w => w.DistrictId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<District>()
-                .HasOne(d => d.Province)
-                .WithMany(p => p.Districts)
-                .HasForeignKey(d => d.ProvinceId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Address>()
-                .HasOne(a => a.Ward)
-                .WithMany(w => w.Addresses)
-                .HasForeignKey(a => a.WardId)
-                .OnDelete(DeleteBehavior.Cascade); // ✅ Vẫn để Cascade
-
-            modelBuilder.Entity<Address>()
-                .HasOne(a => a.District)
-                .WithMany(d => d.Addresses)
-                .HasForeignKey(a => a.DistrictId)
-                .OnDelete(DeleteBehavior.NoAction); // ❌ Đổi từ CASCADE ➝ NO ACTION
-
-            modelBuilder.Entity<Address>()
-                .HasOne(a => a.Province)
-                .WithMany(p => p.Addresses)
-                .HasForeignKey(a => a.ProvinceId)
-                .OnDelete(DeleteBehavior.NoAction); // ❌ Đổi từ CASCADE ➝ NO ACTION
-
         }
     }
+
 }
