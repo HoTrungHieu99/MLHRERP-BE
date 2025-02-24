@@ -167,6 +167,31 @@ namespace Repo.Repository
         {
             return await _context.RegisterAccounts.FindAsync(registerId);
         }
+        //Login
+        public async Task<User> LoginAsync(string email, string password)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+            {
+                throw new ArgumentException("Invalid email or password.");
+            }
+
+            /*// ✅ Nếu mật khẩu đã hash bằng BCrypt, kiểm tra bằng BCrypt
+            if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
+            {
+                throw new ArgumentException("Invalid email or password.");
+            }*/
+
+            return user;
+        }
+
+        //Logout
+        public async Task<User> GetUserByEmailAsync(string email)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        }
+
     }
 
 

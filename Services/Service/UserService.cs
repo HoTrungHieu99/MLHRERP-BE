@@ -130,6 +130,28 @@ namespace Services.Service
             return await _userRepository.ApproveUserAsync(registerId);
         }
 
+        //Login
+        public async Task<User> LoginAsync(string email, string password)
+        {
+            return await _userRepository.LoginAsync(email, password);
+        }
+
+        //Logout
+        public async Task<bool> LogoutAsync(string email)
+        {
+            var user = await _userRepository.GetUserByEmailAsync(email);
+            if (user == null)
+            {
+                throw new ArgumentException("User not found.");
+            }
+
+            // ✅ Nếu bạn dùng Session hoặc Refresh Token, xóa token tại đây
+            // Ví dụ: user.RefreshToken = null;
+            await _userRepository.UpdateUserAsync(user);
+
+            return true; // Trả về true nếu logout thành công
+        }
+
     }
 
 }

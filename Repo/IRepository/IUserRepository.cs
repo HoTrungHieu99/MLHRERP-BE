@@ -24,6 +24,11 @@ namespace Repo.IRepository
 
         // ✅ Tìm User theo UserId
         Task<User> GetUserByIdAsync(Guid userId);
+
+        //Login
+        Task<User> LoginAsync(string email, string password);
+        //Logout
+        Task<User> GetUserByEmailAsync(string email);
     }
 
 }

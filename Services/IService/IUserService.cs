@@ -12,6 +12,10 @@ namespace Services.IService
     {
         Task<RegisterAccount> RegisterUserRequestAsync(RegisterRequest request);
         Task<bool> ApproveUserAsync(int registerId);
+        //Login
+        Task<User> LoginAsync(string email, string password);
+        //Logout
+        Task<bool> LogoutAsync(string email);
     }
 
 
