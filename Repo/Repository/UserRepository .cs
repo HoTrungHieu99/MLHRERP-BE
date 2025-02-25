@@ -26,6 +26,8 @@ namespace Repo.Repository
             {
                 // ✅ Tạo mật khẩu ngẫu nhiên 9 ký tự
                 string rawPassword = PasswordHelper.GenerateRandomPassword();
+
+                registerAccount.Password = BCrypt.Net.BCrypt.HashPassword(rawPassword);
                 // ✅ Kiểm tra nếu Username, Email hoặc Phone đã tồn tại
                 var existingAccount = await _context.RegisterAccounts
                     .FirstOrDefaultAsync(u => u.Username == registerAccount.Username ||
@@ -87,7 +89,7 @@ namespace Repo.Repository
                     Email = registerAccount.Email,
                     Phone = registerAccount.Phone,
                     UserType = registerAccount.UserType,
-                    Password = registerAccount.Password, // Có thể hash trước khi lưu
+                    Password = BCrypt.Net.BCrypt.HashPassword(registerAccount.Password), // Có thể hash trước khi lưu
                     Status = true
                 };
 
@@ -153,6 +155,10 @@ namespace Repo.Repository
         // ✅ Cập nhật User (bao gồm mật khẩu)
         public async Task<bool> UpdateUserAsync(User user)
         {
+            if (!string.IsNullOrWhiteSpace(user.Password))
+            {
+                user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            }
             _context.Users.Update(user);
             return await _context.SaveChangesAsync() > 0;
         }
@@ -177,11 +183,11 @@ namespace Repo.Repository
                 throw new ArgumentException("Invalid email or password.");
             }
 
-            /*// ✅ Nếu mật khẩu đã hash bằng BCrypt, kiểm tra bằng BCrypt
+            // ✅ Nếu mật khẩu đã hash bằng BCrypt, kiểm tra bằng BCrypt
             if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
             {
                 throw new ArgumentException("Invalid email or password.");
-            }*/
+            }
 
             return user;
         }
