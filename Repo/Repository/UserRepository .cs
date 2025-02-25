@@ -1,4 +1,5 @@
-﻿using BusinessObject.Models;
+﻿using BusinessObject.DTO;
+using BusinessObject.Models;
 using DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using Repo.IRepository;
@@ -137,7 +138,7 @@ namespace Repo.Repository
         }
 
         // ✅ Phương thức lấy Province, District, Ward dựa trên tên
-        private async Task<(Province, District, Ward)> GetLocationIdsAsync(string provinceName, string districtName, string wardName)
+        public async Task<(Province, District, Ward)> GetLocationIdsAsync(string provinceName, string districtName, string wardName)
         {
             var province = await _context.Provinces.FirstOrDefaultAsync(p => p.ProvinceName == provinceName);
             if (province == null) throw new Exception($"Province '{provinceName}' not found.");
@@ -153,7 +154,7 @@ namespace Repo.Repository
 
 
         // ✅ Cập nhật User (bao gồm mật khẩu)
-        public async Task<bool> UpdateUserAsync(User user)
+        /*public async Task<bool> UpdateUserAsync(User user)
         {
             if (!string.IsNullOrWhiteSpace(user.Password))
             {
@@ -161,7 +162,46 @@ namespace Repo.Repository
             }
             _context.Users.Update(user);
             return await _context.SaveChangesAsync() > 0;
+        }*/
+        public async Task<Employee> GetEmployeeByUserIdAsync(Guid userId)
+        {
+            return await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId);
         }
+
+        public async Task<AgencyAccount> GetAgencyAccountByUserIdAsync(Guid userId)
+        {
+            return await _context.AgencyAccounts.FirstOrDefaultAsync(a => a.UserId == userId);
+        }
+        public async Task<Address> GetAddressByIdAsync(int addressId)
+        {
+            return await _context.Addresses.FirstOrDefaultAsync(a => a.AddressId == addressId);
+        }
+
+        public async Task<bool> UpdateAddressAsync(Address address)
+        {
+            _context.Addresses.Update(address);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> UpdateUserAsync(User user)
+        {
+            _context.Users.Update(user);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> UpdateEmployeeAsync(Employee employee)
+        {
+            _context.Employees.Update(employee);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> UpdateAgencyAccountAsync(AgencyAccount agencyAccount)
+        {
+            _context.AgencyAccounts.Update(agencyAccount);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+
         // ✅ Tìm User theo UserId
 
         public async Task<User> GetUserByIdAsync(Guid userId)

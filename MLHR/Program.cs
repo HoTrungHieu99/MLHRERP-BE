@@ -16,12 +16,6 @@ builder.Services.AddDbContext<MinhLongDbContext>(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 
-builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-
-builder.Services.AddScoped<IAgencyAccountRepository, AgencyAccountRepository>();
-builder.Services.AddScoped<IAgencyAccountService, AgencyAccountService>();
-
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 

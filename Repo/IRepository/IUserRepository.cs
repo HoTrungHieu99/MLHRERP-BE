@@ -1,4 +1,5 @@
-﻿using BusinessObject.Models;
+﻿using BusinessObject.DTO;
+using BusinessObject.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,9 +20,6 @@ namespace Repo.IRepository
         // ✅ Duyệt tài khoản và lưu vào bảng User + Employee hoặc Agency (thay LocationId bằng AddressId)
         Task<bool> ApproveUserAsync(int registerId);
 
-        // ✅ Cập nhật User (bao gồm mật khẩu)
-        Task<bool> UpdateUserAsync(User user);
-
         // ✅ Tìm User theo UserId
         Task<User> GetUserByIdAsync(Guid userId);
 
@@ -29,6 +27,15 @@ namespace Repo.IRepository
         Task<User> LoginAsync(string email, string password);
         //Logout
         Task<User> GetUserByEmailAsync(string email);
+
+        Task<(Province, District, Ward)> GetLocationIdsAsync(string provinceName, string districtName, string wardName);
+        Task<Employee> GetEmployeeByUserIdAsync(Guid userId);
+        Task<AgencyAccount> GetAgencyAccountByUserIdAsync(Guid userId);
+        Task<Address> GetAddressByIdAsync(int addressId);
+        Task<bool> UpdateUserAsync(User user);
+        Task<bool> UpdateEmployeeAsync(Employee employee);
+        Task<bool> UpdateAgencyAccountAsync(AgencyAccount agencyAccount);
+        Task<bool> UpdateAddressAsync(Address address);
     }
 
 }

@@ -16,6 +16,7 @@ namespace Services.IService
         Task<User> LoginAsync(string email, string password);
         //Logout
         Task<bool> LogoutAsync(string email);
+        Task<bool> UpdateUserAccountAsync(Guid userId, UpdateUserRequest request);
     }
 
 

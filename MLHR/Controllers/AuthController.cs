@@ -1,4 +1,5 @@
 ﻿using BusinessObject.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.IService;
 
@@ -53,6 +54,23 @@ namespace MLHR.Controllers
                 }
 
                 return Ok(new { message = "Logout successful!" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPut("update/{userId}")]
+        public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UpdateUserRequest request)
+        {
+            try
+            {
+                bool isUpdated = await _userService.UpdateUserAccountAsync(userId, request);
+                if (!isUpdated)
+                    return BadRequest(new { message = "Update failed!" });
+
+                return Ok(new { message = "User account updated successfully!" });
             }
             catch (Exception ex)
             {
