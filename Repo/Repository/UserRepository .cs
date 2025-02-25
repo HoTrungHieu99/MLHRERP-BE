@@ -28,7 +28,7 @@ namespace Repo.Repository
                 // ✅ Tạo mật khẩu ngẫu nhiên 9 ký tự
                 string rawPassword = PasswordHelper.GenerateRandomPassword();
 
-                registerAccount.Password = BCrypt.Net.BCrypt.HashPassword(rawPassword);
+                //registerAccount.Password = BCrypt.Net.BCrypt.HashPassword(rawPassword);
                 // ✅ Kiểm tra nếu Username, Email hoặc Phone đã tồn tại
                 var existingAccount = await _context.RegisterAccounts
                     .FirstOrDefaultAsync(u => u.Username == registerAccount.Username ||
@@ -90,12 +90,14 @@ namespace Repo.Repository
                     Email = registerAccount.Email,
                     Phone = registerAccount.Phone,
                     UserType = registerAccount.UserType,
-                    Password = BCrypt.Net.BCrypt.HashPassword(registerAccount.Password), // Có thể hash trước khi lưu
+                    Password = registerAccount.Password, // Có thể hash trước khi lưu
                     Status = true
                 };
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync(); // Lưu trước để có UserId
+
+                int roleId = 0;
 
                 // ✅ Nếu UserType là EMPLOYEE, lưu vào bảng Employee
                 if (registerAccount.UserType.Equals("EMPLOYEE", StringComparison.OrdinalIgnoreCase))
@@ -110,6 +112,15 @@ namespace Repo.Repository
                     };
 
                     _context.Employees.Add(employee);
+
+                    if(registerAccount.Department.Equals("WAREHOUSE MANAGER", StringComparison.OrdinalIgnoreCase))
+                    {
+                        roleId = 3;
+                    }
+                    if (registerAccount.Department.Equals("SALES MANAGER", StringComparison.OrdinalIgnoreCase))
+                    {
+                        roleId = 4;
+                    }
                 }
                 // ✅ Nếu UserType là AGENCY, lưu vào bảng AgencyAccount
                 else if (registerAccount.UserType.Equals("AGENCY", StringComparison.OrdinalIgnoreCase))
@@ -122,10 +133,25 @@ namespace Repo.Repository
                     };
 
                     _context.AgencyAccounts.Add(agency);
+
+                    roleId = 2;
+                }
+
+                if (roleId > 0) 
+                {
+                    var userRole = new UserRole
+                    {
+                        UserId = user.UserId,
+                        RoleId = roleId
+
+                    };
+                    _context.UserRoles.Add(userRole);
                 }
 
                 // ✅ Đánh dấu tài khoản đã được duyệt
                 registerAccount.IsApproved = true;
+                // ✅ Xóa RegisterAccount sau khi duyệt
+                _context.RegisterAccounts.Remove(registerAccount);
                 await _context.SaveChangesAsync();
 
                 return true;
@@ -214,19 +240,19 @@ namespace Repo.Repository
             return await _context.RegisterAccounts.FindAsync(registerId);
         }
         //Login
-        public async Task<User> LoginAsync(string email, string password)
+        public async Task<User> LoginAsync(string userName, string password)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == userName);
 
             if (user == null)
             {
-                throw new ArgumentException("Invalid email or password.");
+                throw new ArgumentException("Invalid userName or password.");
             }
 
             // ✅ Nếu mật khẩu đã hash bằng BCrypt, kiểm tra bằng BCrypt
             if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
             {
-                throw new ArgumentException("Invalid email or password.");
+                throw new ArgumentException("Invalid userName or password.");
             }
 
             return user;
@@ -236,6 +262,21 @@ namespace Repo.Repository
         public async Task<User> GetUserByEmailAsync(string email)
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        //Edit Role
+        public async Task<UserRole> GetUserRoleByUserIdAsync(Guid userId)
+        {
+            return await _context.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == userId);
+        }
+        public async Task<bool> UpdateUserRoleAsync(UserRole userRole)
+        {
+            _context.UserRoles.Update(userRole);
+            return await _context.SaveChangesAsync() > 0;
+        }
+        public async Task<User> GetUserByUsernameAsync(string username)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
         }
 
     }

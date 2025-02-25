@@ -1,11 +1,73 @@
 ﻿using DataAccessLayer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Repo.IRepository;
 using Repo.Repository;
 using Services.IService;
 using Services.Service;
+using System.Security.Claims;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Lấy cấu hình JWT từ appsettings.json
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
+
+// Cấu hình JWT Bearer Authentication cho Swagger
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "MLHR API", Version = "v1" });
+
+    var securityScheme = new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Nhập JWT Token theo định dạng: Bearer YOUR_TOKEN_HERE",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        Reference = new OpenApiReference
+        {
+            Type = ReferenceType.SecurityScheme,
+            Id = "Bearer"
+        }
+    };
+
+    options.AddSecurityDefinition("Bearer", securityScheme);
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        { securityScheme, new string[] {} }
+    });
+});
+
+// Thêm Authentication & Authorization
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        RoleClaimType = ClaimTypes.Role, // ✅ Đảm bảo Role đọc đúng
+        ClockSkew = TimeSpan.Zero // ✅ Không cho phép thời gian trễ
+    };
+});
+
+builder.Services.AddAuthorization();
 
 // ✅ Đọc chuỗi kết nối từ appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -18,6 +80,9 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<ILocationService, LocationService>();
+
+builder.Services.AddScoped<JwtService>();
+
 
 // ✅ Đăng ký Controllers với JSON Options
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -48,6 +113,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Bật Swagger UI khi chạy ứng dụng
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
 // ✅ Bật HTTPS
 app.UseHttpsRedirection();
 
@@ -56,6 +128,7 @@ app.UseRouting();
 // ✅ Bật CORS
 app.UseCors("AllowAllOrigins");
 
+app.UseAuthentication();
 // ✅ Bật Authorization
 app.UseAuthorization();
 

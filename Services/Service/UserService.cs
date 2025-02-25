@@ -9,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.Mail;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -18,10 +20,12 @@ namespace Services.Service
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly JwtService _jwtService;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, JwtService jwtService)
         {
             _userRepository = userRepository;
+            _jwtService = jwtService;
         }
 
         // ✅ Lưu yêu cầu đăng ký vào RegisterAccount
@@ -131,9 +135,9 @@ namespace Services.Service
         }
 
         //Login
-        public async Task<User> LoginAsync(string email, string password)
+        public async Task<User> LoginAsync(string userName, string password)
         {
-            return await _userRepository.LoginAsync(email, password);
+            return await _userRepository.LoginAsync(userName, password);
         }
 
         //Logout
@@ -253,6 +257,214 @@ namespace Services.Service
 
             return true;
         }
+
+        //ForGotPassword
+
+        public async Task<bool> ForgotPasswordAsync(ForgotPasswordRequest request)
+        {
+            // ✅ Tìm User theo Email
+            var user = await _userRepository.GetUserByEmailAsync(request.Email);
+            if (user == null)
+            {
+                throw new ArgumentException("Email not found.");
+            }
+
+            // ✅ Tạo mật khẩu mới ngẫu nhiên
+            string newPassword = PasswordHelper.GenerateRandomPassword();
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword); // Hash trước khi lưu
+
+            // ✅ Cập nhật mật khẩu mới vào database
+            user.Password = hashedPassword;
+            await _userRepository.UpdateUserAsync(user);
+
+            // ✅ Gửi email chứa mật khẩu mới
+            await SendEmailAsync(user.Email, "Password Reset", $"Your new password: {newPassword}");
+
+            return true;
+        }
+
+        private async Task SendEmailAsync(string toEmail, string subject, string body)
+        {
+            try
+            {
+                var smtpClient = new SmtpClient("smtp.your-email-provider.com") // ✅ Đổi SMTP server phù hợp
+                {
+                    Port = 587, // Hoặc 465 tùy nhà cung cấp email
+                    Credentials = new NetworkCredential("your-email@example.com", "your-email-password"),
+                    EnableSsl = true,
+                };
+
+                var mailMessage = new MailMessage
+                {
+                    From = new MailAddress("your-email@example.com"),
+                    Subject = subject,
+                    Body = body,
+                    IsBodyHtml = true,
+                };
+
+                mailMessage.To.Add(toEmail);
+                await smtpClient.SendMailAsync(mailMessage);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error sending email: " + ex.Message);
+            }
+        }
+
+        //ChangePassword
+        /*public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
+        {
+            // ✅ 1. Lấy User từ database
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                throw new ArgumentException("User not found.");
+            }
+
+
+
+            // ✅ 2. Kiểm tra mật khẩu cũ có đúng không
+            if (!BCrypt.Net.BCrypt.Verify(request.OldPassword, user.Password))
+            {
+                throw new ArgumentException("Old password is incorrect.");
+            }
+
+            // ✅ 3. Kiểm tra mật khẩu mới không được trùng với mật khẩu cũ
+            if (BCrypt.Net.BCrypt.Verify(request.NewPassword, user.Password))
+            {
+                throw new ArgumentException("New password cannot be the same as the old password.");
+            }
+
+            // ✅ 4. Kiểm tra độ mạnh của mật khẩu mới
+            if (!IsValidPassword(request.NewPassword))
+            {
+                throw new ArgumentException("New password must be at least 9 characters long, contain at least one uppercase letter, and one special character.");
+            }
+
+            // ✅ 5. Kiểm tra mật khẩu mới có khớp với xác nhận mật khẩu không
+            if (request.NewPassword != request.ConfirmPassword)
+            {
+                throw new ArgumentException("New password and confirm password do not match.");
+            }
+
+            // ✅ 6. Hash mật khẩu mới trước khi lưu
+            user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+
+            // ✅ 7. Cập nhật mật khẩu vào database
+            return await _userRepository.UpdateUserAsync(user);
+        }
+
+
+        // ✅ Hàm kiểm tra độ mạnh của mật khẩu
+        private bool IsValidPassword(string password)
+        {
+            return password.Length >= 9 && // Ít nhất 9 ký tự
+                   Regex.IsMatch(password, @"[A-Z]") && // Ít nhất một chữ hoa
+                   Regex.IsMatch(password, @"[\W_]"); // Ít nhất một ký tự đặc biệt
+        }*/
+
+        public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
+        {
+            // ✅ 1. Lấy User từ database
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                throw new ArgumentException("User not found.");
+            }
+
+            // ✅ 2. Kiểm tra mật khẩu cũ có đúng không (Không hash)
+            if (request.OldPassword != user.Password)
+            {
+                throw new ArgumentException("Old password is incorrect.");
+            }
+
+            // ✅ 3. Kiểm tra mật khẩu mới không được trùng với mật khẩu cũ
+            if (request.NewPassword == user.Password)
+            {
+                throw new ArgumentException("New password cannot be the same as the old password.");
+            }
+
+            // ✅ 4. Kiểm tra độ mạnh của mật khẩu mới
+            if (!IsValidPassword(request.NewPassword))
+            {
+                throw new ArgumentException("New password must be at least 9 characters long, contain at least one uppercase letter, and one special character.");
+            }
+
+            // ✅ 5. Kiểm tra mật khẩu mới có khớp với xác nhận mật khẩu không
+            if (request.NewPassword != request.ConfirmPassword)
+            {
+                throw new ArgumentException("New password and confirm password do not match.");
+            }
+
+            // ✅ 6. Cập nhật mật khẩu vào database (Không hash)
+            user.Password = request.NewPassword;
+
+            return await _userRepository.UpdateUserAsync(user);
+        }
+
+
+        // ✅ Hàm kiểm tra độ mạnh của mật khẩu
+        private bool IsValidPassword(string password)
+        {
+            return password.Length >= 9 && // Ít nhất 9 ký tự
+                   Regex.IsMatch(password, @"[A-Z]") && // Ít nhất một chữ hoa
+                   Regex.IsMatch(password, @"[\W_]"); // Ít nhất một ký tự đặc biệt
+        }
+
+        //Edit Role
+        public async Task<bool> ChangeEmployeeRoleAsync(Guid userId)
+        {
+            // ✅ 1. Lấy Employee từ repository
+            var employee = await _userRepository.GetEmployeeByUserIdAsync(userId);
+            if (employee == null)
+                throw new ArgumentException("Employee not found.");
+
+            // ✅ 2. Lấy UserRole từ UserId
+            var userRole = await _userRepository.GetUserRoleByUserIdAsync(userId);
+            if (userRole == null)
+                throw new ArgumentException("UserRole not found.");
+
+            // ✅ 3. Kiểm tra Role hiện tại và đổi sang Role mới
+            if (userRole.RoleId == 3) // WAREHOUSE MANAGER
+            {
+                userRole.RoleId = 4; // Đổi thành SALES MANAGER
+                employee.Department = "SALES MANAGER";
+            }
+            else if (userRole.RoleId == 4) // SALES MANAGER
+            {
+                userRole.RoleId = 3; // Đổi thành WAREHOUSE MANAGER
+                employee.Department = "WAREHOUSE MANAGER";
+            }
+            else
+            {
+                throw new ArgumentException("Invalid current role for employee.");
+            }
+
+            // ✅ 4. Gọi Repo để cập nhật thông tin Role và Employee
+            bool userRoleUpdated = await _userRepository.UpdateUserRoleAsync(userRole);
+            bool employeeUpdated = await _userRepository.UpdateEmployeeAsync(employee);
+
+            return userRoleUpdated && employeeUpdated;
+        }
+
+        public async Task<string> LoginAsync(LoginRequest request)
+        {
+            var user = await _userRepository.GetUserByUsernameAsync(request.userName);
+            if (user == null || request.Password != user.Password)
+            {
+                throw new ArgumentException("Invalid username or password.");
+            }
+
+
+            // Lấy RoleId từ UserRole
+            var userRole = await _userRepository.GetUserRoleByUserIdAsync(user.UserId);
+            long roleId = userRole?.RoleId ?? 0;
+
+            // Tạo JWT Token
+            var token = _jwtService.GenerateJwtToken(user, roleId);
+            return token;
+        }
+
     }
 
 }

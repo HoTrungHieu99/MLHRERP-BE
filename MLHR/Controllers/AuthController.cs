@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.IService;
+using Services.Service;
 
 namespace MLHR.Controllers
 {
@@ -24,21 +25,12 @@ namespace MLHR.Controllers
         {
             try
             {
-                var user = await _userService.LoginAsync(request.Email, request.Password);
-
-                // ✅ Trả về thông tin user (loại bỏ mật khẩu)
-                return Ok(new
-                {
-                    user.UserId,
-                    user.Username,
-                    user.Email,
-                    user.Phone,
-                    user.UserType,
-                });
+                var token = await _userService.LoginAsync(request);
+                return Ok(new { token });
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
-                return BadRequest(new { error = ex.Message });
+                return Unauthorized(new { message = ex.Message });
             }
         }
 
@@ -71,6 +63,58 @@ namespace MLHR.Controllers
                     return BadRequest(new { message = "Update failed!" });
 
                 return Ok(new { message = "User account updated successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        /*[HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        {
+            try
+            {
+                bool isSuccessful = await _userService.ForgotPasswordAsync(request);
+                if (!isSuccessful)
+                    return BadRequest(new { message = "Failed to reset password!" });
+
+                return Ok(new { message = "A new password has been sent to your email!" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }*/
+
+        [HttpPost("change-password/{userId}")]
+        public async Task<IActionResult> ChangePassword(Guid userId, [FromBody] ChangePasswordRequest request)
+        {
+            try
+            {
+                bool isSuccessful = await _userService.ChangePasswordAsync(userId, request);
+                if (!isSuccessful)
+                    return BadRequest(new { message = "Failed to change password!" });
+
+                return Ok(new { message = "Password changed successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [Authorize(Roles = "1")]
+        [HttpPut("change-employee-role/{userId}")]
+        public async Task<IActionResult> ChangeEmployeeRole(Guid userId)
+        {
+            try
+            {
+                bool isSuccessful = await _userService.ChangeEmployeeRoleAsync(userId);
+                if (!isSuccessful)
+                    return BadRequest(new { message = "Failed to change role!" });
+
+                return Ok(new { message = "Employee role changed successfully!" });
             }
             catch (Exception ex)
             {

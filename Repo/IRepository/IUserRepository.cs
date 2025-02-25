@@ -24,7 +24,7 @@ namespace Repo.IRepository
         Task<User> GetUserByIdAsync(Guid userId);
 
         //Login
-        Task<User> LoginAsync(string email, string password);
+        Task<User> LoginAsync(string userName, string password);
         //Logout
         Task<User> GetUserByEmailAsync(string email);
 
@@ -36,6 +36,9 @@ namespace Repo.IRepository
         Task<bool> UpdateEmployeeAsync(Employee employee);
         Task<bool> UpdateAgencyAccountAsync(AgencyAccount agencyAccount);
         Task<bool> UpdateAddressAsync(Address address);
+        Task<UserRole> GetUserRoleByUserIdAsync(Guid userId);
+        Task<bool> UpdateUserRoleAsync(UserRole userRole);
+        Task<User> GetUserByUsernameAsync(string username);
     }
 
 }
