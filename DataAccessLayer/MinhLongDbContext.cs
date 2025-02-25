@@ -14,7 +14,7 @@ namespace DataAccessLayer
 {
     public class MinhLongDbContext : DbContext
     {
-        public MinhLongDbContext(DbContextOptions<MinhLongDbContext> options) : base(options) { }
+        public MinhLongDbContext(DbContextOptions options) : base(options) { }
         public MinhLongDbContext() { }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -30,6 +30,7 @@ namespace DataAccessLayer
                 optionsBuilder.UseSqlServer(connectionString);
             }
         }
+
 
         // 🔥 Định nghĩa DbSet cho các bảng
         public DbSet<User> Users { get; set; }
