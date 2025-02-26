@@ -66,10 +66,10 @@ namespace DataAccessLayer.Migrations
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Position = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Department = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Position = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Department = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Street = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     WardName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DistrictName = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -295,6 +295,33 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Warehouse",
+                columns: table => new
+                {
+                    WarehouseId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    WarehousName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AddressId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Warehouse", x => x.WarehouseId);
+                    table.ForeignKey(
+                        name: "FK_Warehouse_Address_AddressId",
+                        column: x => x.AddressId,
+                        principalTable: "Address",
+                        principalColumn: "AddressId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Warehouse_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AgencyAccountLevel",
                 columns: table => new
                 {
@@ -401,6 +428,17 @@ namespace DataAccessLayer.Migrations
                 name: "IX_Ward_DistrictId",
                 table: "Ward",
                 column: "DistrictId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Warehouse_AddressId",
+                table: "Warehouse",
+                column: "AddressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Warehouse_UserId",
+                table: "Warehouse",
+                column: "UserId",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -420,6 +458,9 @@ namespace DataAccessLayer.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserRole");
+
+            migrationBuilder.DropTable(
+                name: "Warehouse");
 
             migrationBuilder.DropTable(
                 name: "AgencyAccount");

@@ -33,6 +33,8 @@ namespace Services.Service
             return await _provinceRepository.GetWardsAsync(districtId);
         }
 
+
+
         /*public async Task ImportAllLocations()
         {
             try
@@ -74,7 +76,7 @@ namespace Services.Service
                 Console.WriteLine($"INNER EXCEPTION: {ex.InnerException?.Message}");
                 throw new Exception("Lỗi nhập dữ liệu: " + ex.Message, ex);
             }
-        }
-*/
+        }*/
+
     }
 }

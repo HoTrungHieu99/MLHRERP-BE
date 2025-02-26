@@ -13,6 +13,14 @@ namespace Repo.IRepository
         Task<List<District>> GetDistrictAsync(int provinceId);
         Task<List<Ward>> GetWardsAsync(int districtId);
 
+        int? GetProvinceIdByName(string provinceName);
+        int? GetDistrictIdByName(string districtName, int provinceId);
+        int? GetWardIdByName(string wardName, int districtId);
+        void AddAddress(Address address);
+        void UpdateAddress(Address address);
+
+        Address GetAddressById(int addressId);
+
         /*//Code Nhap Du lieu tinh huyen xa vao db
         Task<List<Province>> GetProvincesFromAPI();
         Task<List<District>> GetDistrictsFromAPI(int provinceId);

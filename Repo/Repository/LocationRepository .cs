@@ -37,6 +37,39 @@ namespace Repo.Repository
                 .ToListAsync();
         }
 
+        public int? GetProvinceIdByName(string provinceName)
+        {
+            return _context.Provinces.FirstOrDefault(p => p.ProvinceName == provinceName)?.ProvinceId;
+        }
+
+        public int? GetDistrictIdByName(string districtName, int provinceId)
+        {
+            return _context.Districts.FirstOrDefault(d => d.DistrictName == districtName && d.ProvinceId == provinceId)?.DistrictId;
+        }
+
+        public int? GetWardIdByName(string wardName, int districtId)
+        {
+            return _context.Wards.FirstOrDefault(w => w.WardName == wardName && w.DistrictId == districtId)?.WardId;
+        }
+
+        public void AddAddress(Address address)
+        {
+            _context.Addresses.Add(address);
+            _context.SaveChanges();
+        }
+
+        public void UpdateAddress(Address address)
+        {
+            _context.Addresses.Update(address);
+            _context.SaveChanges();
+        }
+
+        public Address GetAddressById(int addressId)
+        {
+            return _context.Addresses.FirstOrDefault(a => a.AddressId == addressId);
+        }
+
+
         /*public async Task<List<Province>> GetProvincesAsync()
         {
             return await LocationDAO.GetProvincesAsync();

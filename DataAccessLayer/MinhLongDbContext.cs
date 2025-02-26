@@ -47,6 +47,7 @@ namespace DataAccessLayer
         public DbSet<District> Districts { get; set; }
         public DbSet<Ward> Wards { get; set; }
         public DbSet<Address> Addresses { get; set; }
+        public DbSet<Warehouse> Warehouses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -64,6 +65,7 @@ namespace DataAccessLayer
             modelBuilder.Entity<District>().ToTable("District");
             modelBuilder.Entity<Ward>().ToTable("Ward");
             modelBuilder.Entity<Address>().ToTable("Address");
+            modelBuilder.Entity<Warehouse>().ToTable("Warehouse");
 
             // 🔥 **Cấu hình quan hệ**
             modelBuilder.Entity<Ward>()
@@ -133,6 +135,9 @@ namespace DataAccessLayer
             modelBuilder.Entity<RegisterAccount>()
                 .Property(ra => ra.RegisterId)
                 .ValueGeneratedOnAdd();
+            modelBuilder.Entity<Warehouse>()
+                .Property(ra => ra.WarehouseId)
+                .ValueGeneratedOnAdd();
 
             // 🔥 **Cấu hình quan hệ nhiều - nhiều**
             modelBuilder.Entity<UserRole>()
@@ -167,6 +172,16 @@ namespace DataAccessLayer
                 .WithOne(u => u.AgencyAccount)
                 .HasForeignKey<AgencyAccount>(a => a.UserId);
 
+            // Đảm bảo mỗi User chỉ có 1 Warehouse
+            modelBuilder.Entity<Warehouse>()
+                .HasIndex(w => w.UserId)
+                .IsUnique();
+            // Liên kết Warehouse với Address (1 Warehouse - 1 Address)
+            modelBuilder.Entity<Warehouse>()
+                .HasOne(w => w.Address)  // Warehouse có một Address
+                .WithMany()  // Không cần navigation property ngược
+                .HasForeignKey(w => w.AddressId)  // Dùng AddressId làm khóa ngoại
+                .OnDelete(DeleteBehavior.Cascade); // Nếu Warehouse bị xóa, Address cũng bị xóa
             // 🔥 **Cấu hình giá trị decimal**
             modelBuilder.Entity<AgencyAccountLevel>()
                 .Property(aal => aal.MonthlyRevenue)

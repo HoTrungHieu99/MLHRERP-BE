@@ -81,6 +81,10 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 
+builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
+builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+
+
 builder.Services.AddScoped<JwtService>();
 
 
