@@ -15,6 +15,6 @@ namespace Services.IService
 
 
 
-        //Task ImportAllLocations();
+        Task ImportAllLocations();
     }
 }

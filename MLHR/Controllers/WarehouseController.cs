@@ -29,11 +29,11 @@ namespace MLHR.Controllers
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
 
             if (roleId != 3)
-                return Unauthorized("Chỉ Warehouse Manager (RoleId = 3) mới có quyền.");
+                return Unauthorized("Only Warehouse Manager (RoleId = 3) has this permission!");
 
             _warehouseService.CreateWarehouse(userId, request.WarehousName, request.Street, request.Province, request.District, request.Ward);
 
-            return Ok("Warehouse đã được tạo.");
+            return Ok("Warehouse has been created!");
         }
 
         // Lấy Warehouse của Employee hiện tại
@@ -50,7 +50,6 @@ namespace MLHR.Controllers
             return Ok(warehouse);
         }
 
-        // Xóa Warehouse (chỉ Warehouse Manager)
         [Authorize(Roles = "3")]
         [HttpPut("upate-warehouse/{warehouseId}")]
         public IActionResult UpdateWarehouse(int warehouseId, [FromBody] WarehouseUpdateRequest request)
@@ -59,12 +58,12 @@ namespace MLHR.Controllers
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
 
             if (roleId != 3)
-                return Unauthorized("Chỉ Warehouse Manager (RoleId = 3) mới có quyền.");
+                return Unauthorized("Only Warehouse Manager (RoleId = 3) has this permission!");
 
             try
             {
                 _warehouseService.UpdateWarehouse(userId, warehouseId, request.WarehousName, request.Street, request.Province, request.District, request.Ward);
-                return Ok("Warehouse đã được cập nhật.");
+                return Ok("Warehouse has been updated!");
             }
             catch (Exception ex)
             {
@@ -72,17 +71,17 @@ namespace MLHR.Controllers
             }
         }
 
-       /* // Xóa Warehouse (chỉ Warehouse Manager)
         [Authorize(Roles = "3")]
-        [HttpDelete("delete-warehouse/{warehouseId}")]
-        public IActionResult DeleteWarehouse(int warehouseId)
+        [HttpDelete("{warehouseId}")]
+        public async Task<IActionResult> DeleteWarehouse(int warehouseId)
         {
-            var roleId = int.Parse(User.FindFirst(ClaimTypes.Role)?.Value ?? "0");
-            if (roleId != 3)
-                return Unauthorized("Only Warehouse Manager (RoleId = 3) has this permission!");
+            var result = await _warehouseService.DeleteWarehouseAsync(warehouseId);
 
-            _warehouseService.DeleteWarehouse(warehouseId);
-            return Ok("Warehouse has been deleted!");
-        }*/
+            if (!result)
+            {
+                return NotFound(new { message = "Warehouse not found." });
+            }
+            return Ok("Warehouse has been delete!");
+        }
     }
 }

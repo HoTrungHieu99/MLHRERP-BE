@@ -35,7 +35,7 @@ namespace Services.Service
 
 
 
-        /*public async Task ImportAllLocations()
+        public async Task ImportAllLocations()
         {
             try
             {
@@ -76,7 +76,7 @@ namespace Services.Service
                 Console.WriteLine($"INNER EXCEPTION: {ex.InnerException?.Message}");
                 throw new Exception("Lỗi nhập dữ liệu: " + ex.Message, ex);
             }
-        }*/
+        }
 
     }
 }

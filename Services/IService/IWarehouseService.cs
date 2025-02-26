@@ -13,7 +13,7 @@ namespace Services.IService
         Warehouse GetWarehouseByUserId(Guid userId);
         void CreateWarehouse(Guid userId, string warehousName, string street, string province, string district, string ward);
         void UpdateWarehouse(Guid userId, int warehouseId, string warehousName, string street, string province, string district, string ward);
-        void DeleteWarehouse(int warehouseId);
+        Task<bool> DeleteWarehouseAsync(int warehouseId);
 
     }
 }

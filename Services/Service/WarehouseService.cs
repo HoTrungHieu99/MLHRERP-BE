@@ -1,5 +1,6 @@
 ﻿using BusinessObject.Models;
 using Repo.IRepository;
+using Repo.Repository;
 using Services.IService;
 using System;
 using System.Collections.Generic;
@@ -28,19 +29,19 @@ namespace Services.Service
         {
             // Kiểm tra xem User đã có Warehouse chưa
             if (_warehouseRepo.GetWarehouseByUserId(userId) != null)
-                throw new Exception("Mỗi Employee chỉ có thể tạo một Warehouse.");
+                throw new Exception("Each Employee can only create one Warehouse!");
 
             // Lấy ID của Province
             var provinceId = _locationRepository.GetProvinceIdByName(province);
-            if (provinceId == null) throw new Exception("Province không hợp lệ!");
+            if (provinceId == null) throw new Exception("Province is invalid!");
 
             // Lấy ID của District
             var districtId = _locationRepository.GetDistrictIdByName(district, provinceId.Value);
-            if (districtId == null) throw new Exception("District không hợp lệ!");
+            if (districtId == null) throw new Exception("District is invalid!");
 
             // Lấy ID của Ward
             var wardId = _locationRepository.GetWardIdByName(ward, districtId.Value);
-            if (wardId == null) throw new Exception("Ward không hợp lệ!");
+            if (wardId == null) throw new Exception("Ward is invalid!");
 
             // Tạo Address
             var address = new Address
@@ -69,25 +70,25 @@ namespace Services.Service
             // Tìm Warehouse của User
             var warehouse = _warehouseRepo.GetWarehouseById(warehouseId);
             if (warehouse == null)
-                throw new Exception("Warehouse không tồn tại!");
+                throw new Exception("Warehouse does not exist!");
 
             if (warehouse.UserId != userId)
-                throw new Exception("Bạn không có quyền cập nhật Warehouse này!");
+                throw new Exception("You do not have permission to update this Warehouse!");
 
             // Tìm Address liên kết với Warehouse
             var address = _locationRepository.GetAddressById(warehouse.AddressId);  // ✅ Đảm bảo gọi từ đúng Interface
             if (address == null)
-                throw new Exception("Địa chỉ của Warehouse không tồn tại!");
+                throw new Exception("Warehouse address does not exist!");
 
             // Cập nhật Address
             var provinceId = _locationRepository.GetProvinceIdByName(province);
-            if (provinceId == null) throw new Exception("Province không hợp lệ!");
+            if (provinceId == null) throw new Exception("Province is invalid!");
 
             var districtId = _locationRepository.GetDistrictIdByName(district, provinceId.Value);
-            if (districtId == null) throw new Exception("District không hợp lệ!");
+            if (districtId == null) throw new Exception("Invalid District!");
 
             var wardId = _locationRepository.GetWardIdByName(ward, districtId.Value);
-            if (wardId == null) throw new Exception("Ward không hợp lệ!");
+            if (wardId == null) throw new Exception("Invalid Ward!");
 
             address.Street = street;
             address.ProvinceId = provinceId.Value;
@@ -102,6 +103,16 @@ namespace Services.Service
         }
 
 
-        public void DeleteWarehouse(int warehouseId) => _warehouseRepo.DeleteWarehouse(warehouseId);
+        public async Task<bool> DeleteWarehouseAsync(int warehouseId)
+        {
+            var warehouse = await _warehouseRepo.GetWarehouseByIdAsync(warehouseId);
+            if (warehouse == null)
+            {
+                return false; // Không tìm thấy Warehouse để xóa
+            }
+
+            await _warehouseRepo.DeleteWarehouseAsync(warehouse);
+            return true;
+        }
     }
 }

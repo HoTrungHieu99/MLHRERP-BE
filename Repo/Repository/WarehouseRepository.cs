@@ -1,5 +1,6 @@
 ﻿using BusinessObject.Models;
 using DataAccessLayer;
+using Microsoft.EntityFrameworkCore;
 using Repo.IRepository;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,13 @@ namespace Repo.Repository
         public Warehouse GetWarehouseById(int warehouseId)
             => _context.Warehouses.Find(warehouseId);
 
+        public async Task<Warehouse> GetWarehouseByIdAsync(int warehouseId)
+        {
+            return await _context.Warehouses
+                .Include(w => w.Address) // Load Address để đảm bảo xóa Cascade
+                .FirstOrDefaultAsync(w => w.WarehouseId == warehouseId);
+        }
+
         public void AddWarehouse(Warehouse warehouse)
         {
 
@@ -39,14 +47,21 @@ namespace Repo.Repository
             _context.SaveChanges();
         }
 
-        public void DeleteWarehouse(int warehouseId)
+        public async Task DeleteWarehouseAsync(Warehouse warehouse)
         {
-            var warehouse = _context.Warehouses.Find(warehouseId);
-            if (warehouse != null)
+            // Kiểm tra xem Warehouse có Address không
+            if (warehouse.AddressId != null)
             {
-                _context.Warehouses.Remove(warehouse);
-                _context.SaveChanges();
+                var address = await _context.Addresses.FindAsync(warehouse.AddressId);
+                if (address != null)
+                {
+                    _context.Addresses.Remove(address); // 🔥 XÓA ADDRESS TRƯỚC
+                }
             }
+
+            _context.Warehouses.Remove(warehouse); // 🔥 Sau đó xóa Warehouse
+            await _context.SaveChangesAsync(); // 🔥 Lưu thay đổi vào DB
         }
+
     }
 }

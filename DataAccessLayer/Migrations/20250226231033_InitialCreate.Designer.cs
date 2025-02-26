@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MinhLongDbContext))]
-    [Migration("20250226150627_InitialCreate")]
+    [Migration("20250226231033_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -472,7 +472,8 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("WarehouseId");
 
-                    b.HasIndex("AddressId");
+                    b.HasIndex("AddressId")
+                        .IsUnique();
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -627,8 +628,8 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("BusinessObject.Models.Warehouse", b =>
                 {
                     b.HasOne("BusinessObject.Models.Address", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
+                        .WithOne("Warehouse")
+                        .HasForeignKey("BusinessObject.Models.Warehouse", "AddressId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -648,6 +649,9 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("AgencyAccounts");
 
                     b.Navigation("Employees");
+
+                    b.Navigation("Warehouse")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BusinessObject.Models.AgencyLevel", b =>

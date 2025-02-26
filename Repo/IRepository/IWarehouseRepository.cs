@@ -12,8 +12,9 @@ namespace Repo.IRepository
         List<Warehouse> GetAllWarehouses();
         Warehouse GetWarehouseByUserId(Guid userId);
         Warehouse GetWarehouseById(int warehouseId);
+        Task<Warehouse> GetWarehouseByIdAsync(int warehouseId);
         void AddWarehouse(Warehouse warehouse);
         void UpdateWarehouse(Warehouse warehouse);
-        void DeleteWarehouse(int warehouseId);
+        Task DeleteWarehouseAsync(Warehouse warehouse);
     }
 }

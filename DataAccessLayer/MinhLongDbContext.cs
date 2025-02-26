@@ -100,6 +100,7 @@ namespace DataAccessLayer
                 .OnDelete(DeleteBehavior.NoAction); // 🔥 Fix lỗi
 
             // ✅ **Cấu hình khóa chính tự động tăng**
+
             modelBuilder.Entity<User>()
                 .Property(u => u.UserId)
                 .HasDefaultValueSql("NEWID()");
@@ -178,11 +179,10 @@ namespace DataAccessLayer
                 .IsUnique();
             // Liên kết Warehouse với Address (1 Warehouse - 1 Address)
             modelBuilder.Entity<Warehouse>()
-                .HasOne(w => w.Address)  // Warehouse có một Address
-                .WithMany()  // Không cần navigation property ngược
-                .HasForeignKey(w => w.AddressId)  // Dùng AddressId làm khóa ngoại
-                .OnDelete(DeleteBehavior.Cascade); // Nếu Warehouse bị xóa, Address cũng bị xóa
-            // 🔥 **Cấu hình giá trị decimal**
+                .HasOne(w => w.Address)
+                .WithOne(a => a.Warehouse) // 🔥 1-1 Mapping
+                .HasForeignKey<Warehouse>(w => w.AddressId)
+                .OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<AgencyAccountLevel>()
                 .Property(aal => aal.MonthlyRevenue)
                 .HasColumnType("decimal(18, 2)");
