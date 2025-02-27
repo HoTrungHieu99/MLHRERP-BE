@@ -50,6 +50,11 @@ namespace Services.Service
                 throw new ArgumentException("UserType must be either 'EMPLOYEE' or 'AGENCY'!");
             }
 
+            if (request.Username.Equals("admin"))
+            {
+                throw new ArgumentException("username cannot be admin!");
+            }
+
             // ✅ Nếu UserType là EMPLOYEE -> Bắt buộc nhập FullName, Position, Department
             if (request.UserType.ToUpper() == "EMPLOYEE")
             {
