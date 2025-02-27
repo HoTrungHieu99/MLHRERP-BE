@@ -18,7 +18,7 @@ namespace Repo.Repository
         {
             _context = context;
         }
-        public async Task<List<Province>> GetProvincesAsync()
+        /*public async Task<List<Province>> GetProvincesAsync()
         {
             return await _context.Provinces.ToListAsync();
         }
@@ -35,7 +35,7 @@ namespace Repo.Repository
             return await _context.Wards
                 .Where(d => d.DistrictId == districtId)
                 .ToListAsync();
-        }
+        }*/
 
         public int? GetProvinceIdByName(string provinceName)
         {
@@ -70,7 +70,7 @@ namespace Repo.Repository
         }
 
 
-        /*public async Task<List<Province>> GetProvincesAsync()
+        public async Task<List<Province>> GetProvincesAsync()
         {
             return await LocationDAO.GetProvincesAsync();
         }
@@ -84,7 +84,7 @@ namespace Repo.Repository
         {
             return await LocationDAO.GetWardsAsync(districtId);
         }
-        
+
 
 
         // 🚀 Lấy danh sách tỉnh từ API
@@ -131,6 +131,6 @@ namespace Repo.Repository
         {
             await _context.Wards.AddRangeAsync(wards);
             await _context.SaveChangesAsync();
-        }*/
+        }
     }
 }
