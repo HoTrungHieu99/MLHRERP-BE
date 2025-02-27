@@ -28,6 +28,28 @@ namespace Services.Service
             _jwtService = jwtService;
         }
 
+
+        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        {
+            var users = await _userRepository.GetAllAsync();
+
+            // Lọc bỏ tài khoản "admin" hoặc user có Role "ADMIN"
+            var filteredUsers = users
+                .Where(u => !u.Username.Equals("admin", StringComparison.OrdinalIgnoreCase) &&
+                            !u.UserRoles.Any(r => r.Role.RoleName.Equals("ADMIN", StringComparison.OrdinalIgnoreCase)))
+                .Select(u => new UserDto
+                {
+                    UserId = u.UserId,
+                    Username = u.Username,
+                    Email = u.Email,
+                    UserType = u.UserType,
+                    Phone = u.Phone,
+                    Status = u.Status
+                }).ToList();
+
+            return filteredUsers;
+        }
+
         // ✅ Lưu yêu cầu đăng ký vào RegisterAccount
         public async Task<RegisterAccount> RegisterUserRequestAsync(RegisterRequest request)
         {

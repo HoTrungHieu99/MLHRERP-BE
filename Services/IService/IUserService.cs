@@ -24,6 +24,8 @@ namespace Services.IService
         Task<bool> ChangeEmployeeRoleAsync(Guid userId);
 
         Task<string> LoginAsync(LoginRequest request);
+
+        Task<IEnumerable<UserDto>> GetAllUsersAsync();
     }
 
 

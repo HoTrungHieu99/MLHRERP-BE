@@ -93,6 +93,9 @@ builder.Services.AddScoped<ITaxConfigService, TaxConfigService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+
 builder.Services.AddScoped<JwtService>();
 
 
