@@ -22,7 +22,10 @@ namespace Repo.Repository
         public List<Warehouse> GetAllWarehouses() => _context.Warehouses.ToList();
 
         public Warehouse GetWarehouseByUserId(Guid userId)
-            => _context.Warehouses.FirstOrDefault(w => w.UserId == userId);
+                => _context.Warehouses
+               .Include(w => w.Address) // Load thông tin Address theo AddressId
+               .FirstOrDefault(w => w.UserId == userId);
+
 
         public Warehouse GetWarehouseById(int warehouseId)
             => _context.Warehouses.Find(warehouseId);
