@@ -81,6 +81,16 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 
+builder.Services.AddScoped<IProductCategoryRepository, ProductCategoryRepository>();
+builder.Services.AddScoped<IProductCategoryService, ProductCategoryService>();
+
+builder.Services.AddScoped<ITaxConfigRepository, TaxConfigRepository>();
+builder.Services.AddScoped<ITaxConfigService, TaxConfigService>();
+
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductService, ProductService>();
+
+
 builder.Services.AddScoped<JwtService>();
 
 

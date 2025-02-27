@@ -229,6 +229,116 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("Permission", (string)null);
                 });
 
+            modelBuilder.Entity("BusinessObject.Models.Product", b =>
+                {
+                    b.Property<long>("ProductId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ProductId"));
+
+                    b.Property<long>("CategoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DefaultExpiration")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProductCode")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int?>("TaxId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ProductId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("TaxId");
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.ToTable("Product", (string)null);
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.ProductCategory", b =>
+                {
+                    b.Property<long>("CategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CategoryId"));
+
+                    b.Property<string>("CategoryName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("ParentCategoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("CategoryId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("ParentCategoryId");
+
+                    b.HasIndex("UpdatedBy");
+
+                    b.ToTable("ProductCategory", (string)null);
+                });
+
             modelBuilder.Entity("BusinessObject.Models.Province", b =>
                 {
                     b.Property<int>("ProvinceId")
@@ -359,6 +469,40 @@ namespace DataAccessLayer.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("RolePermission", (string)null);
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.TaxConfig", b =>
+                {
+                    b.Property<int>("TaxId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TaxId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TaxName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<decimal>("TaxRate")
+                        .HasColumnType("decimal(18, 4)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("TaxId");
+
+                    b.ToTable("TaxConfig", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Models.User", b =>
@@ -542,6 +686,64 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Address");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.Product", b =>
+                {
+                    b.HasOne("BusinessObject.Models.ProductCategory", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.User", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.TaxConfig", "TaxConfig")
+                        .WithMany()
+                        .HasForeignKey("TaxId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BusinessObject.Models.User", "Updater")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Creator");
+
+                    b.Navigation("TaxConfig");
+
+                    b.Navigation("Updater");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.ProductCategory", b =>
+                {
+                    b.HasOne("BusinessObject.Models.User", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.ProductCategory", "ParentCategory")
+                        .WithMany()
+                        .HasForeignKey("ParentCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BusinessObject.Models.User", "Updater")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Creator");
+
+                    b.Navigation("ParentCategory");
+
+                    b.Navigation("Updater");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.RolePermission", b =>

@@ -66,10 +66,10 @@ namespace DataAccessLayer.Migrations
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Position = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Department = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Position = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Department = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Street = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     WardName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DistrictName = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -92,6 +92,24 @@ namespace DataAccessLayer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Role", x => x.RoleId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TaxConfig",
+                columns: table => new
+                {
+                    TaxId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TaxName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    TaxRate = table.Column<decimal>(type: "decimal(18,4)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TaxConfig", x => x.TaxId);
                 });
 
             migrationBuilder.CreateTable(
@@ -160,6 +178,43 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ProductCategory",
+                columns: table => new
+                {
+                    CategoryId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CategoryName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    ParentCategoryId = table.Column<long>(type: "bigint", nullable: true),
+                    SortOrder = table.Column<int>(type: "int", nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductCategory", x => x.CategoryId);
+                    table.ForeignKey(
+                        name: "FK_ProductCategory_ProductCategory_ParentCategoryId",
+                        column: x => x.ParentCategoryId,
+                        principalTable: "ProductCategory",
+                        principalColumn: "CategoryId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ProductCategory_User_CreatedBy",
+                        column: x => x.CreatedBy,
+                        principalTable: "User",
+                        principalColumn: "UserId");
+                    table.ForeignKey(
+                        name: "FK_ProductCategory_User_UpdatedBy",
+                        column: x => x.UpdatedBy,
+                        principalTable: "User",
+                        principalColumn: "UserId");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserRole",
                 columns: table => new
                 {
@@ -204,6 +259,51 @@ namespace DataAccessLayer.Migrations
                         principalTable: "District",
                         principalColumn: "DistrictId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Product",
+                columns: table => new
+                {
+                    ProductId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ProductCode = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    ProductName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Unit = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    DefaultExpiration = table.Column<int>(type: "int", nullable: true),
+                    CategoryId = table.Column<long>(type: "bigint", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TaxId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Product", x => x.ProductId);
+                    table.ForeignKey(
+                        name: "FK_Product_ProductCategory_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "ProductCategory",
+                        principalColumn: "CategoryId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Product_TaxConfig_TaxId",
+                        column: x => x.TaxId,
+                        principalTable: "TaxConfig",
+                        principalColumn: "TaxId",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Product_User_CreatedBy",
+                        column: x => x.CreatedBy,
+                        principalTable: "User",
+                        principalColumn: "UserId");
+                    table.ForeignKey(
+                        name: "FK_Product_User_UpdatedBy",
+                        column: x => x.UpdatedBy,
+                        principalTable: "User",
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
@@ -378,6 +478,41 @@ namespace DataAccessLayer.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Product_CategoryId",
+                table: "Product",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Product_CreatedBy",
+                table: "Product",
+                column: "CreatedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Product_TaxId",
+                table: "Product",
+                column: "TaxId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Product_UpdatedBy",
+                table: "Product",
+                column: "UpdatedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductCategory_CreatedBy",
+                table: "ProductCategory",
+                column: "CreatedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductCategory_ParentCategoryId",
+                table: "ProductCategory",
+                column: "ParentCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductCategory_UpdatedBy",
+                table: "ProductCategory",
+                column: "UpdatedBy");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RolePermission_PermissionId",
                 table: "RolePermission",
                 column: "PermissionId");
@@ -413,6 +548,9 @@ namespace DataAccessLayer.Migrations
                 name: "Employee");
 
             migrationBuilder.DropTable(
+                name: "Product");
+
+            migrationBuilder.DropTable(
                 name: "RegisterAccounts");
 
             migrationBuilder.DropTable(
@@ -426,6 +564,12 @@ namespace DataAccessLayer.Migrations
 
             migrationBuilder.DropTable(
                 name: "AgencyLevel");
+
+            migrationBuilder.DropTable(
+                name: "ProductCategory");
+
+            migrationBuilder.DropTable(
+                name: "TaxConfig");
 
             migrationBuilder.DropTable(
                 name: "Permission");

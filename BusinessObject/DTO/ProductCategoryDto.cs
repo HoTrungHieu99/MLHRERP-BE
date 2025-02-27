@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BusinessObject.DTO
+{
+    public class ProductCategoryDto
+    {
+        public string CategoryName { get; set; }
+        public long? ParentCategoryId { get; set; }
+        public int? SortOrder { get; set; }
+        public string Notes { get; set; }
+        public bool IsActive { get; set; }
+    }
+}
