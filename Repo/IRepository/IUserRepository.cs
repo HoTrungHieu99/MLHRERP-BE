@@ -28,6 +28,7 @@ namespace Repo.IRepository
         //Logout
         Task<User> GetUserByEmailAsync(string email);
 
+        Task<IEnumerable<User>> GetAllAsync();
         Task<(Province, District, Ward)> GetLocationIdsAsync(string provinceName, string districtName, string wardName);
         Task<Employee> GetEmployeeByUserIdAsync(Guid userId);
         Task<AgencyAccount> GetAgencyAccountByUserIdAsync(Guid userId);

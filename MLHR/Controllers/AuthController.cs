@@ -121,5 +121,11 @@ namespace MLHR.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        [HttpGet("get-all-User")]
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
+        {
+            return Ok(await _userService.GetAllUsersAsync());
+        }
     }
 }
