@@ -20,7 +20,7 @@ namespace Repo.IRepository
         void UpdateAddress(Address address);
 
         Address GetAddressById(int addressId);
-
+/*
         //Code Nhap Du lieu tinh huyen xa vao db
         Task<List<Province>> GetProvincesFromAPI();
         Task<List<District>> GetDistrictsFromAPI(int provinceId);
@@ -28,6 +28,6 @@ namespace Repo.IRepository
 
         Task SaveProvincesToDatabase(List<Province> provinces);
         Task SaveDistrictsToDatabase(List<District> districts);
-        Task SaveWardsToDatabase(List<Ward> wards);
+        Task SaveWardsToDatabase(List<Ward> wards);*/
     }
 }

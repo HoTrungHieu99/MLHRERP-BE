@@ -13,8 +13,6 @@ namespace Services.IService
         Task<List<District>> GetDistrictAsync(int provinceId);
         Task<List<Ward>> GetWardsAsync(int districtId);
 
-
-
-        Task ImportAllLocations();
+        //Task ImportAllLocations();
     }
 }

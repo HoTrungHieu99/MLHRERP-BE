@@ -48,6 +48,9 @@ namespace DataAccessLayer
         public DbSet<Ward> Wards { get; set; }
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Warehouse> Warehouses { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<ProductCategory> ProductCategories { get; set; }
+        public DbSet<TaxConfig> TaxConfigs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -66,6 +69,9 @@ namespace DataAccessLayer
             modelBuilder.Entity<Ward>().ToTable("Ward");
             modelBuilder.Entity<Address>().ToTable("Address");
             modelBuilder.Entity<Warehouse>().ToTable("Warehouse");
+            modelBuilder.Entity<Product>().ToTable("Product");
+            modelBuilder.Entity<ProductCategory>().ToTable("ProductCategory");
+            modelBuilder.Entity<TaxConfig>().ToTable("TaxConfig");
 
             // 🔥 **Cấu hình quan hệ**
             modelBuilder.Entity<Ward>()
@@ -140,6 +146,18 @@ namespace DataAccessLayer
                 .Property(ra => ra.WarehouseId)
                 .ValueGeneratedOnAdd();
 
+            modelBuilder.Entity<Product>()
+                .Property(p => p.ProductId)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<ProductCategory>()
+                .Property(pc => pc.CategoryId)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<TaxConfig>()
+                .Property(tc => tc.TaxId)
+                .ValueGeneratedOnAdd();
+
             // 🔥 **Cấu hình quan hệ nhiều - nhiều**
             modelBuilder.Entity<UserRole>()
                 .HasOne(ur => ur.User)
@@ -172,7 +190,6 @@ namespace DataAccessLayer
                 .HasOne(a => a.User)
                 .WithOne(u => u.AgencyAccount)
                 .HasForeignKey<AgencyAccount>(a => a.UserId);
-
             // Đảm bảo mỗi User chỉ có 1 Warehouse
             modelBuilder.Entity<Warehouse>()
                 .HasIndex(w => w.UserId)
@@ -183,6 +200,51 @@ namespace DataAccessLayer
                 .WithOne(a => a.Warehouse) // 🔥 1-1 Mapping
                 .HasForeignKey<Warehouse>(w => w.AddressId)
                 .OnDelete(DeleteBehavior.Cascade);
+            // Cấu hình quan hệ ProductCategory
+            modelBuilder.Entity<ProductCategory>()
+                .HasOne(pc => pc.ParentCategory)
+                .WithMany()
+                .HasForeignKey(pc => pc.ParentCategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ProductCategory>()
+                .HasOne(c => c.Creator)
+                .WithMany()
+                .HasForeignKey(c => c.CreatedBy)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<ProductCategory>()
+                .HasOne(c => c.Updater)
+                .WithMany()
+                .HasForeignKey(c => c.UpdatedBy)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Cấu hình quan hệ Product
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Category)
+                .WithMany()
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.TaxConfig)
+                .WithMany()
+                .HasForeignKey(p => p.TaxId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Creator)
+                .WithMany()
+                .HasForeignKey(p => p.CreatedBy)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Updater)
+                .WithMany()
+                .HasForeignKey(p => p.UpdatedBy)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // 🔥 **Cấu hình giá trị decimal**
             modelBuilder.Entity<AgencyAccountLevel>()
                 .Property(aal => aal.MonthlyRevenue)
                 .HasColumnType("decimal(18, 2)");
@@ -206,6 +268,10 @@ namespace DataAccessLayer
             modelBuilder.Entity<AgencyLevel>()
                 .Property(al => al.DiscountPercentage)
                 .HasColumnType("decimal(18, 2)");
+
+            modelBuilder.Entity<TaxConfig>()
+                .Property(tc => tc.TaxRate)
+                .HasColumnType("decimal(18, 4)");
 
             modelBuilder.Entity<User>()
                 .Property(u => u.Status)
