@@ -83,7 +83,7 @@ namespace Repo.Repository
         public async Task<List<Ward>> GetWardsAsync(int districtId)
         {
             return await LocationDAO.GetWardsAsync(districtId);
-        }
+        }*/
         
 
 
@@ -131,6 +131,6 @@ namespace Repo.Repository
         {
             await _context.Wards.AddRangeAsync(wards);
             await _context.SaveChangesAsync();
-        }*/
+        }
     }
 }

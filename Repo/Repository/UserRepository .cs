@@ -20,6 +20,15 @@ namespace Repo.Repository
             _context = context;
         }
 
+
+        public async Task<IEnumerable<User>> GetAllAsync()
+        {
+            return await _context.Users
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .ToListAsync();
+        }
+
         // ✅ Lưu yêu cầu đăng ký vào RegisterAccount
         public async Task<RegisterAccount> RegisterUserRequestAsync(RegisterAccount registerAccount)
         {
