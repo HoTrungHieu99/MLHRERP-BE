@@ -41,6 +41,7 @@ namespace Services.Service
                 {
                     UserId = u.UserId,
                     Username = u.Username,
+                    Password = u.Password,
                     Email = u.Email,
                     UserType = u.UserType,
                     Phone = u.Phone,
