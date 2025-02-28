@@ -21,12 +21,14 @@ namespace Repo.Repository
         }
 
 
-        public async Task<IEnumerable<User>> GetAllAsync()
+        public async Task<int> GetTotalUsersAsync() // ✅ Triển khai phương thức này
         {
-            return await _context.Users
-                .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
-                .ToListAsync();
+            return await _context.Users.CountAsync();
+        }
+
+        public async Task<List<User>> GetUsersAsync(int skip, int take)
+        {
+            return await _context.Users.Skip(skip).Take(take).ToListAsync();
         }
 
         // ✅ Lưu yêu cầu đăng ký vào RegisterAccount

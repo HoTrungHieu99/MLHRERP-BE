@@ -19,12 +19,14 @@ namespace Repo.Repository
             _context = context;
         }
 
-        public async Task<IEnumerable<Product>> GetAllAsync()
+        public async Task<int> GetTotalProductsAsync() // ✅ Triển khai phương thức này
         {
-            return await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.TaxConfig)
-                .ToListAsync();
+            return await _context.Products.CountAsync();
+        }
+
+        public async Task<List<Product>> GetProductsAsync(int skip, int take)
+        {
+            return await _context.Products.Skip(skip).Take(take).ToListAsync();
         }
 
         public async Task<Product> GetByIdAsync(long id)

@@ -29,25 +29,18 @@ namespace Services.Service
         }
 
 
-        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        public async Task<PagedResult<User>> GetUsersAsync(int page, int pageSize)
         {
-            var users = await _userRepository.GetAllAsync();
+            int totalItems = await _userRepository.GetTotalUsersAsync(); // ✅ Gọi đúng phương thức
+            var items = await _userRepository.GetUsersAsync((page - 1) * pageSize, pageSize);
 
-            // Lọc bỏ tài khoản "admin" hoặc user có Role "ADMIN"
-            var filteredUsers = users
-                .Where(u => !u.Username.Equals("admin", StringComparison.OrdinalIgnoreCase) &&
-                            !u.UserRoles.Any(r => r.Role.RoleName.Equals("ADMIN", StringComparison.OrdinalIgnoreCase)))
-                .Select(u => new UserDto
-                {
-                    UserId = u.UserId,
-                    Username = u.Username,
-                    Email = u.Email,
-                    UserType = u.UserType,
-                    Phone = u.Phone,
-                    Status = u.Status
-                }).ToList();
-
-            return filteredUsers;
+            return new PagedResult<User>
+            {
+                Items = items,
+                TotalItems = totalItems,
+                TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize),
+                CurrentPage = page
+            };
         }
 
         // ✅ Lưu yêu cầu đăng ký vào RegisterAccount

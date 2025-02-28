@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.IService;
+using Services.Service;
 using System.Security.Claims;
 
 namespace MLHR.Controllers
@@ -20,9 +21,16 @@ namespace MLHR.Controllers
 
 
         [HttpGet("product")]
-        public async Task<ActionResult<IEnumerable<ProductResponseDto>>> GetProducts()
+        public async Task<IActionResult> GetProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
-            return Ok(await _service.GetAllProductsAsync());
+            var products = await _service.GetProductsAsync(page, pageSize);
+
+            if (products == null || products.Items.Count == 0)
+            {
+                return NotFound(new { message = "Không có dữ liệu." });
+            }
+
+            return Ok(products);
         }
 
         [HttpGet("product/{id}")]

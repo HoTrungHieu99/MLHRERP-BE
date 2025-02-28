@@ -25,7 +25,7 @@ namespace Services.IService
 
         Task<object> LoginAsync(LoginRequest request);
 
-        Task<IEnumerable<UserDto>> GetAllUsersAsync();
+        Task<PagedResult<User>> GetUsersAsync(int page, int pageSize);
     }
 
 

@@ -123,9 +123,16 @@ namespace MLHR.Controllers
         }
 
         [HttpGet("user")]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
+        public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
-            return Ok(await _userService.GetAllUsersAsync());
+            var users = await _userService.GetUsersAsync(page, pageSize);
+
+            if (users == null || users.Items.Count == 0)
+            {
+                return NotFound(new { message = "Không có dữ liệu." });
+            }
+
+            return Ok(users);
         }
     }
 }

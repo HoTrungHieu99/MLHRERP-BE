@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BusinessObject.DTO;
 using BusinessObject.Models;
 using Repo.IRepository;
+using Repo.Repository;
 using Services.IService;
 
 namespace Services.Service
@@ -19,24 +20,18 @@ namespace Services.Service
             _repository = repository;
         }
 
-        public async Task<IEnumerable<ProductResponseDto>> GetAllProductsAsync()
+        public async Task<PagedResult<Product>> GetProductsAsync(int page, int pageSize)
         {
-            var products = await _repository.GetAllAsync();
-            return products.Select(p => new ProductResponseDto
+            int totalItems = await _repository.GetTotalProductsAsync(); // ✅ Gọi đúng phương thức
+            var items = await _repository.GetProductsAsync((page - 1) * pageSize, pageSize);
+
+            return new PagedResult<Product>
             {
-                ProductId = p.ProductId,
-                ProductCode = p.ProductCode,
-                ProductName = p.ProductName,
-                Unit = p.Unit,
-                DefaultExpiration = p.DefaultExpiration,
-                CategoryId = p.CategoryId,
-                Description = p.Description,
-                TaxId = p.TaxId,
-                CreatedBy = p.CreatedBy,
-                CreatedDate = p.CreatedDate,
-                UpdatedBy = p.UpdatedBy,
-                UpdatedDate = p.UpdatedDate
-            }).ToList();
+                Items = items,
+                TotalItems = totalItems,
+                TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize),
+                CurrentPage = page
+            };
         }
 
         public async Task<ProductResponseDto> GetProductByIdAsync(long id)
