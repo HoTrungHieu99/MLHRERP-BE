@@ -276,8 +276,11 @@ namespace Repo.Repository
         //Edit Role
         public async Task<UserRole> GetUserRoleByUserIdAsync(Guid userId)
         {
-            return await _context.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == userId);
+            return await _context.UserRoles
+                .Include(ur => ur.Role) // Load thông tin Role
+                .FirstOrDefaultAsync(ur => ur.UserId == userId);
         }
+
         public async Task<bool> UpdateUserRoleAsync(UserRole userRole)
         {
             _context.UserRoles.Update(userRole);

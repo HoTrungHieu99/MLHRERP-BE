@@ -23,7 +23,7 @@ namespace Services.IService
         Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest request);
         Task<bool> ChangeEmployeeRoleAsync(Guid userId);
 
-        Task<string> LoginAsync(LoginRequest request);
+        Task<object> LoginAsync(LoginRequest request);
 
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
     }
