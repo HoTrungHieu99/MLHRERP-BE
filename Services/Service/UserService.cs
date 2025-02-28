@@ -474,7 +474,7 @@ namespace Services.Service
             return userRoleUpdated && employeeUpdated;
         }
 
-        public async Task<string> LoginAsync(LoginRequest request)
+        public async Task<object> LoginAsync(LoginRequest request)
         {
             var user = await _userRepository.GetUserByUsernameAsync(request.userName);
             if (user == null || request.Password != user.Password)
@@ -486,10 +486,12 @@ namespace Services.Service
             // Lấy RoleId từ UserRole
             var userRole = await _userRepository.GetUserRoleByUserIdAsync(user.UserId);
             long roleId = userRole?.RoleId ?? 0;
+            string roleName = userRole?.Role?.RoleName ?? null;
+
 
             // Tạo JWT Token
             var token = _jwtService.GenerateJwtToken(user, roleId);
-            return token;
+            return new { roleName, token };
         }
 
     }
