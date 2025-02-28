@@ -5,7 +5,7 @@ using Services.IService;
 
 namespace MLHR.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/")]
     [ApiController]
     public class RoleController : ControllerBase
     {
@@ -16,7 +16,7 @@ namespace MLHR.Controllers
             _service = service;
         }
 
-        [HttpGet]
+        [HttpGet("role")]
         public async Task<ActionResult<IEnumerable<Role>>> GetRoles()
         {
             return Ok(await _service.GetAllRolesAsync());

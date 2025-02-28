@@ -6,7 +6,7 @@ using System.Security.Claims;
 
 namespace MLHR.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/")]
     [ApiController]
     [Authorize(Roles = "4")] // Yêu cầu xác thực JWT
     public class ProductController : ControllerBase
@@ -19,13 +19,13 @@ namespace MLHR.Controllers
         }
 
 
-        [HttpGet]
+        [HttpGet("product")]
         public async Task<ActionResult<IEnumerable<ProductResponseDto>>> GetProducts()
         {
             return Ok(await _service.GetAllProductsAsync());
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("product/{id}")]
         public async Task<ActionResult<ProductResponseDto>> GetProduct(long id)
         {
             var product = await _service.GetProductByIdAsync(id);
@@ -36,7 +36,7 @@ namespace MLHR.Controllers
             return Ok(product);
         }
 
-        [HttpPost]
+        [HttpPost("product")]
         public async Task<ActionResult<ProductResponseDto>> CreateProduct([FromBody] ProductDto productDto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -50,7 +50,7 @@ namespace MLHR.Controllers
             return CreatedAtAction(nameof(GetProduct), new { id = createdProduct.ProductId }, createdProduct);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("product/{id}")]
         public async Task<IActionResult> UpdateProduct(long id, [FromBody] ProductDto productDto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -66,7 +66,7 @@ namespace MLHR.Controllers
             return Ok(updatedProduct);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("product/{id}")]
         public async Task<IActionResult> DeleteProduct(long id)
         {
             var result = await _service.DeleteProductAsync(id);

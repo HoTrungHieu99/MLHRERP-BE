@@ -4,7 +4,7 @@ using Services.IService;
 
 namespace MLHR.Controllers
 {
-    [Route("api/location")]
+    [Route("api/")]
     [ApiController]
     public class LocationController : ControllerBase
     {

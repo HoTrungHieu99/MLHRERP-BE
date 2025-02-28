@@ -6,7 +6,7 @@ using Services.Service;
 
 namespace MLHR.Controllers
 {
-    [Route("api/auth")]
+    [Route("api/")]
     [ApiController]
     public class AuthController : Controller
     {
@@ -20,7 +20,7 @@ namespace MLHR.Controllers
         /// <summary>
         /// Đăng nhập bằng Email & Password
         /// </summary>
-        [HttpPost("login")]
+        [HttpPost("auth/login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             try
@@ -34,7 +34,7 @@ namespace MLHR.Controllers
             }
         }
 
-        [HttpPost("logout")]
+        [HttpPost("auth/logout")]
         public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
         {
             try
@@ -53,7 +53,7 @@ namespace MLHR.Controllers
             }
         }
 
-        [HttpPut("update/{userId}")]
+        [HttpPut("user/{userId}")]
         public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UpdateUserRequest request)
         {
             try
@@ -122,7 +122,7 @@ namespace MLHR.Controllers
             }
         }
 
-        [HttpGet("get-all-User")]
+        [HttpGet("user")]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
         {
             return Ok(await _userService.GetAllUsersAsync());

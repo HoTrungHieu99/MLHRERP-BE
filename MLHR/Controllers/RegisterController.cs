@@ -6,7 +6,7 @@ using Services.Service;
 
 namespace MLHR.Controllers
 {
-    [Route("api/register")]
+    [Route("api/")]
     [ApiController]
     public class RegisterController : ControllerBase
     {
@@ -20,7 +20,7 @@ namespace MLHR.Controllers
         /// <summary>
         /// Người dùng gửi yêu cầu đăng ký
         /// </summary>
-        [HttpPost("register")]
+        [HttpPost("auth/register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             try
@@ -38,7 +38,7 @@ namespace MLHR.Controllers
         /// <summary>
         /// Admin duyệt tài khoản đăng ký
         /// </summary>
-        [HttpPut("approve-account/{registerId}")]
+        [HttpPut("auth/register/{id}")]
         public async Task<IActionResult> ApproveUser(int registerId)
         {
             try

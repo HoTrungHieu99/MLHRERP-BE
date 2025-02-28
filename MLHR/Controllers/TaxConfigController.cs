@@ -5,7 +5,7 @@ using Services.IService;
 
 namespace MLHR.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/")]
     [ApiController]
     [Authorize(Roles = "4")] // Yêu cầu xác thực bằng JWT
     public class TaxConfigController : ControllerBase
@@ -17,14 +17,14 @@ namespace MLHR.Controllers
             _taxConfigService = taxConfigService;
         }
 
-        [HttpGet]
+        [HttpGet("taxconfig")]
         public async Task<ActionResult<IEnumerable<TaxConfigDTO>>> GetAll()
         {
             var result = await _taxConfigService.GetAllAsync();
             return Ok(result);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("tax-config/{id}")]
         public async Task<ActionResult<TaxConfigDTO>> GetById(int id)
         {
             var result = await _taxConfigService.GetByIdAsync(id);
@@ -32,14 +32,14 @@ namespace MLHR.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost("tax-config")]
         public async Task<ActionResult<TaxConfigDTO>> Create(TaxConfigDTO taxConfigDto)
         {
             var result = await _taxConfigService.AddAsync(taxConfigDto);
             return CreatedAtAction(nameof(GetById), new { id = result.TaxId }, result);
         }
 
-        [HttpPatch("{id}")]
+        [HttpPatch("tax-config/{id}")]
         public async Task<ActionResult<TaxConfigDTO>> Update(int id, [FromBody] TaxConfigDTO taxConfigDto)
         {
             if (id != taxConfigDto.TaxId)
@@ -51,7 +51,7 @@ namespace MLHR.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("tax-config/{id}")]
         public async Task<ActionResult> Delete(int id)
         {
             var result = await _taxConfigService.DeleteAsync(id);

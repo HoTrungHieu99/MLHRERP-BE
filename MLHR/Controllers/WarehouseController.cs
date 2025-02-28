@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace MLHR.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/")]
     [ApiController]
     [Authorize] // Chỉ người dùng đăng nhập mới có quyền truy cập
     public class WarehouseController : ControllerBase
@@ -20,9 +20,23 @@ namespace MLHR.Controllers
             _warehouseService = warehouseService;
         }
 
+        // Lấy Warehouse của Employee hiện tại
+        [Authorize(Roles = "3")]
+        [HttpGet("warehouses")]
+        public IActionResult GetMyWarehouse()
+        {
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+            var warehouse = _warehouseService.GetWarehouseByUserId(userId);
+
+            if (warehouse == null)
+                return NotFound("You do not have a Warehouse!");
+
+            return Ok(warehouse);
+        }
+
         // Tạo Warehouse (chỉ cho Warehouse Manager)
         [Authorize(Roles = "3")]
-        [HttpPost]
+        [HttpPost("warehouses")]
         public IActionResult CreateWarehouse([FromBody] WarehouseCreateRequest request)
         {
             var roleId = int.Parse(User.FindFirst(ClaimTypes.Role)?.Value ?? "0");
@@ -36,22 +50,8 @@ namespace MLHR.Controllers
             return Ok("Warehouse has been created!");
         }
 
-        // Lấy Warehouse của Employee hiện tại
         [Authorize(Roles = "3")]
-        [HttpGet("Get-Warehouse")]
-        public IActionResult GetMyWarehouse()
-        {
-            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
-            var warehouse = _warehouseService.GetWarehouseByUserId(userId);
-
-            if (warehouse == null)
-                return NotFound("You do not have a Warehouse!");
-
-            return Ok(warehouse);
-        }
-
-        [Authorize(Roles = "3")]
-        [HttpPut("upate-warehouse/{warehouseId}")]
+        [HttpPut("warehouses/{id}")]
         public IActionResult UpdateWarehouse(int warehouseId, [FromBody] WarehouseUpdateRequest request)
         {
             var roleId = int.Parse(User.FindFirst(ClaimTypes.Role)?.Value ?? "0");
@@ -72,7 +72,7 @@ namespace MLHR.Controllers
         }
 
         [Authorize(Roles = "3")]
-        [HttpDelete("{warehouseId}")]
+        [HttpDelete("warehouses/{id}")]
         public async Task<IActionResult> DeleteWarehouse(int warehouseId)
         {
             var result = await _warehouseService.DeleteWarehouseAsync(warehouseId);
