@@ -102,7 +102,9 @@ builder.Services.AddScoped<JwtService>();
 // ✅ Đăng ký Controllers với JSON Options
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    options.JsonSerializerOptions.WriteIndented = true; // Nếu muốn JSON format đẹp hơn
 });
 
 // ✅ Đăng ký HttpClient

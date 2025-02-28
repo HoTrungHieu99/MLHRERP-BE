@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO;
+﻿using Azure;
+using BusinessObject.DTO;
 using BusinessObject.Models;
 using System;
 using System.Collections.Generic;
@@ -28,7 +29,8 @@ namespace Repo.IRepository
         //Logout
         Task<User> GetUserByEmailAsync(string email);
 
-        Task<IEnumerable<User>> GetAllAsync();
+        Task<int> GetTotalUsersAsync(); // ✅ Thêm phương thức này
+        Task<List<User>> GetUsersAsync(int skip, int take);
         Task<(Province, District, Ward)> GetLocationIdsAsync(string provinceName, string districtName, string wardName);
         Task<Employee> GetEmployeeByUserIdAsync(Guid userId);
         Task<AgencyAccount> GetAgencyAccountByUserIdAsync(Guid userId);
@@ -40,6 +42,9 @@ namespace Repo.IRepository
         Task<UserRole> GetUserRoleByUserIdAsync(Guid userId);
         Task<bool> UpdateUserRoleAsync(UserRole userRole);
         Task<User> GetUserByUsernameAsync(string username);
+        List<UserRole> GetUserRoles(Guid userId);
+
+
     }
 
 }

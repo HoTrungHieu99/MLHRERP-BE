@@ -29,27 +29,44 @@ namespace Services.Service
         }
 
 
-        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        public async Task<PagedResult<User>> GetUsersAsync(int page, int pageSize)
         {
-            var users = await _userRepository.GetAllAsync();
+            int totalItems = await _userRepository.GetTotalUsersAsync(); // Tổng số user
+            var allUsers = await _userRepository.GetUsersAsync(0, totalItems); // Lấy toàn bộ user
 
-            // Lọc bỏ tài khoản "admin" hoặc user có Role "ADMIN"
-            var filteredUsers = users
-                .Where(u => !u.Username.Equals("admin", StringComparison.OrdinalIgnoreCase) &&
-                            !u.UserRoles.Any(r => r.Role.RoleName.Equals("ADMIN", StringComparison.OrdinalIgnoreCase)))
-                .Select(u => new UserDto
-                {
-                    UserId = u.UserId,
-                    Username = u.Username,
-                    Password = u.Password,
-                    Email = u.Email,
-                    UserType = u.UserType,
-                    Phone = u.Phone,
-                    Status = u.Status
-                }).ToList();
+            // Loại bỏ admin trước khi phân trang
+            var filteredUsers = allUsers
+                .Where(user => !user.Username.Equals("admin", StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
-            return filteredUsers;
+            int totalFilteredItems = filteredUsers.Count; // Tổng số user sau khi lọc admin
+
+            // Tính tổng số trang thực tế
+            int totalPages = (int)Math.Ceiling(totalFilteredItems / (double)pageSize);
+
+            // Xác định số user cần lấy cho trang hiện tại
+            List<User> usersToReturn = filteredUsers
+                .Skip((page - 1) * pageSize) // ✅ Phân trang sau khi đã loại bỏ admin
+                .Take(pageSize)
+                .ToList();
+
+            return new PagedResult<User>
+            {
+                Items = usersToReturn,
+                TotalItems = totalFilteredItems, // ✅ Cập nhật lại số lượng sau khi lọc
+                TotalPages = totalPages,
+                CurrentPage = page
+            };
         }
+
+
+
+        // Hàm kiểm tra User có RoleId = 1 không
+        private bool UserHasRole(Guid userId, int roleId)
+        {
+            return _userRepository.GetUserRoles(userId).Any(r => r.RoleId == roleId);
+        }
+
 
         // ✅ Lưu yêu cầu đăng ký vào RegisterAccount
         public async Task<RegisterAccount> RegisterUserRequestAsync(RegisterRequest request)

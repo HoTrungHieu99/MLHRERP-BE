@@ -9,7 +9,8 @@ namespace Repo.IRepository
 {
     public interface IProductRepository
     {
-        Task<IEnumerable<Product>> GetAllAsync();
+        Task<int> GetTotalProductsAsync(); // ✅ Thêm phương thức này
+        Task<List<Product>> GetProductsAsync(int skip, int take);
         Task<Product> GetByIdAsync(long id);
         Task<Product> AddAsync(Product product);
         Task<Product> UpdateAsync(Product product);
