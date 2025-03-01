@@ -44,6 +44,8 @@ namespace Repo.IRepository
         Task<User> GetUserByUsernameAsync(string username);
         List<UserRole> GetUserRoles(Guid userId);
 
+        Task<List<RegisterAccount>> GetRegisterAccount();
+
 
     }
 

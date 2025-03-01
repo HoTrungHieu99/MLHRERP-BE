@@ -166,8 +166,8 @@ namespace Repo.Repository
 
                 // ✅ Đánh dấu tài khoản đã được duyệt
                 registerAccount.IsApproved = true;
-                // ✅ Xóa RegisterAccount sau khi duyệt
-                _context.RegisterAccounts.Remove(registerAccount);
+                /*// ✅ Xóa RegisterAccount sau khi duyệt
+                _context.RegisterAccounts.Remove(registerAccount);*/
                 await _context.SaveChangesAsync();
 
                 return true;
@@ -298,6 +298,10 @@ namespace Repo.Repository
             return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
         }
 
+        public async Task<List<RegisterAccount>> GetRegisterAccount()
+        {
+            return _context.RegisterAccounts.ToList();
+        }
     }
 
 

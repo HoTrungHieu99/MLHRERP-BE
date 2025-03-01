@@ -512,6 +512,10 @@ namespace Services.Service
             return new { roleName, token };
         }
 
+        public async Task<List<RegisterAccount>> GetRegisterAccount()
+        {
+            return await _userRepository.GetRegisterAccount();
+        }
     }
 
 }
