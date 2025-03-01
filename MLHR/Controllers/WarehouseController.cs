@@ -45,7 +45,7 @@ namespace MLHR.Controllers
             if (roleId != 3)
                 return Unauthorized("Only Warehouse Manager (RoleId = 3) has this permission!");
 
-            _warehouseService.CreateWarehouse(userId, request.WarehousName, request.Street, request.Province, request.District, request.Ward);
+            _warehouseService.CreateWarehouse(userId, request.WarehouseName, request.Street, request.Province, request.District, request.Ward);
 
             return Ok("Warehouse has been created!");
         }
