@@ -10,18 +10,16 @@ namespace BusinessObject.DTO
     public class WarehouseCreateRequest
     {
         [Required]
-        public string WarehousName { get; set; }
+        public string WarehouseName { get; set; }
 
         [Required]
         public string Street { get; set; }
 
         [Required]
-        public string Province { get; set; }  // Tên tỉnh/thành phố
-
+        public string Ward { get; set; }  // Tên phường/xã
         [Required]
         public string District { get; set; }  // Tên quận/huyện
-
         [Required]
-        public string Ward { get; set; }  // Tên phường/xã
+        public string Province { get; set; }  // Tên tỉnh/thành phố
     }
 }
