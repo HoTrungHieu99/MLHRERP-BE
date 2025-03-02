@@ -102,6 +102,14 @@ namespace Services.Service
                 {
                     throw new ArgumentException("FullName is required for EMPLOYEE.");
                 }
+
+                // Regex pattern: Bắt đầu bằng chữ cái in hoa, chỉ chứa chữ cái và khoảng trắng
+                string namePattern = @"^[A-Z][a-zA-Z\s]*$";
+                if (!Regex.IsMatch(request.FullName, namePattern))
+                {
+                    throw new ArgumentException("FullName must start with an uppercase letter and contain only letters and spaces.");
+                }
+
                 if (string.IsNullOrWhiteSpace(request.Position) ||
                     (request.Position.ToUpper() != "STAFF" && request.Position.ToUpper() != "MANAGER"))
                 {
