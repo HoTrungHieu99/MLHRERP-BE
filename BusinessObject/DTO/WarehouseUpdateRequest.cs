@@ -11,7 +11,7 @@ namespace BusinessObject.DTO
     {
 
         [Required]
-        public string WarehousName { get; set; }
+        public string WarehouseName { get; set; }
 
         [Required]
         public string Street { get; set; }

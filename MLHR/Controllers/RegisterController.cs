@@ -17,6 +17,30 @@ namespace MLHR.Controllers
             _userService = userService;
         }
 
+        
+        [HttpGet("auth")]
+        public async Task<IActionResult> GetRegisterAccount()
+        {
+            try
+            {
+                // Lấy thông tin tài khoản từ service
+                var account = await _userService.GetRegisterAccount();
+
+                // Kiểm tra nếu tài khoản không tồn tại
+                if (account == null)
+                {
+                    return NotFound(new { message = "Account does not exist!" });
+                }
+
+                return Ok(account);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+
         /// <summary>
         /// Người dùng gửi yêu cầu đăng ký
         /// </summary>
@@ -39,11 +63,11 @@ namespace MLHR.Controllers
         /// Admin duyệt tài khoản đăng ký
         /// </summary>
         [HttpPut("auth/register/{id}")]
-        public async Task<IActionResult> ApproveUser(int registerId)
+        public async Task<IActionResult> ApproveUser(int id)
         {
             try
             {
-                bool isApproved = await _userService.ApproveUserAsync(registerId);
+                bool isApproved = await _userService.ApproveUserAsync(id);
                 if (!isApproved)
                     return BadRequest(new { message = "Account cannot be approved or account does not exist!" });
 

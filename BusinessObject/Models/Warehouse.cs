@@ -14,7 +14,7 @@ namespace BusinessObject.Models
         public int WarehouseId { get; set; }
 
         [Required]
-        public string WarehousName { get; set; }
+        public string WarehouseName { get; set; }
 
         [Required]
         public Guid UserId { get; set; } // Người tạo Warehouse

@@ -57,7 +57,7 @@ namespace Services.Service
             // Tạo Warehouse
             var warehouse = new Warehouse
             {
-                WarehousName = warehousName,
+                WarehouseName = warehousName,
                 UserId = userId,
                 AddressId = address.AddressId
             };
@@ -98,7 +98,7 @@ namespace Services.Service
             _locationRepository.UpdateAddress(address);
 
             // Cập nhật Warehouse
-            warehouse.WarehousName = warehousName;
+            warehouse.WarehouseName = warehousName;
             _warehouseRepo.UpdateWarehouse(warehouse);
         }
 
