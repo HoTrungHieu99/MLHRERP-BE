@@ -11,7 +11,7 @@ namespace BusinessObject.Models
     public class Warehouse
     {
         [Key]
-        public int WarehouseId { get; set; }
+        public long WarehouseId { get; set; }
 
         [Required]
         public string WarehouseName { get; set; }
