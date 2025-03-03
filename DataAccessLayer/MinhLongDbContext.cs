@@ -349,9 +349,9 @@ namespace DataAccessLayer
                 .HasForeignKey(o => o.RequestId);
 
             modelBuilder.Entity<Request>()
-                .HasOne(r => r.SalesAgent)
+                .HasOne(r => r.AgencyAccount)
                 .WithMany()
-                .HasForeignKey(r => r.SalesAgentId)
+                .HasForeignKey(r => r.AgencyId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Request>()
@@ -359,6 +359,12 @@ namespace DataAccessLayer
                 .WithMany()
                 .HasForeignKey(r => r.ApprovedBy)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Request>()
+                .HasOne(r => r.AgencyAccount)
+                .WithMany()
+                .HasForeignKey(r => r.AgencyId)
+                .OnDelete(DeleteBehavior.NoAction); // Assuming Request is linked to an AgencyAccount
 
             // Explicitly define precision and scale for decimal fields to avoid truncation issues
             modelBuilder.Entity<Batch>()

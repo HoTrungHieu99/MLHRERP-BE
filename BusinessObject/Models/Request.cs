@@ -12,7 +12,7 @@ namespace BusinessObject.Models
     {
         [Key]
         public long RequestId { get; set; }
-        public long SalesAgentId { get; set; }
+        public long AgencyId { get; set; }
         public long ProductId { get; set; }
         public int Quantity { get; set; }
         public long ApprovedBy { get; set; }
@@ -20,8 +20,8 @@ namespace BusinessObject.Models
         public DateTime UpdatedAt { get; set; }
         public string RequestStatus { get; set; } // PENDING, APPROVED, REJECTED
 
-        [ForeignKey("SalesAgentId")]
-        public Employee SalesAgent { get; set; }
+        [ForeignKey("AgencyId")]
+        public AgencyAccount AgencyAccount { get; set; }
 
         [ForeignKey("ApprovedBy")]
         public Employee ApprovedByEmployee { get; set; }
