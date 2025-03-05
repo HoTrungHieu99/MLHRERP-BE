@@ -5,7 +5,7 @@
 namespace DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class IntialCreate : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -24,6 +24,31 @@ namespace DataAccessLayer.Migrations
                 table: "Request",
                 newName: "IX_Request_AgencyId");
 
+            migrationBuilder.CreateTable(
+                name: "Image",
+                columns: table => new
+                {
+                    ImageId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ProductId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Image", x => x.ImageId);
+                    table.ForeignKey(
+                        name: "FK_Image_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "ProductId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Image_ProductId",
+                table: "Image",
+                column: "ProductId");
+
             migrationBuilder.AddForeignKey(
                 name: "FK_Request_AgencyAccount_AgencyId",
                 table: "Request",
@@ -38,6 +63,9 @@ namespace DataAccessLayer.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_Request_AgencyAccount_AgencyId",
                 table: "Request");
+
+            migrationBuilder.DropTable(
+                name: "Image");
 
             migrationBuilder.RenameColumn(
                 name: "AgencyId",

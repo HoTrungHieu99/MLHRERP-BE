@@ -57,6 +57,7 @@ namespace DataAccessLayer
         public DbSet<Inventory> Inventories { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Request> Requests { get; set; }
+        public DbSet<Image> Images { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -84,6 +85,7 @@ namespace DataAccessLayer
             modelBuilder.Entity<Inventory>().ToTable("Inventory");
             modelBuilder.Entity<Order>().ToTable("Order");
             modelBuilder.Entity<Request>().ToTable("Request");
+            modelBuilder.Entity<Image>().ToTable("Image");
 
             // 🔥 **Cấu hình quan hệ**
             modelBuilder.Entity<Ward>()
@@ -386,6 +388,11 @@ namespace DataAccessLayer
             modelBuilder.Entity<Order>()
                 .Property(o => o.FinalPrice)
                 .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Image>()
+            .HasOne(i => i.Product)
+            .WithMany(p => p.Images)
+            .HasForeignKey(i => i.ProductId);
         }
     }
 
