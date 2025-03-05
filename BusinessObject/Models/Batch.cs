@@ -18,6 +18,7 @@ namespace BusinessObject.Models
         public decimal UnitCost { get; set; }
         public int Quantity { get; set; }
         public DateTime ExpiryDate { get; set; }
+        public string Unit{ get; set; }
         public decimal TotalAmount { get; set; }
         public string Status { get; set; } // Available, Expired
 

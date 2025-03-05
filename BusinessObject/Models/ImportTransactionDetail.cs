@@ -15,7 +15,7 @@ namespace BusinessObject.Models
         public int Quantity { get; set; }
         public long ImportTransactionId { get; set; }
         public decimal TotalAmount { get; set; }
-        public string Note { get; set; }
+        public string? Note { get; set; }
 
         [ForeignKey("ImportTransactionId")]
         public ImportTransaction ImportTransaction { get; set; }

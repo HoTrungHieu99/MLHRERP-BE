@@ -15,7 +15,7 @@ namespace BusinessObject.Models
         public string DocumentNumber { get; set; }
         public DateTime DocumentDate { get; set; }
         public string TypeImport { get; set; } // Standard, Return, Transfer
-        public string Note { get; set; }
+        public string? Note { get; set; }
         public long WarehouseId { get; set; }
         public string Supplier { get; set; }
         public DateTime DateImport { get; set; }
