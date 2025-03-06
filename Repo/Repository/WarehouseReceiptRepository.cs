@@ -126,19 +126,7 @@ namespace Repo.Repository
                     _context.Batches.Add(newBatch);
                     await _context.SaveChangesAsync(); // ✅ Lưu Batch sau khi có ImportTransactionDetailId
 
-                    // 🔥 Kiểm tra nếu sản phẩm đã có trong Inventory cùng ngày
-                    var existingInventory = await _context.Inventories
-                        .FirstOrDefaultAsync(i => i.ProductId == batch.ProductId
-                                                && i.WarehouseId == receipt.WarehouseId
-                                                && i.ExpirationDate.Date == newBatch.ExpiryDate.Date);
-
-                    if (existingInventory != null)
-                    {
-                        // ✅ Cộng dồn số lượng vào bản ghi Inventory cũ
-                        existingInventory.Quantity += batch.Quantity;
-                    }
-                    else
-                    {
+                    
                         // ✅ Tạo mới Inventory nếu chưa có
                         var inventory = new Inventory
                         {
@@ -151,7 +139,7 @@ namespace Repo.Repository
                         };
 
                         _context.Inventories.Add(inventory);
-                    }
+                    
                     warehouseReceipt.IsApproved = true;
                     await _context.SaveChangesAsync();
                 }

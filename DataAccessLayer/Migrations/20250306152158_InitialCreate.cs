@@ -5,7 +5,7 @@
 namespace DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateWarehouseRecipt : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,6 +16,14 @@ namespace DataAccessLayer.Migrations
                 type: "nvarchar(max)",
                 nullable: false,
                 defaultValue: "");
+
+            migrationBuilder.AlterColumn<long>(
+                name: "ApprovedBy",
+                table: "Request",
+                type: "bigint",
+                nullable: true,
+                oldClrType: typeof(long),
+                oldType: "bigint");
         }
 
         /// <inheritdoc />
@@ -24,6 +32,16 @@ namespace DataAccessLayer.Migrations
             migrationBuilder.DropColumn(
                 name: "Note",
                 table: "WarehouseReceipt");
+
+            migrationBuilder.AlterColumn<long>(
+                name: "ApprovedBy",
+                table: "Request",
+                type: "bigint",
+                nullable: false,
+                defaultValue: 0L,
+                oldClrType: typeof(long),
+                oldType: "bigint",
+                oldNullable: true);
         }
     }
 }

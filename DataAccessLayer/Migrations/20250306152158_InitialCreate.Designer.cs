@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MinhLongDbContext))]
-    [Migration("20250305194407_UpdateWarehouseRecipt")]
-    partial class UpdateWarehouseRecipt
+    [Migration("20250306152158_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -652,7 +652,7 @@ namespace DataAccessLayer.Migrations
                     b.Property<long>("AgencyId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("ApprovedBy")
+                    b.Property<long?>("ApprovedBy")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1180,8 +1180,7 @@ namespace DataAccessLayer.Migrations
                     b.HasOne("BusinessObject.Models.Employee", "ApprovedByEmployee")
                         .WithMany()
                         .HasForeignKey("ApprovedBy")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("BusinessObject.Models.Product", "Product")
                         .WithMany()
