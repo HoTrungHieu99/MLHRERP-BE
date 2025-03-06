@@ -62,5 +62,31 @@ namespace Repo.Repository
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task UpdateAvailableStockAsync()
+        {
+            // ✅ Lấy tổng số lượng sản phẩm theo ProductId từ bảng Inventory
+            var inventoryTotals = await _context.Inventories
+                .GroupBy(i => i.ProductId)
+                .Select(g => new
+                {
+                    ProductId = g.Key,
+                    TotalQuantity = g.Sum(i => i.Quantity) // ✅ Tính tổng số lượng tồn kho
+                })
+                .ToListAsync();
+
+            // ✅ Cập nhật AvailableStock trong bảng Product
+            foreach (var item in inventoryTotals)
+            {
+                var product = await _context.Products.FindAsync(item.ProductId);
+                if (product != null)
+                {
+                    product.AvailableStock = item.TotalQuantity; // ✅ Gán tổng số lượng tồn kho vào AvailableStock
+                }
+            }
+
+            // ✅ Lưu thay đổi vào database
+            await _context.SaveChangesAsync();
+        }
     }
 }

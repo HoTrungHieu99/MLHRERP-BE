@@ -15,5 +15,6 @@ namespace Services.IService
         Task<ProductResponseDto> CreateProductAsync(ProductDto productDto, Guid userId);
         Task<ProductResponseDto> UpdateProductAsync(long id, ProductDto productDto, Guid userId);
         Task<bool> DeleteProductAsync(long id);
+        Task UpdateAvailableStockAsync();
     }
 }

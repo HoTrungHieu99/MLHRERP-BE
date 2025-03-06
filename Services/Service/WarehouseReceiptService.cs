@@ -24,6 +24,19 @@ namespace Services.Service
 
         public async Task<bool> CreateReceiptAsync(WarehouseReceiptRequest request)
         {
+            var validateImportType = new HashSet<string>
+            {
+                "Nhập Sản Xuất", 
+                "Nhập trả hàng", 
+                "Nhập Mua", 
+                "Nhập bổ sung"
+            };
+
+            if (!validateImportType.Contains(request.ImportType))
+            {
+                throw new Exception("ImportType is invalid! Only accepted: Production Import, Return Import, Purchase Import, Supplement Import!");
+            }
+
             // ✅ Tính toán TotalAmount cho từng batch
             var processedBatches = request.Batches.Select(b => new
             {

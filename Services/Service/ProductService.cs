@@ -98,5 +98,10 @@ namespace Services.Service
         {
             return await _repository.DeleteAsync(id);
         }
+
+        public async Task UpdateAvailableStockAsync()
+        {
+            await _repository.UpdateAvailableStockAsync();
+        }
     }
 }
