@@ -39,6 +39,8 @@ namespace Services.Service
             // ✅ Tính TotalPrice bằng tổng TotalAmount của tất cả batch
             int totalQuantity = processedBatches.Sum(b => b.Quantity);
             decimal totalPrice = processedBatches.Sum(b => b.TotalAmount); // ✅ Tổng tất cả TotalAmount
+            DateTime documentDate = DateTime.Now;
+            DateTime ImportDate = DateTime.Now;
 
             // ✅ Chuyển danh sách thành JSON
             string batchesJson = JsonConvert.SerializeObject(processedBatches);
@@ -46,11 +48,11 @@ namespace Services.Service
             var warehouseReceipt = new WarehouseReceipt
             {
                 DocumentNumber = request.DocumentNumber,
-                DocumentDate = request.DocumentDate,
+                DocumentDate = documentDate,
                 WarehouseId = request.WarehouseId,
                 ImportType = request.ImportType,
                 Supplier = request.Supplier,
-                DateImport = request.DateImport,
+                DateImport = ImportDate,
                 TotalQuantity = totalQuantity,  // ✅ Đã được tính toán
                 TotalPrice = totalPrice,        // ✅ Đã được tính toán
                 BatchesJson = batchesJson       // ✅ Gán chuỗi JSON đúng cách
