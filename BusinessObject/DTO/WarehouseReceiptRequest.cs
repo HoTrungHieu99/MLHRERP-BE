@@ -13,7 +13,7 @@ namespace BusinessObject.DTO
         [Required]
         public string DocumentNumber { get; set; } // Số chứng từ
 
-        [Required]
+        [JsonIgnore]
         public DateTime DocumentDate { get; set; } // Ngày chứng từ
 
         [Required]
@@ -25,7 +25,7 @@ namespace BusinessObject.DTO
         [Required]
         public string Supplier { get; set; } // Nhà cung cấp
 
-        [Required]
+        [JsonIgnore]
         public DateTime DateImport { get; set; } // Ngày nhập
 
         [Required]

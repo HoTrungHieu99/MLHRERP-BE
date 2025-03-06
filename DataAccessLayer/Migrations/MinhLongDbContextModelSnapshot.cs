@@ -652,7 +652,7 @@ namespace DataAccessLayer.Migrations
                     b.Property<long>("AgencyId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("ApprovedBy")
+                    b.Property<long?>("ApprovedBy")
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1183,8 +1183,7 @@ namespace DataAccessLayer.Migrations
                     b.HasOne("BusinessObject.Models.Employee", "ApprovedByEmployee")
                         .WithMany()
                         .HasForeignKey("ApprovedBy")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("BusinessObject.Models.Product", "Product")
                         .WithMany()

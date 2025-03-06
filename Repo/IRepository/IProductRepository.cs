@@ -15,6 +15,6 @@ namespace Repo.IRepository
         Task<Product> AddAsync(Product product);
         Task<Product> UpdateAsync(Product product);
         Task<bool> DeleteAsync(long id);
-        Task UpdateAvailableStockAsync();
+        
     }
 }

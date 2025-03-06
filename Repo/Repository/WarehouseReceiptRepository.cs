@@ -107,7 +107,11 @@ namespace Repo.Repository
                 foreach (var batch in batches)
                 {
                     var product = await _context.Products.FindAsync(batch.ProductId);
-                    if (product == null) continue;
+                    if (product == null)
+                    {
+                        throw new Exception($"Product with ID {batch.ProductId} not found.");
+                    }
+
 
                     // 🔥 Tạo Batch từ WarehouseReceipt với `importTransactionDetailId` chính xác
                     var newBatch = new Batch
@@ -126,32 +130,22 @@ namespace Repo.Repository
                     _context.Batches.Add(newBatch);
                     await _context.SaveChangesAsync(); // ✅ Lưu Batch sau khi có ImportTransactionDetailId
 
-                    // 🔥 Kiểm tra nếu sản phẩm đã có trong Inventory cùng ngày
-                    var existingInventory = await _context.Inventories
-                        .FirstOrDefaultAsync(i => i.ProductId == batch.ProductId
-                                                && i.WarehouseId == receipt.WarehouseId
-                                                && i.ExpirationDate.Date == newBatch.ExpiryDate.Date);
 
-                    if (existingInventory != null)
+                    // ✅ Tạo mới Inventory nếu chưa có
+                    var inventory = new Inventory
                     {
-                        // ✅ Cộng dồn số lượng vào bản ghi Inventory cũ
-                        existingInventory.Quantity += batch.Quantity;
-                    }
-                    else
-                    {
-                        // ✅ Tạo mới Inventory nếu chưa có
-                        var inventory = new Inventory
-                        {
-                            ProductId = batch.ProductId,
-                            WarehouseId = receipt.WarehouseId,
-                            BatchId = newBatch.BatchId,
-                            ExpirationDate = newBatch.ExpiryDate,
-                            Quantity = batch.Quantity,
-                            Status = batch.Status
-                        };
+                        ProductId = batch.ProductId,
+                        WarehouseId = receipt.WarehouseId,
+                        BatchId = newBatch.BatchId,
+                        ExpirationDate = newBatch.ExpiryDate,
+                        Quantity = batch.Quantity,
+                        Status = batch.Status
+                    };
 
-                        _context.Inventories.Add(inventory);
-                    }
+                    _context.Inventories.Add(inventory);
+
+                    product.AvailableStock += batch.Quantity;
+
                     warehouseReceipt.IsApproved = true;
                     await _context.SaveChangesAsync();
                 }

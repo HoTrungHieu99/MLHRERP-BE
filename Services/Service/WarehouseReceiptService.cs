@@ -34,7 +34,7 @@ namespace Services.Service
 
             if (!validateImportType.Contains(request.ImportType))
             {
-                throw new Exception("ImportType is invalid! Only accepted: Production Import, Return Import, Purchase Import, Supplement Import!");
+                throw new Exception("ImportType is invalid! Only accepted: Nhập Sản Xuất, Nhập trả hàng, Nhập Mua, Nhập bổ sung!");
             }
 
             // ✅ Tính toán TotalAmount cho từng batch
@@ -52,6 +52,8 @@ namespace Services.Service
             // ✅ Tính TotalPrice bằng tổng TotalAmount của tất cả batch
             int totalQuantity = processedBatches.Sum(b => b.Quantity);
             decimal totalPrice = processedBatches.Sum(b => b.TotalAmount); // ✅ Tổng tất cả TotalAmount
+            DateTime documentDate = DateTime.Now;
+            DateTime ImportDate = DateTime.Now;
 
             // ✅ Chuyển danh sách thành JSON
             string batchesJson = JsonConvert.SerializeObject(processedBatches);
@@ -59,11 +61,11 @@ namespace Services.Service
             var warehouseReceipt = new WarehouseReceipt
             {
                 DocumentNumber = request.DocumentNumber,
-                DocumentDate = request.DocumentDate,
+                DocumentDate = documentDate,
                 WarehouseId = request.WarehouseId,
                 ImportType = request.ImportType,
                 Supplier = request.Supplier,
-                DateImport = request.DateImport,
+                DateImport = ImportDate,
                 TotalQuantity = totalQuantity,  // ✅ Đã được tính toán
                 TotalPrice = totalPrice,        // ✅ Đã được tính toán
                 BatchesJson = batchesJson       // ✅ Gán chuỗi JSON đúng cách

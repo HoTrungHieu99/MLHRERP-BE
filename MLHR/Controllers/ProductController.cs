@@ -85,12 +85,6 @@ namespace MLHR.Controllers
             return NoContent();
         }
 
-        // ✅ API cập nhật AvailableStock
-        [HttpPut("update-available-stock")]
-        public async Task<IActionResult> UpdateAvailableStock()
-        {
-            await _service.UpdateAvailableStockAsync();
-            return Ok(new { message = "AvailableStock updated successfully!" });
-        }
+        
     }
 }
