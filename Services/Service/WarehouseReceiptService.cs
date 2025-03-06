@@ -24,7 +24,23 @@ namespace Services.Service
 
         public async Task<bool> CreateReceiptAsync(WarehouseReceiptRequest request)
         {
-            string batchesJson = JsonConvert.SerializeObject(request.Batches); // ✅ Lưu batch dưới dạng JSON
+            // ✅ Tính toán TotalQuantity và TotalPrice ngay từ đầu
+            int totalQuantity = request.Batches.Sum(b => b.Quantity);
+            decimal totalPrice = request.Batches.Sum(b => b.TotalAmount); // ✅ Tính toán từ Quantity * UnitCost
+
+            // ✅ Tạo danh sách batches mới (bỏ TotalAmount)
+            var filteredBatches = request.Batches.Select(b => new
+            {
+                b.BatchCode,
+                b.ProductId,
+                b.Unit,
+                b.Quantity,
+                b.UnitCost,
+                b.Status
+            }).ToList();
+
+            // ✅ Chuyển danh sách thành JSON
+            string batchesJson = JsonConvert.SerializeObject(filteredBatches);
 
             var warehouseReceipt = new WarehouseReceipt
             {
@@ -34,13 +50,15 @@ namespace Services.Service
                 ImportType = request.ImportType,
                 Supplier = request.Supplier,
                 DateImport = request.DateImport,
-                TotalQuantity = request.TotalQuantity,
-                TotalPrice = request.TotalPrice,
-                BatchesJson = batchesJson
+                TotalQuantity = totalQuantity,  // ✅ Đã được tính toán
+                TotalPrice = totalPrice,        // ✅ Đã được tính toán
+                BatchesJson = batchesJson       // ✅ Gán chuỗi JSON đúng cách
             };
 
             return await _repository.AddAsync(warehouseReceipt);
         }
+
+
 
         public async Task<bool> ApproveReceiptAsync(long id)
         {

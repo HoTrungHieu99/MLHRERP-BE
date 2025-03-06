@@ -12,9 +12,9 @@ namespace BusinessObject.Models
     {
         [Key]
         public long ImportTransactionDetailId { get; set; }
-        public int Quantity { get; set; }
+        public int TotalQuantity { get; set; }
         public long ImportTransactionId { get; set; }
-        public decimal TotalAmount { get; set; }
+        public decimal TotalPrice { get; set; }
         public string? Note { get; set; }
 
         [ForeignKey("ImportTransactionId")]

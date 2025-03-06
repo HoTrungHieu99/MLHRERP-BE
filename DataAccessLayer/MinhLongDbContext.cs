@@ -327,7 +327,7 @@ namespace DataAccessLayer
                 .HasPrecision(18, 2);
 
             modelBuilder.Entity<ImportTransactionDetail>()
-                .Property(itd => itd.TotalAmount)
+                .Property(itd => itd.TotalPrice)
                 .HasPrecision(18, 2);
 
             modelBuilder.Entity<Order>()

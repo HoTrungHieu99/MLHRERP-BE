@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace BusinessObject.DTO
@@ -24,7 +25,7 @@ namespace BusinessObject.DTO
         [Required]
         public decimal UnitCost { get; set; } // Đơn giá
 
-        [Required]
+        [JsonIgnore]
         public decimal TotalAmount { get; set; } // Thành tiền
 
         [Required]

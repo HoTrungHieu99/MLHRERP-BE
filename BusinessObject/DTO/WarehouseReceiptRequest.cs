@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace BusinessObject.DTO
@@ -31,7 +32,9 @@ namespace BusinessObject.DTO
         public string Note { get; set; } = "nothing";
 
         // Không nhập từ người dùng, sẽ tính toán tự động
+        [JsonIgnore]
         public int TotalQuantity { get; set; }
+        [JsonIgnore]
         public decimal TotalPrice { get; set; }
 
         // Danh sách chi tiết nhập hàng

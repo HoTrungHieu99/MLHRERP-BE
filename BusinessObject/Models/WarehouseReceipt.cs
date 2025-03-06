@@ -38,6 +38,8 @@ namespace BusinessObject.Models
 
         [Required]
         public string Note { get; set; } = "nothing";
+
+        public bool IsApproved { get; set; } = false;  // Mặc định chưa duyệt
     }
 
 }
