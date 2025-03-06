@@ -24,23 +24,24 @@ namespace Services.Service
 
         public async Task<bool> CreateReceiptAsync(WarehouseReceiptRequest request)
         {
-            // ✅ Tính toán TotalQuantity và TotalPrice ngay từ đầu
-            int totalQuantity = request.Batches.Sum(b => b.Quantity);
-            decimal totalPrice = request.Batches.Sum(b => b.TotalAmount); // ✅ Tính toán từ Quantity * UnitCost
-
-            // ✅ Tạo danh sách batches mới (bỏ TotalAmount)
-            var filteredBatches = request.Batches.Select(b => new
+            // ✅ Tính toán TotalAmount cho từng batch
+            var processedBatches = request.Batches.Select(b => new
             {
                 b.BatchCode,
                 b.ProductId,
                 b.Unit,
                 b.Quantity,
                 b.UnitCost,
+                TotalAmount = b.Quantity * b.UnitCost, // ✅ Tính TotalAmount
                 b.Status
             }).ToList();
 
+            // ✅ Tính TotalPrice bằng tổng TotalAmount của tất cả batch
+            int totalQuantity = processedBatches.Sum(b => b.Quantity);
+            decimal totalPrice = processedBatches.Sum(b => b.TotalAmount); // ✅ Tổng tất cả TotalAmount
+
             // ✅ Chuyển danh sách thành JSON
-            string batchesJson = JsonConvert.SerializeObject(filteredBatches);
+            string batchesJson = JsonConvert.SerializeObject(processedBatches);
 
             var warehouseReceipt = new WarehouseReceipt
             {
@@ -57,7 +58,6 @@ namespace Services.Service
 
             return await _repository.AddAsync(warehouseReceipt);
         }
-
 
 
         public async Task<bool> ApproveReceiptAsync(long id)
