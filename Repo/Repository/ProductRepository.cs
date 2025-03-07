@@ -26,7 +26,11 @@ namespace Repo.Repository
 
         public async Task<List<Product>> GetProductsAsync(int skip, int take)
         {
-            return await _context.Products.Skip(skip).Take(take).ToListAsync();
+            return await _context.Products
+                .Include(p => p.Images) // ✅ Bao gồm hình ảnh
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
         }
 
         public async Task<Product> GetByIdAsync(long id)
@@ -34,20 +38,54 @@ namespace Repo.Repository
             return await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.TaxConfig)
+                .Include(p => p.Images) // ✅ Bao gồm hình ảnh
                 .FirstOrDefaultAsync(p => p.ProductId == id);
         }
 
-        public async Task<Product> AddAsync(Product product)
+        public async Task<Product> AddAsync(Product product, List<string> imageUrls)
         {
             _context.Products.Add(product);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(); // 🔥 Lưu sản phẩm trước để lấy ProductId
+
+            // ✅ Lưu hình ảnh vào bảng Image
+            if (imageUrls != null && imageUrls.Count > 0)
+            {
+                foreach (var imageUrl in imageUrls)
+                {
+                    var image = new Image
+                    {
+                        ProductId = product.ProductId,
+                        ImageUrl = imageUrl
+                    };
+                    _context.Images.Add(image);
+                }
+                await _context.SaveChangesAsync(); // 🔥 Lưu hình ảnh
+            }
+
             return product;
         }
 
-        public async Task<Product> UpdateAsync(Product product)
+        public async Task<Product> UpdateAsync(Product product, List<string> imageUrls)
         {
             _context.Products.Update(product);
             await _context.SaveChangesAsync();
+
+            // ✅ Xóa hình ảnh cũ trước khi cập nhật
+            var existingImages = _context.Images.Where(img => img.ProductId == product.ProductId);
+            _context.Images.RemoveRange(existingImages);
+            await _context.SaveChangesAsync();
+
+            // ✅ Thêm hình ảnh mới
+            foreach (var imageUrl in imageUrls)
+            {
+                _context.Images.Add(new Image
+                {
+                    ProductId = product.ProductId,
+                    ImageUrl = imageUrl
+                });
+            }
+            await _context.SaveChangesAsync();
+
             return product;
         }
 

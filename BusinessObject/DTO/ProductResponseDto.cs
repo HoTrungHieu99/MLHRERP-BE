@@ -20,5 +20,7 @@ namespace BusinessObject.DTO
         public DateTime CreatedDate { get; set; }
         public Guid? UpdatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
+        // ✅ Danh sách URL hình ảnh lấy từ database
+        public List<string> Images { get; set; } = new List<string>();
     }
 }

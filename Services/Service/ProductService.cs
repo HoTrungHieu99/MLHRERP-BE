@@ -20,18 +20,25 @@ namespace Services.Service
             _repository = repository;
         }
 
-        public async Task<PagedResult<Product>> GetProductsAsync(int page, int pageSize)
+        public async Task<List<ProductResponseDto>> GetProductsAsync(int page, int pageSize)
         {
-            int totalItems = await _repository.GetTotalProductsAsync(); // ✅ Gọi đúng phương thức
-            var items = await _repository.GetProductsAsync((page - 1) * pageSize, pageSize);
-
-            return new PagedResult<Product>
+            var products = await _repository.GetProductsAsync((page - 1) * pageSize, pageSize);
+            return products.Select(p => new ProductResponseDto
             {
-                Items = items,
-                TotalItems = totalItems,
-                TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize),
-                CurrentPage = page
-            };
+                ProductId = p.ProductId,
+                ProductCode = p.ProductCode,
+                ProductName = p.ProductName,
+                Unit = p.Unit,
+                DefaultExpiration = p.DefaultExpiration,
+                CategoryId = p.CategoryId,
+                Description = p.Description,
+                TaxId = p.TaxId,
+                CreatedBy = p.CreatedBy,
+                CreatedDate = p.CreatedDate,
+                UpdatedBy = p.UpdatedBy,
+                UpdatedDate = p.UpdatedDate,
+                Images = p.Images.Select(img => img.ImageUrl).ToList()
+            }).ToList();
         }
 
         public async Task<ProductResponseDto> GetProductByIdAsync(long id)
@@ -52,7 +59,10 @@ namespace Services.Service
                 CreatedBy = product.CreatedBy,
                 CreatedDate = product.CreatedDate,
                 UpdatedBy = product.UpdatedBy,
-                UpdatedDate = product.UpdatedDate
+                UpdatedDate = product.UpdatedDate,
+
+                // ✅ Lấy danh sách URL hình ảnh từ database
+                Images = product.Images.Select(img => img.ImageUrl).ToList()
             };
         }
 
@@ -71,10 +81,12 @@ namespace Services.Service
                 CreatedDate = DateTime.UtcNow
             };
 
-            var createdProduct = await _repository.AddAsync(product);
+            // ✅ Lưu sản phẩm và danh sách hình ảnh
+            var createdProduct = await _repository.AddAsync(product, productDto.Images);
 
             return await GetProductByIdAsync(createdProduct.ProductId);
         }
+
 
         public async Task<ProductResponseDto> UpdateProductAsync(long id, ProductDto productDto, Guid userId)
         {
@@ -90,8 +102,8 @@ namespace Services.Service
             product.UpdatedBy = userId;
             product.UpdatedDate = DateTime.UtcNow;
 
-            await _repository.UpdateAsync(product);
-            return await GetProductByIdAsync(product.ProductId);
+            var updatedProduct = await _repository.UpdateAsync(product, productDto.Images);
+            return await GetProductByIdAsync(updatedProduct.ProductId);
         }
 
         public async Task<bool> DeleteProductAsync(long id)

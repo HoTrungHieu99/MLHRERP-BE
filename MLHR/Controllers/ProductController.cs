@@ -24,12 +24,10 @@ namespace MLHR.Controllers
         public async Task<IActionResult> GetProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var products = await _service.GetProductsAsync(page, pageSize);
-
-            if (products == null || products.Items.Count == 0)
+            if (products == null || products.Count == 0)
             {
                 return NotFound(new { message = "Không có dữ liệu." });
             }
-
             return Ok(products);
         }
 
@@ -57,6 +55,7 @@ namespace MLHR.Controllers
             var createdProduct = await _service.CreateProductAsync(productDto, userId);
             return CreatedAtAction(nameof(GetProduct), new { id = createdProduct.ProductId }, createdProduct);
         }
+
 
         [HttpPut("product/{id}")]
         public async Task<IActionResult> UpdateProduct(long id, [FromBody] ProductDto productDto)
