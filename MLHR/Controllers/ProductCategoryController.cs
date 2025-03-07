@@ -9,7 +9,6 @@ namespace MLHR.Controllers
 {
     [Route("api/")]
     [ApiController]
-    [Authorize(Roles = "4")] // Yêu cầu xác thực bằng JWT
     public class ProductCategoryController : ControllerBase
     {
         private readonly IProductCategoryService _service;
@@ -19,13 +18,15 @@ namespace MLHR.Controllers
             _service = service;
         }
 
-        /*[HttpGet]
+        [HttpGet("product-category")]
+        [Authorize(Roles = "4,2")]
         public async Task<ActionResult<IEnumerable<ProductCategoryResponseDto>>> GetCategories()
         {
             return Ok(await _service.GetAllCategoriesAsync());
-        }*/
+        }
 
         [HttpGet("product-category/{id}")]
+        [Authorize(Roles = "4,2")]
         public async Task<ActionResult<ProductCategoryResponseDto>> GetCategory(long id)
         {
             var category = await _service.GetCategoryByIdAsync(id);
@@ -37,6 +38,7 @@ namespace MLHR.Controllers
         }
 
         [HttpPost("product-category")]
+        [Authorize(Roles = "4")]
         public async Task<ActionResult<ProductCategoryResponseDto>> CreateCategory([FromBody] ProductCategoryDto categoryDto)
         {
 
@@ -54,6 +56,7 @@ namespace MLHR.Controllers
         }
 
         [HttpPut("product-category{id}")]
+        [Authorize(Roles = "4")]
         public async Task<IActionResult> UpdateCategory(long id, [FromBody] ProductCategoryDto categoryDto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -75,6 +78,7 @@ namespace MLHR.Controllers
 
 
         [HttpDelete("product-category{id}")]
+        [Authorize(Roles = "4")]
         public async Task<IActionResult> DeleteCategory(long id)
         {
             var result = await _service.DeleteCategoryAsync(id);

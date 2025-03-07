@@ -9,7 +9,6 @@ namespace MLHR.Controllers
 {
     [Route("api/")]
     [ApiController]
-    [Authorize(Roles = "4")] // Yêu cầu xác thực JWT
     public class ProductController : ControllerBase
     {
         private readonly IProductService _service;
@@ -21,6 +20,7 @@ namespace MLHR.Controllers
 
 
         [HttpGet("product")]
+        [Authorize(Roles = "4,2")]
         public async Task<IActionResult> GetProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var products = await _service.GetProductsAsync(page, pageSize);
@@ -32,6 +32,7 @@ namespace MLHR.Controllers
         }
 
         [HttpGet("product/{id}")]
+        [Authorize(Roles = "4,2")]
         public async Task<ActionResult<ProductResponseDto>> GetProduct(long id)
         {
             var product = await _service.GetProductByIdAsync(id);
@@ -43,6 +44,7 @@ namespace MLHR.Controllers
         }
 
         [HttpPost("product")]
+        [Authorize(Roles = "4")]
         public async Task<ActionResult<ProductResponseDto>> CreateProduct([FromBody] ProductDto productDto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -58,6 +60,7 @@ namespace MLHR.Controllers
 
 
         [HttpPut("product/{id}")]
+        [Authorize(Roles = "4")]
         public async Task<IActionResult> UpdateProduct(long id, [FromBody] ProductDto productDto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -74,6 +77,7 @@ namespace MLHR.Controllers
         }
 
         [HttpDelete("product/{id}")]
+        [Authorize(Roles = "4")]
         public async Task<IActionResult> DeleteProduct(long id)
         {
             var result = await _service.DeleteProductAsync(id);
