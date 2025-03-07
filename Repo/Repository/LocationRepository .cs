@@ -84,7 +84,7 @@ namespace Repo.Repository
         {
             return await LocationDAO.GetWardsAsync(districtId);
         }
-
+        */
 
         // 🚀 Lấy danh sách tỉnh từ API
         public async Task<List<Province>> GetProvincesFromAPI()
@@ -130,6 +130,6 @@ namespace Repo.Repository
         {
             await _context.Wards.AddRangeAsync(wards);
             await _context.SaveChangesAsync();
-        }*/
+        }
     }
 }

@@ -45,7 +45,7 @@ namespace MLHR.Controllers
             return Ok(wards);
         }
 
-        /*[HttpPost("import-all")]
+        [HttpPost("import-all")]
         public async Task<IActionResult> ImportAllLocations()
         {
             try
@@ -57,7 +57,7 @@ namespace MLHR.Controllers
             {
                 return StatusCode(500, $"Lỗi trong quá trình nhập dữ liệu: {ex.Message}");
             }
-        }*/
+        }
 
     }
 }

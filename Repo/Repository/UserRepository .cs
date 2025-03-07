@@ -55,7 +55,7 @@ namespace Repo.Repository
                     throw new ArgumentException("Username, Email, or Phone already exists!");
                 }
 
-              
+
                 // ✅ Nếu Password rỗng hoặc null, đặt giá trị mặc định là "1"
                 if (string.IsNullOrWhiteSpace(registerAccount.Password))
                 {
@@ -77,106 +77,117 @@ namespace Repo.Repository
         // ✅ Admin duyệt tài khoản và lưu vào bảng User + Employee hoặc Agency
         public async Task<bool> ApproveUserAsync(int registerId)
         {
+
             try
             {
                 var registerAccount = await _context.RegisterAccounts.FindAsync(registerId);
-                if (registerAccount == null || registerAccount.IsApproved)
-                    return false; // Tài khoản không tồn tại hoặc đã được duyệt trước đó
-
-                // ✅ Tạo Address dựa trên thông tin từ RegisterAccount
-                (Province province, District district, Ward ward) = await GetLocationIdsAsync(
-                    registerAccount.ProvinceName, registerAccount.DistrictName, registerAccount.WardName
-                );
-
-                var newAddress = new Address
+                if (registerAccount.IsApproved == true)
                 {
-                    Street = registerAccount.Street,
-                    WardId = ward.WardId,
-                    DistrictId = district.DistrictId,
-                    ProvinceId = province.ProvinceId
-                };
-
-                _context.Addresses.Add(newAddress);
-                await _context.SaveChangesAsync(); // Lưu để lấy AddressId
-
-                // ✅ Tạo User
-                var user = new User
+                    throw new Exception("Account was previously activated!");
+                }
+                else
                 {
-                    Username = registerAccount.Username,
-                    Email = registerAccount.Email,
-                    Phone = registerAccount.Phone,
-                    UserType = registerAccount.UserType,
-                    Password = registerAccount.Password, // Có thể hash trước khi lưu
-                    Status = true
-                };
 
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync(); // Lưu trước để có UserId
+                    if (registerAccount == null || registerAccount.IsApproved)
+                        return false; // Tài khoản không tồn tại hoặc đã được duyệt trước đó
 
-                int roleId = 0;
+                    // ✅ Tạo Address dựa trên thông tin từ RegisterAccount
+                    (Province province, District district, Ward ward) = await GetLocationIdsAsync(
+                        registerAccount.ProvinceName, registerAccount.DistrictName, registerAccount.WardName
+                    );
 
-                // ✅ Nếu UserType là EMPLOYEE, lưu vào bảng Employee
-                if (registerAccount.UserType.Equals("EMPLOYEE", StringComparison.OrdinalIgnoreCase))
-                {
-                    var employee = new Employee
+                    var newAddress = new Address
                     {
-                        UserId = user.UserId,
-                        FullName = registerAccount.FullName,
-                        Position = registerAccount.Position,
-                        Department = registerAccount.Department,
-                        AddressId = newAddress.AddressId // Sử dụng AddressId thay vì LocationId
+                        Street = registerAccount.Street,
+                        WardId = ward.WardId,
+                        DistrictId = district.DistrictId,
+                        ProvinceId = province.ProvinceId
                     };
 
-                    _context.Employees.Add(employee);
+                    _context.Addresses.Add(newAddress);
+                    await _context.SaveChangesAsync(); // Lưu để lấy AddressId
 
-                    if(registerAccount.Department.Equals("WAREHOUSE MANAGER", StringComparison.OrdinalIgnoreCase))
+                    // ✅ Tạo User
+                    var user = new User
                     {
-                        roleId = 3;
+                        Username = registerAccount.Username,
+                        Email = registerAccount.Email,
+                        Phone = registerAccount.Phone,
+                        UserType = registerAccount.UserType,
+                        Password = registerAccount.Password, // Có thể hash trước khi lưu
+                        Status = true
+                    };
+
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync(); // Lưu trước để có UserId
+
+                    int roleId = 0;
+
+                    // ✅ Nếu UserType là EMPLOYEE, lưu vào bảng Employee
+                    if (registerAccount.UserType.Equals("EMPLOYEE", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var employee = new Employee
+                        {
+                            UserId = user.UserId,
+                            FullName = registerAccount.FullName,
+                            Position = registerAccount.Position,
+                            Department = registerAccount.Department,
+                            AddressId = newAddress.AddressId // Sử dụng AddressId thay vì LocationId
+                        };
+
+                        _context.Employees.Add(employee);
+
+                        if (registerAccount.Department.Equals("WAREHOUSE MANAGER", StringComparison.OrdinalIgnoreCase))
+                        {
+                            roleId = 3;
+                        }
+                        if (registerAccount.Department.Equals("SALES MANAGER", StringComparison.OrdinalIgnoreCase))
+                        {
+                            roleId = 4;
+                        }
                     }
-                    if (registerAccount.Department.Equals("SALES MANAGER", StringComparison.OrdinalIgnoreCase))
+                    // ✅ Nếu UserType là AGENCY, lưu vào bảng AgencyAccount
+                    else if (registerAccount.UserType.Equals("AGENCY", StringComparison.OrdinalIgnoreCase))
                     {
-                        roleId = 4;
+                        var agency = new AgencyAccount
+                        {
+                            UserId = user.UserId,
+                            AgencyName = registerAccount.AgencyName,
+                            AddressId = newAddress.AddressId
+                        };
+
+                        _context.AgencyAccounts.Add(agency);
+
+                        roleId = 2;
                     }
-                }
-                // ✅ Nếu UserType là AGENCY, lưu vào bảng AgencyAccount
-                else if (registerAccount.UserType.Equals("AGENCY", StringComparison.OrdinalIgnoreCase))
-                {
-                    var agency = new AgencyAccount
+
+                    if (roleId > 0)
                     {
-                        UserId = user.UserId,
-                        AgencyName = registerAccount.AgencyName,
-                        AddressId = newAddress.AddressId
-                    };
+                        var userRole = new UserRole
+                        {
+                            UserId = user.UserId,
+                            RoleId = roleId
 
-                    _context.AgencyAccounts.Add(agency);
+                        };
+                        _context.UserRoles.Add(userRole);
+                    }
 
-                    roleId = 2;
+                    // ✅ Đánh dấu tài khoản đã được duyệt
+                    registerAccount.IsApproved = true;
+                    /*// ✅ Xóa RegisterAccount sau khi duyệt
+                    _context.RegisterAccounts.Remove(registerAccount);*/
+                    await _context.SaveChangesAsync();
+
+                    return true;
                 }
 
-                if (roleId > 0) 
-                {
-                    var userRole = new UserRole
-                    {
-                        UserId = user.UserId,
-                        RoleId = roleId
-
-                    };
-                    _context.UserRoles.Add(userRole);
-                }
-
-                // ✅ Đánh dấu tài khoản đã được duyệt
-                registerAccount.IsApproved = true;
-                /*// ✅ Xóa RegisterAccount sau khi duyệt
-                _context.RegisterAccounts.Remove(registerAccount);*/
-                await _context.SaveChangesAsync();
-
-                return true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error: {ex.Message}");
                 throw new Exception("Error while approving user: " + ex.Message);
             }
+
         }
 
         // ✅ Phương thức lấy Province, District, Ward dựa trên tên

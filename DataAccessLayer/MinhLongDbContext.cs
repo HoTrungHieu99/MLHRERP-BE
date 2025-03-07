@@ -51,6 +51,15 @@ namespace DataAccessLayer
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductCategory> ProductCategories { get; set; }
         public DbSet<TaxConfig> TaxConfigs { get; set; }
+        public DbSet<ImportTransaction> ImportTransactions { get; set; }
+        public DbSet<ImportTransactionDetail> ImportTransactionDetails { get; set; }
+        public DbSet<Batch> Batches { get; set; }
+        public DbSet<Inventory> Inventories { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<Request> Requests { get; set; }
+        public DbSet<Image> Images { get; set; }
+
+        public DbSet<WarehouseReceipt> WarehouseReceipts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -72,6 +81,14 @@ namespace DataAccessLayer
             modelBuilder.Entity<Product>().ToTable("Product");
             modelBuilder.Entity<ProductCategory>().ToTable("ProductCategory");
             modelBuilder.Entity<TaxConfig>().ToTable("TaxConfig");
+            modelBuilder.Entity<ImportTransaction>().ToTable("ImportTransaction");
+            modelBuilder.Entity<ImportTransactionDetail>().ToTable("ImportTransactionDetail");
+            modelBuilder.Entity<Batch>().ToTable("Batch");
+            modelBuilder.Entity<Inventory>().ToTable("Inventory");
+            modelBuilder.Entity<Order>().ToTable("Order");
+            modelBuilder.Entity<Request>().ToTable("Request");
+            modelBuilder.Entity<Image>().ToTable("Image");
+            modelBuilder.Entity<WarehouseReceipt>().ToTable("WarehouseReceipt");
 
             // 🔥 **Cấu hình quan hệ**
             modelBuilder.Entity<Ward>()
@@ -105,58 +122,23 @@ namespace DataAccessLayer
                 .HasForeignKey(a => a.ProvinceId)
                 .OnDelete(DeleteBehavior.NoAction); // 🔥 Fix lỗi
 
-            // ✅ **Cấu hình khóa chính tự động tăng**
+            // 🔥 Cấu hình khóa chính tự động tăng
+            modelBuilder.Entity<User>().Property(u => u.UserId).HasDefaultValueSql("NEWID()");
+            modelBuilder.Entity<Employee>().Property(e => e.EmployeeId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<AgencyAccount>().Property(a => a.AgencyId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Warehouse>().Property(w => w.WarehouseId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Product>().Property(p => p.ProductId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<ProductCategory>().Property(pc => pc.CategoryId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<TaxConfig>().Property(tc => tc.TaxId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<ImportTransaction>().Property(it => it.ImportTransactionId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<ImportTransactionDetail>().Property(itd => itd.ImportTransactionDetailId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Inventory>().Property(i => i.InventoryId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Order>().Property(o => o.OrderId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Batch>().Property(b => b.BatchId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Request>().Property(r => r.RequestId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<Image>().Property(i => i.ImageId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<WarehouseReceipt>().Property(wr => wr.WarehouseReceiptId).ValueGeneratedOnAdd();
 
-            modelBuilder.Entity<User>()
-                .Property(u => u.UserId)
-                .HasDefaultValueSql("NEWID()");
-
-            modelBuilder.Entity<Employee>()
-                .Property(e => e.EmployeeId)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<AgencyAccount>()
-                .Property(a => a.AgencyId)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<Address>()
-                .Property(a => a.AddressId)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<Role>()
-                .Property(r => r.RoleId)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<Permission>()
-                .Property(p => p.PermissionId)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<RolePermission>()
-                .Property(rp => rp.RolePermissionId)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<UserRole>()
-                .Property(ur => ur.UserRoleId)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<RegisterAccount>()
-                .Property(ra => ra.RegisterId)
-                .ValueGeneratedOnAdd();
-            modelBuilder.Entity<Warehouse>()
-                .Property(ra => ra.WarehouseId)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<Product>()
-                .Property(p => p.ProductId)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<ProductCategory>()
-                .Property(pc => pc.CategoryId)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<TaxConfig>()
-                .Property(tc => tc.TaxId)
-                .ValueGeneratedOnAdd();
 
             // 🔥 **Cấu hình quan hệ nhiều - nhiều**
             modelBuilder.Entity<UserRole>()
@@ -276,6 +258,103 @@ namespace DataAccessLayer
             modelBuilder.Entity<User>()
                 .Property(u => u.Status)
                 .HasDefaultValue(false);
+
+            // Configurations if needed
+            modelBuilder.Entity<ImportTransaction>()
+                .HasMany(it => it.ImportTransactionDetails)
+                .WithOne(itd => itd.ImportTransaction)
+                .HasForeignKey(itd => itd.ImportTransactionId);
+
+            modelBuilder.Entity<ImportTransactionDetail>()
+                .HasMany(itd => itd.Batches)
+                .WithOne(b => b.ImportTransactionDetail)
+                .HasForeignKey(b => b.ImportTransactionDetailId);
+
+            modelBuilder.Entity<Inventory>()
+                .HasOne(i => i.Product)
+                .WithMany()
+                .HasForeignKey(i => i.ProductId)
+                .OnDelete(DeleteBehavior.NoAction); // Fixing cascade issue
+
+            modelBuilder.Entity<Inventory>()
+                .HasOne(i => i.Warehouse)
+                .WithMany()
+                .HasForeignKey(i => i.WarehouseId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Inventory>()
+                .HasOne(i => i.Batch)
+                .WithMany()
+                .HasForeignKey(i => i.BatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Request)
+                .WithMany()
+                .HasForeignKey(o => o.RequestId);
+
+            modelBuilder.Entity<Request>()
+                .HasOne(r => r.AgencyAccount)
+                .WithMany()
+                .HasForeignKey(r => r.AgencyId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Request>()
+                .HasOne(r => r.ApprovedByEmployee)
+                .WithMany()
+                .HasForeignKey(r => r.ApprovedBy)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Request>()
+                .HasOne(r => r.AgencyAccount)
+                .WithMany()
+                .HasForeignKey(r => r.AgencyId)
+                .OnDelete(DeleteBehavior.NoAction); // Assuming Request is linked to an AgencyAccount
+
+            modelBuilder.Entity<Batch>()
+                .HasOne(b => b.ImportTransactionDetail)
+                .WithMany(d => d.Batches)
+                .HasForeignKey(b => b.ImportTransactionDetailId)
+                .OnDelete(DeleteBehavior.Cascade); // ✅ Chỉ dùng cascade khi thực sự cần
+
+            // Explicitly define precision and scale for decimal fields to avoid truncation issues
+            modelBuilder.Entity<Batch>()
+                .Property(b => b.TotalAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Batch>()
+                .Property(b => b.UnitCost)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<ImportTransactionDetail>()
+                .Property(itd => itd.TotalPrice)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .Property(o => o.Discount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Order>()
+                .Property(o => o.FinalPrice)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Image>()
+            .HasOne(i => i.Product)
+            .WithMany(p => p.Images)
+            .HasForeignKey(i => i.ProductId);
+
+            // Định dạng cột decimal (18,2) cho TotalPrice
+            modelBuilder.Entity<WarehouseReceipt>()
+                .Property(w => w.TotalPrice)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Batch>()
+                .Property(b => b.UnitCost)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Batch>()
+                .Property(b => b.TotalAmount)
+                .HasColumnType("decimal(18,2)");
         }
     }
 

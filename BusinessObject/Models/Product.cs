@@ -45,5 +45,10 @@ namespace BusinessObject.Models
         public int? TaxId { get; set; }
         [ForeignKey("TaxId")]
         public TaxConfig TaxConfig { get; set; }
+
+        // Mối quan hệ: Một Product có nhiều Image
+        public List<Image> Images { get; set; } = new List<Image>();
+
+        public int AvailableStock { get; set; }
     }
 }
