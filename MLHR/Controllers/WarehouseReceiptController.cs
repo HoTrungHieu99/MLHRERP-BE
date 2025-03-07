@@ -1,4 +1,5 @@
 ﻿using BusinessObject.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.IService;
 using Services.Service;
@@ -7,6 +8,7 @@ namespace MLHR.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "3")]
     public class WarehouseReceiptController : ControllerBase
     {
         private readonly IWarehouseReceiptService _service;
