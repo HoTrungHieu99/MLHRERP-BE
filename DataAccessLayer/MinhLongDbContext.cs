@@ -54,7 +54,7 @@ namespace DataAccessLayer
         public DbSet<ImportTransaction> ImportTransactions { get; set; }
         public DbSet<ImportTransactionDetail> ImportTransactionDetails { get; set; }
         public DbSet<Batch> Batches { get; set; }
-        public DbSet<Inventory> Inventories { get; set; }
+        public DbSet<WarehouseProduct> WarehouseProduct { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Request> Requests { get; set; }
         public DbSet<Image> Images { get; set; }
@@ -84,7 +84,7 @@ namespace DataAccessLayer
             modelBuilder.Entity<ImportTransaction>().ToTable("ImportTransaction");
             modelBuilder.Entity<ImportTransactionDetail>().ToTable("ImportTransactionDetail");
             modelBuilder.Entity<Batch>().ToTable("Batch");
-            modelBuilder.Entity<Inventory>().ToTable("Inventory");
+            modelBuilder.Entity<WarehouseProduct>().ToTable("WarehouseProduct");
             modelBuilder.Entity<Order>().ToTable("Order");
             modelBuilder.Entity<Request>().ToTable("Request");
             modelBuilder.Entity<Image>().ToTable("Image");
@@ -132,7 +132,7 @@ namespace DataAccessLayer
             modelBuilder.Entity<TaxConfig>().Property(tc => tc.TaxId).ValueGeneratedOnAdd();
             modelBuilder.Entity<ImportTransaction>().Property(it => it.ImportTransactionId).ValueGeneratedOnAdd();
             modelBuilder.Entity<ImportTransactionDetail>().Property(itd => itd.ImportTransactionDetailId).ValueGeneratedOnAdd();
-            modelBuilder.Entity<Inventory>().Property(i => i.InventoryId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<WarehouseProduct>().Property(i => i.WarehouseProductId).ValueGeneratedOnAdd();
             modelBuilder.Entity<Order>().Property(o => o.OrderId).ValueGeneratedOnAdd();
             modelBuilder.Entity<Batch>().Property(b => b.BatchId).ValueGeneratedOnAdd();
             modelBuilder.Entity<Request>().Property(r => r.RequestId).ValueGeneratedOnAdd();
@@ -270,19 +270,19 @@ namespace DataAccessLayer
                 .WithOne(b => b.ImportTransactionDetail)
                 .HasForeignKey(b => b.ImportTransactionDetailId);
 
-            modelBuilder.Entity<Inventory>()
+            modelBuilder.Entity<WarehouseProduct>()
                 .HasOne(i => i.Product)
                 .WithMany()
                 .HasForeignKey(i => i.ProductId)
                 .OnDelete(DeleteBehavior.NoAction); // Fixing cascade issue
 
-            modelBuilder.Entity<Inventory>()
+            modelBuilder.Entity<WarehouseProduct>()
                 .HasOne(i => i.Warehouse)
                 .WithMany()
                 .HasForeignKey(i => i.WarehouseId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<Inventory>()
+            modelBuilder.Entity<WarehouseProduct>()
                 .HasOne(i => i.Batch)
                 .WithMany()
                 .HasForeignKey(i => i.BatchId)

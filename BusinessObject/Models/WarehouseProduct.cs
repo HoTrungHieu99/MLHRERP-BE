@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace BusinessObject.Models
 {
-    public class Inventory
+    public class WarehouseProduct
     {
         [Key]
-        public long InventoryId { get; set; }
+        public long WarehouseProductId { get; set; }
         public long ProductId { get; set; }
         public long WarehouseId { get; set; }
         public long BatchId { get; set; }

@@ -132,7 +132,7 @@ namespace Repo.Repository
 
 
                     // ✅ Tạo mới Inventory nếu chưa có
-                    var inventory = new Inventory
+                    var inventory = new WarehouseProduct
                     {
                         ProductId = batch.ProductId,
                         WarehouseId = receipt.WarehouseId,
@@ -142,7 +142,7 @@ namespace Repo.Repository
                         Status = batch.Status
                     };
 
-                    _context.Inventories.Add(inventory);
+                    _context.WarehouseProduct.Add(inventory);
 
                     product.AvailableStock += batch.Quantity;
 

@@ -277,7 +277,8 @@ namespace DataAccessLayer.Migrations
                     DefaultExpiration = table.Column<int>(type: "int", nullable: true),
                     CategoryId = table.Column<long>(type: "bigint", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TaxId = table.Column<int>(type: "int", nullable: true)
+                    TaxId = table.Column<int>(type: "int", nullable: true),
+                    AvailableStock = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -481,7 +482,7 @@ namespace DataAccessLayer.Migrations
                     AgencyId = table.Column<long>(type: "bigint", nullable: false),
                     ProductId = table.Column<long>(type: "bigint", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
-                    ApprovedBy = table.Column<long>(type: "bigint", nullable: false),
+                    ApprovedBy = table.Column<long>(type: "bigint", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RequestStatus = table.Column<string>(type: "nvarchar(max)", nullable: false)
@@ -517,7 +518,7 @@ namespace DataAccessLayer.Migrations
                     DocumentNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DocumentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TypeImport = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     WarehouseId = table.Column<long>(type: "bigint", nullable: false),
                     Supplier = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateImport = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -547,7 +548,9 @@ namespace DataAccessLayer.Migrations
                     DateImport = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TotalQuantity = table.Column<int>(type: "int", nullable: false),
                     TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    BatchesJson = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    BatchesJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsApproved = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -589,10 +592,10 @@ namespace DataAccessLayer.Migrations
                 {
                     ImportTransactionDetailId = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    TotalQuantity = table.Column<int>(type: "int", nullable: false),
                     ImportTransactionId = table.Column<long>(type: "bigint", nullable: false),
-                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    TotalPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -639,10 +642,10 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Inventory",
+                name: "WarehouseProduct",
                 columns: table => new
                 {
-                    InventoryId = table.Column<long>(type: "bigint", nullable: false)
+                    WarehouseProductId = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ProductId = table.Column<long>(type: "bigint", nullable: false),
                     WarehouseId = table.Column<long>(type: "bigint", nullable: false),
@@ -653,20 +656,20 @@ namespace DataAccessLayer.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Inventory", x => x.InventoryId);
+                    table.PrimaryKey("PK_WarehouseProduct", x => x.WarehouseProductId);
                     table.ForeignKey(
-                        name: "FK_Inventory_Batch_BatchId",
+                        name: "FK_WarehouseProduct_Batch_BatchId",
                         column: x => x.BatchId,
                         principalTable: "Batch",
                         principalColumn: "BatchId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Inventory_Product_ProductId",
+                        name: "FK_WarehouseProduct_Product_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Product",
                         principalColumn: "ProductId");
                     table.ForeignKey(
-                        name: "FK_Inventory_Warehouse_WarehouseId",
+                        name: "FK_WarehouseProduct_Warehouse_WarehouseId",
                         column: x => x.WarehouseId,
                         principalTable: "Warehouse",
                         principalColumn: "WarehouseId");
@@ -748,21 +751,6 @@ namespace DataAccessLayer.Migrations
                 name: "IX_ImportTransactionDetail_ImportTransactionId",
                 table: "ImportTransactionDetail",
                 column: "ImportTransactionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Inventory_BatchId",
-                table: "Inventory",
-                column: "BatchId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Inventory_ProductId",
-                table: "Inventory",
-                column: "ProductId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Inventory_WarehouseId",
-                table: "Inventory",
-                column: "WarehouseId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Order_RequestId",
@@ -857,6 +845,21 @@ namespace DataAccessLayer.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_WarehouseProduct_BatchId",
+                table: "WarehouseProduct",
+                column: "BatchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WarehouseProduct_ProductId",
+                table: "WarehouseProduct",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WarehouseProduct_WarehouseId",
+                table: "WarehouseProduct",
+                column: "WarehouseId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WarehouseReceipt_WarehouseId",
                 table: "WarehouseReceipt",
                 column: "WarehouseId");
@@ -872,9 +875,6 @@ namespace DataAccessLayer.Migrations
                 name: "Image");
 
             migrationBuilder.DropTable(
-                name: "Inventory");
-
-            migrationBuilder.DropTable(
                 name: "Order");
 
             migrationBuilder.DropTable(
@@ -887,13 +887,13 @@ namespace DataAccessLayer.Migrations
                 name: "UserRole");
 
             migrationBuilder.DropTable(
+                name: "WarehouseProduct");
+
+            migrationBuilder.DropTable(
                 name: "WarehouseReceipt");
 
             migrationBuilder.DropTable(
                 name: "AgencyLevel");
-
-            migrationBuilder.DropTable(
-                name: "Batch");
 
             migrationBuilder.DropTable(
                 name: "Request");
@@ -905,13 +905,16 @@ namespace DataAccessLayer.Migrations
                 name: "Role");
 
             migrationBuilder.DropTable(
-                name: "ImportTransactionDetail");
+                name: "Batch");
 
             migrationBuilder.DropTable(
                 name: "AgencyAccount");
 
             migrationBuilder.DropTable(
                 name: "Employee");
+
+            migrationBuilder.DropTable(
+                name: "ImportTransactionDetail");
 
             migrationBuilder.DropTable(
                 name: "Product");
