@@ -9,10 +9,10 @@ namespace Repo.IRepository
 {
     public interface IRequestRepository
     {
-        Task<IEnumerable<Request>> GetAllRequestsAsync();
-        Task<Request> GetRequestByIdAsync(long requestId);
-        Task<Request> CreateRequestAsync(Request request);
-        Task<Request> UpdateRequestAsync(Request request);
+        Task<IEnumerable<RequestProduct>> GetAllRequestsAsync();
+        Task<RequestProduct> GetRequestByIdAsync(long requestId);
+        Task<RequestProduct> CreateRequestAsync(RequestProduct request);
+        Task<RequestProduct> UpdateRequestAsync(RequestProduct request);
         Task<bool> ApproveRequestAsync(long requestId, Guid userId); // 🔥 Sửa long thành Guid
         Task<long?> GetAgencyIdByUserIdAsync(Guid userId);
         Task<long?> GetEmployeeIdByUserIdAsync(Guid userId);

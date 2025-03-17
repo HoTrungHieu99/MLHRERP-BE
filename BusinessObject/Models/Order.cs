@@ -21,6 +21,6 @@ namespace BusinessObject.Models
         public long RequestId { get; set; }
 
         [ForeignKey("RequestId")]
-        public Request Request { get; set; }
+        public RequestProduct Request { get; set; }
     }
 }

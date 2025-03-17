@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace BusinessObject.Models
 {
-    public class Request
+    public class RequestProduct
     {
         [Key]
-        public long RequestId { get; set; }
+        public long RequestProductId { get; set; }
         public long AgencyId { get; set; }
         public long ProductId { get; set; }
         public int Quantity { get; set; }

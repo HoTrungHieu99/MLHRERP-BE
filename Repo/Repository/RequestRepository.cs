@@ -19,34 +19,34 @@ namespace Repo.Repository
             _context = context;
         }
 
-        public async Task<IEnumerable<Request>> GetAllRequestsAsync()
+        public async Task<IEnumerable<RequestProduct>> GetAllRequestsAsync()
         {
-            return await _context.Requests.Include(r => r.AgencyAccount).Include(r => r.Product).ToListAsync();
+            return await _context.RequestProducts.Include(r => r.AgencyAccount).Include(r => r.Product).ToListAsync();
         }
 
-        public async Task<Request> GetRequestByIdAsync(long requestId)
+        public async Task<RequestProduct> GetRequestByIdAsync(long requestId)
         {
-            return await _context.Requests.Include(r => r.AgencyAccount).Include(r => r.Product)
-                                          .FirstOrDefaultAsync(r => r.RequestId == requestId);
+            return await _context.RequestProducts.Include(r => r.AgencyAccount).Include(r => r.Product)
+                                          .FirstOrDefaultAsync(r => r.RequestProductId == requestId);
         }
 
-        public async Task<Request> CreateRequestAsync(Request request)
+        public async Task<RequestProduct> CreateRequestAsync(RequestProduct request)
         {
-            _context.Requests.Add(request);
+            _context.RequestProducts.Add(request);
             await _context.SaveChangesAsync();
             return request;
         }
 
-        public async Task<Request> UpdateRequestAsync(Request request)
+        public async Task<RequestProduct> UpdateRequestAsync(RequestProduct request)
         {
-            _context.Requests.Update(request);
+            _context.RequestProducts.Update(request);
             await _context.SaveChangesAsync();
             return request;
         }
 
         public async Task<bool> ApproveRequestAsync(long requestId, Guid userId) // 🔥 Sửa long thành Guid
         {
-            var request = await _context.Requests.FindAsync(requestId);
+            var request = await _context.RequestProducts.FindAsync(requestId);
             if (request == null || request.RequestStatus != "PENDING")
                 return false;
 
@@ -66,7 +66,7 @@ namespace Repo.Repository
                 Discount = 0,
                 FinalPrice = 0,
                 Status = "PENDING",
-                RequestId = request.RequestId
+                RequestId = request.RequestProductId
             };
 
             _context.Orders.Add(order);

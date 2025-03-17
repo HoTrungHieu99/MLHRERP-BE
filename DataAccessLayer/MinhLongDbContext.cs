@@ -56,7 +56,7 @@ namespace DataAccessLayer
         public DbSet<Batch> Batches { get; set; }
         public DbSet<WarehouseProduct> WarehouseProduct { get; set; }
         public DbSet<Order> Orders { get; set; }
-        public DbSet<Request> Requests { get; set; }
+        public DbSet<RequestProduct> RequestProducts { get; set; }
         public DbSet<Image> Images { get; set; }
 
         public DbSet<WarehouseReceipt> WarehouseReceipts { get; set; }
@@ -86,7 +86,7 @@ namespace DataAccessLayer
             modelBuilder.Entity<Batch>().ToTable("Batch");
             modelBuilder.Entity<WarehouseProduct>().ToTable("WarehouseProduct");
             modelBuilder.Entity<Order>().ToTable("Order");
-            modelBuilder.Entity<Request>().ToTable("Request");
+            modelBuilder.Entity<RequestProduct>().ToTable("RequestProduct");
             modelBuilder.Entity<Image>().ToTable("Image");
             modelBuilder.Entity<WarehouseReceipt>().ToTable("WarehouseReceipt");
 
@@ -135,7 +135,7 @@ namespace DataAccessLayer
             modelBuilder.Entity<WarehouseProduct>().Property(i => i.WarehouseProductId).ValueGeneratedOnAdd();
             modelBuilder.Entity<Order>().Property(o => o.OrderId).ValueGeneratedOnAdd();
             modelBuilder.Entity<Batch>().Property(b => b.BatchId).ValueGeneratedOnAdd();
-            modelBuilder.Entity<Request>().Property(r => r.RequestId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<RequestProduct>().Property(r => r.RequestProductId).ValueGeneratedOnAdd();
             modelBuilder.Entity<Image>().Property(i => i.ImageId).ValueGeneratedOnAdd();
             modelBuilder.Entity<WarehouseReceipt>().Property(wr => wr.WarehouseReceiptId).ValueGeneratedOnAdd();
 
@@ -293,19 +293,19 @@ namespace DataAccessLayer
                 .WithMany()
                 .HasForeignKey(o => o.RequestId);
 
-            modelBuilder.Entity<Request>()
+            modelBuilder.Entity<RequestProduct>()
                 .HasOne(r => r.AgencyAccount)
                 .WithMany()
                 .HasForeignKey(r => r.AgencyId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<Request>()
+            modelBuilder.Entity<RequestProduct>()
                 .HasOne(r => r.ApprovedByEmployee)
                 .WithMany()
                 .HasForeignKey(r => r.ApprovedBy)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Request>()
+            modelBuilder.Entity<RequestProduct>()
                 .HasOne(r => r.AgencyAccount)
                 .WithMany()
                 .HasForeignKey(r => r.AgencyId)

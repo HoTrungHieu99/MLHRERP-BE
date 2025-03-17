@@ -25,7 +25,7 @@ namespace Services.Service
 
             return requests.Select(r => new RequestDto
             {
-                RequestId = r.RequestId,
+                RequestId = r.RequestProductId,
                 ProductId = r.ProductId,
                 Quantity = r.Quantity,
                 RequestStatus = r.RequestStatus,
@@ -45,7 +45,7 @@ namespace Services.Service
 
             return new RequestDto
             {
-                RequestId = request.RequestId,
+                RequestId = request.RequestProductId,
                 ProductId = request.ProductId,
                 Quantity = request.Quantity,
                 RequestStatus = request.RequestStatus,
@@ -62,7 +62,7 @@ namespace Services.Service
                 var agencyId = await _requestRepository.GetAgencyIdByUserIdAsync(userId);
                 if (agencyId == null) return null;
 
-                var request = new Request
+                var request = new RequestProduct
                 {
                     AgencyId = agencyId.Value,
                     ProductId = createRequestDto.ProductId,
@@ -76,7 +76,7 @@ namespace Services.Service
 
                 return new RequestDto
                 {
-                    RequestId = createdRequest.RequestId,
+                    RequestId = createdRequest.RequestProductId,
                     ProductId = createdRequest.ProductId,
                     Quantity = createdRequest.Quantity,
                     RequestStatus = createdRequest.RequestStatus,
@@ -98,7 +98,7 @@ namespace Services.Service
 
                 return new RequestDto
                 {
-                    RequestId = updatedRequest.RequestId,
+                    RequestId = updatedRequest.RequestProductId,
                     ProductId = updatedRequest.ProductId,
                     Quantity = updatedRequest.Quantity,
                     RequestStatus = updatedRequest.RequestStatus,

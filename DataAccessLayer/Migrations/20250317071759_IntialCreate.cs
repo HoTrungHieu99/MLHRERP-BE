@@ -474,10 +474,10 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Request",
+                name: "RequestProduct",
                 columns: table => new
                 {
-                    RequestId = table.Column<long>(type: "bigint", nullable: false)
+                    RequestProductId = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     AgencyId = table.Column<long>(type: "bigint", nullable: false),
                     ProductId = table.Column<long>(type: "bigint", nullable: false),
@@ -489,20 +489,20 @@ namespace DataAccessLayer.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Request", x => x.RequestId);
+                    table.PrimaryKey("PK_RequestProduct", x => x.RequestProductId);
                     table.ForeignKey(
-                        name: "FK_Request_AgencyAccount_AgencyId",
+                        name: "FK_RequestProduct_AgencyAccount_AgencyId",
                         column: x => x.AgencyId,
                         principalTable: "AgencyAccount",
                         principalColumn: "AgencyId");
                     table.ForeignKey(
-                        name: "FK_Request_Employee_ApprovedBy",
+                        name: "FK_RequestProduct_Employee_ApprovedBy",
                         column: x => x.ApprovedBy,
                         principalTable: "Employee",
                         principalColumn: "EmployeeId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Request_Product_ProductId",
+                        name: "FK_RequestProduct_Product_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Product",
                         principalColumn: "ProductId",
@@ -579,10 +579,10 @@ namespace DataAccessLayer.Migrations
                 {
                     table.PrimaryKey("PK_Order", x => x.OrderId);
                     table.ForeignKey(
-                        name: "FK_Order_Request_RequestId",
+                        name: "FK_Order_RequestProduct_RequestId",
                         column: x => x.RequestId,
-                        principalTable: "Request",
-                        principalColumn: "RequestId",
+                        principalTable: "RequestProduct",
+                        principalColumn: "RequestProductId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -793,18 +793,18 @@ namespace DataAccessLayer.Migrations
                 column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Request_AgencyId",
-                table: "Request",
+                name: "IX_RequestProduct_AgencyId",
+                table: "RequestProduct",
                 column: "AgencyId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Request_ApprovedBy",
-                table: "Request",
+                name: "IX_RequestProduct_ApprovedBy",
+                table: "RequestProduct",
                 column: "ApprovedBy");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Request_ProductId",
-                table: "Request",
+                name: "IX_RequestProduct_ProductId",
+                table: "RequestProduct",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
@@ -896,7 +896,7 @@ namespace DataAccessLayer.Migrations
                 name: "AgencyLevel");
 
             migrationBuilder.DropTable(
-                name: "Request");
+                name: "RequestProduct");
 
             migrationBuilder.DropTable(
                 name: "Permission");

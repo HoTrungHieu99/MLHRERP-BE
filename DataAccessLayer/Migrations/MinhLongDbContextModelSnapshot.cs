@@ -603,13 +603,13 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("RegisterAccounts");
                 });
 
-            modelBuilder.Entity("BusinessObject.Models.Request", b =>
+            modelBuilder.Entity("BusinessObject.Models.RequestProduct", b =>
                 {
-                    b.Property<long>("RequestId")
+                    b.Property<long>("RequestProductId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("RequestId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("RequestProductId"));
 
                     b.Property<long>("AgencyId")
                         .HasColumnType("bigint");
@@ -633,7 +633,7 @@ namespace DataAccessLayer.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.HasKey("RequestId");
+                    b.HasKey("RequestProductId");
 
                     b.HasIndex("AgencyId");
 
@@ -641,7 +641,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Request", (string)null);
+                    b.ToTable("RequestProduct", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Role", b =>
@@ -1078,7 +1078,7 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("BusinessObject.Models.Order", b =>
                 {
-                    b.HasOne("BusinessObject.Models.Request", "Request")
+                    b.HasOne("BusinessObject.Models.RequestProduct", "Request")
                         .WithMany()
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1145,7 +1145,7 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Updater");
                 });
 
-            modelBuilder.Entity("BusinessObject.Models.Request", b =>
+            modelBuilder.Entity("BusinessObject.Models.RequestProduct", b =>
                 {
                     b.HasOne("BusinessObject.Models.AgencyAccount", "AgencyAccount")
                         .WithMany()
