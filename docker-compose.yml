@@ -7,10 +7,10 @@ services:
       context: .
       dockerfile: MLHR/Dockerfile
     ports:
-      - "8085:8085"  # Cổng HTTP (nếu cần)
+      - "8086:8086"  # Cổng HTTP (nếu cần)
     environment:
-      - ASPNETCORE_URLS=http://+:8085/
-      - "8085:8085"   # Cổng HTTP (nếu cần)
+      - ASPNETCORE_URLS=http://+:8086/
+      - "8086:8086"   # Cổng HTTP (nếu cần)
     networks:
       - demo
 
