@@ -111,6 +111,17 @@ namespace Services.Service
             return await _repository.DeleteAsync(id);
         }
 
-        
+
+        public async Task<List<ProductSimpleResponseDto>> GetProductsByCategoryIdAsync(long categoryId)
+        {
+            var products = await _repository.GetProductsByCategoryIdAsync(categoryId);
+            return products.Select(p => new ProductSimpleResponseDto
+            {
+                ProductId = p.ProductId,
+                ProductName = p.ProductName,
+                Images = p.Images.Select(img => img.ImageUrl).ToList()
+            }).ToList();
+        }
+
     }
 }

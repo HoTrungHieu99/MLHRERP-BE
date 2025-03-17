@@ -88,6 +88,13 @@ namespace MLHR.Controllers
             return NoContent();
         }
 
-        
+        [HttpGet("by-category/{categoryId}")]
+        [Authorize(Roles = "4,2")]
+        public async Task<ActionResult<IEnumerable<ProductSimpleResponseDto>>> GetProductsByCategory(long categoryId)
+        {
+            var products = await _service.GetProductsByCategoryIdAsync(categoryId);
+            return Ok(products);
+        }
+
     }
 }

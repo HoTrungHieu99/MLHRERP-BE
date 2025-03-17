@@ -15,6 +15,7 @@ namespace Repo.IRepository
         Task<Product> AddAsync(Product product, List<string> imageUrls);
         Task<Product> UpdateAsync(Product product, List<string> imageUrls);
         Task<bool> DeleteAsync(long id);
-        
+
+        Task<List<Product>> GetProductsByCategoryIdAsync(long categoryId);
     }
 }

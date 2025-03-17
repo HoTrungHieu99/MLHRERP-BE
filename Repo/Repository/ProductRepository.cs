@@ -101,6 +101,13 @@ namespace Repo.Repository
             return true;
         }
 
-        
+        public async Task<List<Product>> GetProductsByCategoryIdAsync(long categoryId)
+        {
+            return await _context.Products
+                .Where(p => p.CategoryId == categoryId)
+                .Include(p => p.Images) // Load danh sách ảnh
+                .ToListAsync();
+        }
+
     }
 }
