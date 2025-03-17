@@ -70,7 +70,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 // ✅ Đọc chuỗi kết nối từ appsettings.json
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("ServerConnection");
 builder.Services.AddDbContext<MinhLongDbContext>(options =>
     options.UseSqlServer(connectionString));
 
@@ -130,18 +130,10 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ✅ Cấu hình Middleware cho Swagger (chỉ trong môi trường Development)
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
-// Bật Swagger UI khi chạy ứng dụng
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 // ✅ Bật HTTPS
 app.UseHttpsRedirection();

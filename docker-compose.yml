@@ -1,22 +1,19 @@
-﻿services:
-  hairhub.api:
-    container_name: minhlongvattunongnghiep-api-new
+﻿version: '3.4'
+
+services:
+  mlhr:
+    container_name: mlhr-api-new
     build:
-      context: E:\DoAn\CodeDoAn\MLHRERP-BE
+      context: .
       dockerfile: MLHR/Dockerfile
-    image: mlhr
-    networks:
-      - demo
     ports:
-      - "8085:8085"
+      - "8085:8085"   # Cổng HTTP (nếu cần)
     environment:
       - ASPNETCORE_URLS=http://+:8085
       - TZ=Asia/Ho_Chi_Minh
-    volumes:
-      - "E:\DoAn\CodeDoAn\MLHRERP-BE:/app"
-      - "E:\DoAn\CodeDoAn\MLHRERP-BE\.nuget:/root/.nuget:ro"
-      - "E:\DoAn\CodeDoAn\MLHRERP-BE\logs:/app/logs"
+    networks:
+      - demo
 
-enetworks:
+networks:
   demo:
     driver: bridge
