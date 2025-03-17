@@ -10,7 +10,7 @@ services:
       - "8085:8085"  # Cổng HTTP (nếu cần)
     environment:
       - ASPNETCORE_URLS=http://+:8085/
-      - TZ=Asia/Ho_Chi_Minh
+      - "8085:8085"   # Cổng HTTP (nếu cần)
     networks:
       - demo
 
