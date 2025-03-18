@@ -27,5 +27,15 @@ namespace BusinessObject.Models
 
         [ForeignKey("AddressId")]
         public virtual Address Address { get; set; }
+
+        // Các mối quan hệ bổ sung
+        public ICollection<ExportTransaction> ExportTransactions { get; set; } // Một kho có thể có nhiều giao dịch xuất kho
+        public ICollection<WarehouseReceipt> WarehouseReceipts { get; set; } // Một kho có thể có nhiều phiếu nhập kho
+        public ICollection<ExportWarehouseReceipt> ExportWarehouseReceipts { get; set; }// 🔹 Thêm danh sách ExportWarehouseReceipts (KHÔNG phải ExportWarehouseReceiptDetails)
+        public ICollection<WarehouseProduct> WarehouseProducts { get; set; } // Một kho có thể có nhiều sản phẩm kho                                                                            // 🔹 Mới thêm: Mối quan hệ với WarehouseLedger
+        public ICollection<WarehouseLedger> WarehouseLedgers { get; set; } // Một kho có nhiều bản ghi nhật ký kho
+
+        public string Note { get; set; } // Ghi chú cho kho
     }
+
 }

@@ -37,7 +37,7 @@ namespace DataAccessLayer
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile("appsettings.json")
                 .Build();
-            optionsBuilder.UseSqlServer(configuration.GetConnectionString("ServerConnection"));
+            optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         }
 
 
@@ -67,8 +67,11 @@ namespace DataAccessLayer
         public DbSet<Order> Orders { get; set; }
         public DbSet<RequestProduct> RequestProducts { get; set; }
         public DbSet<Image> Images { get; set; }
-
         public DbSet<WarehouseReceipt> WarehouseReceipts { get; set; }
+        public DbSet<ExportWarehouseReceipt> ExportWarehouseReceipts { get; set; }
+        public DbSet<ExportTransaction> ExportTransactions { get; set; }
+        public DbSet<ExportTransactionDetail> ExportTransactionDetails { get; set; }
+        public DbSet<WarehouseLedger> WarehouseLedgers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -98,6 +101,10 @@ namespace DataAccessLayer
             modelBuilder.Entity<RequestProduct>().ToTable("RequestProduct");
             modelBuilder.Entity<Image>().ToTable("Image");
             modelBuilder.Entity<WarehouseReceipt>().ToTable("WarehouseReceipt");
+            modelBuilder.Entity<ExportWarehouseReceipt>().ToTable("ExportWarehouseReceipt");
+            modelBuilder.Entity<ExportTransaction>().ToTable("ExportTransaction");
+            modelBuilder.Entity<ExportTransactionDetail>().ToTable("ExportTransactionDetail");
+            modelBuilder.Entity<WarehouseLedger>().ToTable("WarehouseLedger");
 
             // 🔥 **Cấu hình quan hệ**
             modelBuilder.Entity<Ward>()
@@ -147,6 +154,10 @@ namespace DataAccessLayer
             modelBuilder.Entity<RequestProduct>().Property(r => r.RequestProductId).ValueGeneratedOnAdd();
             modelBuilder.Entity<Image>().Property(i => i.ImageId).ValueGeneratedOnAdd();
             modelBuilder.Entity<WarehouseReceipt>().Property(wr => wr.WarehouseReceiptId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<WarehouseLedger>().Property(wr => wr.WarehouseLedgerId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<ExportTransaction>().Property(wr => wr.ExportTransactionId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<ExportTransactionDetail>().Property(wr => wr.ExportTransactionDetailId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<ExportWarehouseReceipt>().Property(wr => wr.ExportWarehouseReceiptId).ValueGeneratedOnAdd();
 
 
             // 🔥 **Cấu hình quan hệ nhiều - nhiều**
@@ -364,6 +375,116 @@ namespace DataAccessLayer
             modelBuilder.Entity<Batch>()
                 .Property(b => b.TotalAmount)
                 .HasColumnType("decimal(18,2)");
+
+            //Moi Quan He Warehouse, WarehouseProduct, ExportTransaction, ExportTransactionDetail
+            // 🔹 1. ExportTransaction ↔ Warehouse (1-Nhiều)
+            modelBuilder.Entity<ExportTransaction>()
+                .HasOne(et => et.Warehouse)
+                .WithMany(w => w.ExportTransactions)
+                .HasForeignKey(et => et.WarehouseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 🔹 2. ExportTransaction ↔ ExportTransactionDetail (1-Nhiều)
+            modelBuilder.Entity<ExportTransactionDetail>()
+                .HasOne(etd => etd.ExportTransaction)
+                .WithMany(et => et.ExportTransactionDetail)
+                .HasForeignKey(etd => etd.ExportTransactionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // 🔹 3. ExportTransactionDetail ↔ WarehouseProduct (1-Nhiều)
+            modelBuilder.Entity<ExportTransactionDetail>()
+                .HasOne(etd => etd.WarehouseProduct)
+                .WithMany(wp => wp.ExportTransactionDetails) // ✅ Đúng với WarehouseProduct
+                .HasForeignKey(etd => etd.WarehouseProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 🔹 4. ExportWarehouseReceipt ↔ Warehouse (1-Nhiều)
+            modelBuilder.Entity<ExportWarehouseReceipt>()
+                .HasOne(ewr => ewr.Warehouse)
+                .WithMany(w => w.ExportWarehouseReceipts)
+                .HasForeignKey(ewr => ewr.WarehouseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 🔹 ExportWarehouseReceipt ↔ ExportWarehouseReceiptDetail (1-Nhiều)
+            modelBuilder.Entity<ExportWarehouseReceiptDetail>()
+                .HasOne(ewrd => ewrd.ExportWarehouseReceipt)
+                .WithMany(ewr => ewr.ExportWarehouseReceiptDetails)
+                .HasForeignKey(ewrd => ewrd.ExportWarehouseReceiptId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 🔹 ExportWarehouseReceiptDetail ↔ WarehouseProduct (1-Nhiều)
+            modelBuilder.Entity<ExportWarehouseReceiptDetail>()
+                .HasOne(ewrd => ewrd.WarehouseProduct)
+                .WithMany()
+                .HasForeignKey(ewrd => ewrd.WarehouseProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 🔹 ExportWarehouseReceiptDetail ↔ Product (1-Nhiều)
+            modelBuilder.Entity<ExportWarehouseReceiptDetail>()
+                .HasOne(ewrd => ewrd.Product)
+                .WithMany()
+                .HasForeignKey(ewrd => ewrd.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 🔹 7. WarehouseLedger ↔ Warehouse (1-Nhiều)
+            modelBuilder.Entity<WarehouseLedger>()
+                .HasOne(wl => wl.Warehouse)
+                .WithMany(w => w.WarehouseLedgers)
+                .HasForeignKey(wl => wl.WarehouseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 🔹 8. WarehouseLedger ↔ ExportTransaction (1-1 hoặc 1-Nhiều, nullable)
+            modelBuilder.Entity<WarehouseLedger>()
+                .HasOne(wl => wl.ExportTransaction)
+                .WithMany()
+                .HasForeignKey(wl => wl.ExportTransactionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 🔹 9. WarehouseLedger ↔ ImportTransaction (1-1 hoặc 1-Nhiều, nullable)
+            modelBuilder.Entity<WarehouseLedger>()
+                .HasOne(wl => wl.ImportTransaction)
+                .WithMany()
+                .HasForeignKey(wl => wl.ImportTransactionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 🔹 WarehouseProduct ↔ ExportWarehouseReceiptDetail (1-Nhiều)
+            modelBuilder.Entity<ExportWarehouseReceiptDetail>()
+                .HasOne(ewrd => ewrd.WarehouseProduct)
+                .WithMany(wp => wp.ExportWarehouseReceiptDetails)
+                .HasForeignKey(ewrd => ewrd.WarehouseProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 🔹 WarehouseProduct ↔ Warehouse (1-Nhiều)
+            modelBuilder.Entity<WarehouseProduct>()
+                .HasOne(wp => wp.Warehouse)
+                .WithMany(w => w.WarehouseProducts) // ✅ Đảm bảo Warehouse có `ICollection<WarehouseProduct>`
+                .HasForeignKey(wp => wp.WarehouseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ExportTransactionDetail>()
+                .Property(e => e.UnitPrice)
+                .HasPrecision(18, 4); // Đảm bảo chính xác đến 4 số lẻ
+
+            modelBuilder.Entity<ExportTransactionDetail>()
+                .Property(e => e.TotalProductAmount)
+                .HasPrecision(18, 4);
+
+            modelBuilder.Entity<ExportWarehouseReceipt>()
+                .Property(e => e.TotalAmount)
+                .HasPrecision(18, 4);
+
+            modelBuilder.Entity<ExportWarehouseReceiptDetail>()
+                .Property(e => e.UnitPrice)
+                .HasPrecision(18, 4);
+
+            modelBuilder.Entity<ExportWarehouseReceiptDetail>()
+                .Property(e => e.TotalProductAmount)
+                .HasPrecision(18, 4);
+
+            modelBuilder.Entity<WarehouseLedger>()
+                .Property(e => e.TotalAmount)
+                .HasPrecision(18, 4);
+
         }
     }
 

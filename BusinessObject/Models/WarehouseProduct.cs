@@ -12,13 +12,23 @@ namespace BusinessObject.Models
     {
         [Key]
         public long WarehouseProductId { get; set; }
+
+        [Required]
         public long ProductId { get; set; }
+
+        [Required]
         public long WarehouseId { get; set; }
+
+        [Required]
         public long BatchId { get; set; }
+
         public DateTime ExpirationDate { get; set; }
+
         public int Quantity { get; set; }
+
         public string Status { get; set; }
 
+        // 🔹 Foreign Keys
         [ForeignKey("ProductId")]
         public Product Product { get; set; }
 
@@ -27,5 +37,12 @@ namespace BusinessObject.Models
 
         [ForeignKey("BatchId")]
         public Batch Batch { get; set; }
+
+        // 🔹 Mối quan hệ với ExportTransactionDetail
+        public ICollection<ExportTransactionDetail> ExportTransactionDetails { get; set; }
+
+        // 🔹 Mối quan hệ với ExportWarehouseReceiptDetail (ĐÃ SỬA)
+        public ICollection<ExportWarehouseReceiptDetail> ExportWarehouseReceiptDetails { get; set; }
     }
+
 }

@@ -50,5 +50,8 @@ namespace BusinessObject.Models
         public List<Image> Images { get; set; } = new List<Image>();
 
         public int AvailableStock { get; set; }
+
+        public ICollection<ExportTransactionDetail> ExportTransactionDetail { get; set; }
+        public ICollection<ExportWarehouseReceipt> ExportWarehouseReceipt { get; set; }
     }
 }
