@@ -22,5 +22,7 @@ namespace BusinessObject.Models
 
         [ForeignKey("RequestId")]
         public RequestProduct Request { get; set; }
+        public ICollection<PaymentHistory> PaymentHistories { get; set; }
+        public ICollection<RequestExport> RequestExports { get; set; }
     }
 }

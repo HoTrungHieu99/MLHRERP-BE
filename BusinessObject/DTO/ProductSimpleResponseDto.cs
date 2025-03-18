@@ -11,5 +11,7 @@ namespace BusinessObject.DTO
         public long ProductId { get; set; }
         public string ProductName { get; set; }
         public List<string> Images { get; set; }
+
+        public DateTime CreatedAt { get; set; }
     }
 }

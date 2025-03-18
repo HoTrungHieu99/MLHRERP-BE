@@ -313,6 +313,22 @@ namespace Repo.Repository
         {
             return _context.RegisterAccounts.ToList();
         }
+
+        public async Task<long?> GetAgencyIdByUserId(Guid userId)
+        {
+            var agencyAccount = await _context.AgencyAccounts
+                .FirstOrDefaultAsync(a => a.UserId == userId); // Truy vấn bằng GUID
+
+            return agencyAccount?.AgencyId; // Trả về AgencyId (int)
+        }
+
+        public async Task<long?> GetEmployeeIdByUserId(Guid userId)
+        {
+            var employeeAccount = await _context.Employees
+                .FirstOrDefaultAsync(a => a.UserId == userId); // Truy vấn bằng GUID
+
+            return employeeAccount?.EmployeeId; // Trả về AgencyId (int)
+        }
     }
 
 
