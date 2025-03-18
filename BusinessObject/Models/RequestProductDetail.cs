@@ -15,7 +15,7 @@ namespace BusinessObject.Models
         [Key]
         public long RequestDetailId { get; set; }
 
-        public long RequestProductId { get; set; }
+        public Guid RequestProductId { get; set; }
         public long ProductId { get; set; }
         public int Quantity { get; set; }
 

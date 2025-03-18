@@ -11,7 +11,8 @@ namespace BusinessObject.Models
     public class RequestProduct
     {
         [Key]
-        public long RequestProductId { get; set; }
+        public Guid RequestProductId { get; set; } // Khóa chính
+
         public long AgencyId { get; set; }
         public long? ApprovedBy { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -23,6 +24,9 @@ namespace BusinessObject.Models
 
         [ForeignKey("ApprovedBy")]
         public Employee? ApprovedByEmployee { get; set; }
+
+        // Mối quan hệ 1-1 với Order
+        public Order Order { get; set; }
 
         public ICollection<RequestProductDetail> RequestProductDetails { get; set; }
     }

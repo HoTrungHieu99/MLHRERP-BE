@@ -18,10 +18,14 @@ namespace BusinessObject.Models
         public decimal Discount { get; set; }
         public decimal FinalPrice { get; set; }
         public string Status { get; set; } // PENDING, PROCESSING, CANCELED
-        public long RequestId { get; set; }
+        // Thêm khóa ngoại để liên kết với RequestProduct
+        public Guid RequestId { get; set; }
 
         [ForeignKey("RequestId")]
-        public RequestProduct Request { get; set; }
+        public RequestProduct RequestProduct { get; set; } // Navigation property
+
+        // Navigation property
+        public virtual List<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
         public ICollection<PaymentHistory> PaymentHistories { get; set; }
         public ICollection<RequestExport> RequestExports { get; set; }
     }

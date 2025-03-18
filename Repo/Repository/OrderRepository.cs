@@ -1,5 +1,6 @@
 ﻿using BusinessObject.Models;
 using DataAccessLayer;
+using Microsoft.EntityFrameworkCore;
 using Repo.IRepository;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,11 @@ namespace Repo.Repository
         public OrderRepository(MinhLongDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<IEnumerable<Order>> GetAllOrdersAsync()
+        {
+            return await _context.Orders.Include(o => o.OrderDetails).ToListAsync();
         }
 
         public async Task AddOrderAsync(Order order)
@@ -36,6 +42,33 @@ namespace Repo.Repository
         public async Task AddOrderDetailAsync(List<OrderDetail> orderDetails) // ✅ Thêm phương thức này
         {
             await _context.OrderDetails.AddRangeAsync(orderDetails); // 🔹 Thêm danh sách `OrderDetail` cùng lúc
+        }
+
+        public async Task<Order> GetOrderByIdAsync(Guid orderId)
+        {
+            return await _context.Orders
+                .Include(o => o.OrderDetails)
+                .FirstOrDefaultAsync(o => o.OrderId == orderId);
+        }
+
+        public async Task<RequestProduct> GetRequestProductByOrderAsync(Guid orderId)
+        {
+            var order = await GetOrderByIdAsync(orderId);
+            if (order == null) return null;
+
+            return await _context.RequestProducts
+                .FirstOrDefaultAsync(rp => rp.RequestProductId == order.RequestId);
+        }
+        public async Task SaveAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> GetTotalQuantityByOrderIdAsync(Guid orderId)
+        {
+            return await _context.OrderDetails
+                                 .Where(od => od.OrderId == orderId)
+                                 .SumAsync(od => od.Quantity);
         }
 
     }

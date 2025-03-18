@@ -34,7 +34,7 @@ namespace Services.Service
             return await _requestProductRepository.GetAllRequestsAsync();
         }
 
-        public async Task<RequestProduct> GetRequestByIdAsync(int id)
+        public async Task<RequestProduct> GetRequestByIdAsync(Guid id)
         {
             return await _requestProductRepository.GetRequestByIdAsync(id);
         }
@@ -82,67 +82,83 @@ namespace Services.Service
             await _requestProductRepository.SaveChangesAsync();
         }
 
-        public async Task ApproveRequestAsync(int requestId, long approvedBy)
+        public async Task ApproveRequestAsync(Guid requestId, long approvedBy)
         {
-            var requestProduct = await _requestProductRepository.GetRequestByIdAsync(requestId);
-            if (requestProduct == null) throw new Exception("Request not found!");
-
-            // ✅ Kiểm tra nếu đơn hàng đã được duyệt trước đó
-            if (requestProduct.RequestStatus == "Approved")
+            try
             {
-                throw new Exception("This request has already been approved and cannot be approved again.");
-            }
+                var requestProduct = await _requestProductRepository.GetRequestByIdAsync(requestId);
+                if (requestProduct == null) throw new Exception("Request not found!");
 
-            // **Cập nhật trạng thái RequestProduct**
-            requestProduct.ApprovedBy = approvedBy;
-            requestProduct.RequestStatus = "Approved";
-            requestProduct.UpdatedAt = DateTime.UtcNow;
-
-            await _requestProductRepository.UpdateRequestAsync(requestProduct);
-            await _requestProductRepository.SaveChangesAsync(); // ✅ Lưu lại trạng thái RequestProduct
-
-            // **Tạo Order từ RequestProduct**
-            var order = new Order
-            {
-                OrderDate = DateTime.UtcNow,
-                SalesAgentId = approvedBy,
-                Status = "Pending",
-                RequestId = requestId,
-                Discount = 0,
-                FinalPrice = 0
-            };
-
-            await _orderRepository.AddOrderAsync(order);
-            await _orderRepository.SaveChangesAsync(); // ✅ Lưu để lấy OrderId
-
-            decimal finalPrice = 0;
-            var orderDetails = new List<OrderDetail>();
-
-            // **Tạo từng OrderDetail và tính tổng giá trị đơn hàng**
-            foreach (var detail in requestProduct.RequestProductDetails)
-            {
-                var unitPrice = 100; // 🔹 Lấy từ bảng Product nếu cần
-                var totalAmount = detail.Quantity * unitPrice;
-
-                var orderDetail = new OrderDetail
+                // ✅ Kiểm tra nếu đơn hàng đã được duyệt trước đó
+                if (requestProduct.RequestStatus == "Approved")
                 {
-                    OrderId = order.OrderId,
-                    ProductId = detail.ProductId,
-                    Quantity = detail.Quantity,
-                    UnitPrice = unitPrice,
-                    TotalAmount = totalAmount,
-                    CreatedAt = DateTime.UtcNow
+                    throw new Exception("This request has already been approved and cannot be approved again.");
+                }
+
+                // **Cập nhật trạng thái RequestProduct**
+                requestProduct.ApprovedBy = approvedBy;
+                requestProduct.RequestStatus = "Approved";
+                requestProduct.UpdatedAt = DateTime.UtcNow;
+
+                await _requestProductRepository.UpdateRequestAsync(requestProduct);
+                await _requestProductRepository.SaveChangesAsync(); // ✅ Lưu lại trạng thái RequestProduct
+
+                // **Tạo Order từ RequestProduct**
+                var order = new Order
+                {
+                    OrderDate = DateTime.UtcNow,
+                    SalesAgentId = approvedBy,
+                    Status = "Procesing",
+                    RequestId = requestId,
+                    Discount = 0,
+                    FinalPrice = 0
                 };
 
-                finalPrice += totalAmount;
-                orderDetails.Add(orderDetail);
+                await _orderRepository.AddOrderAsync(order);
+                await _orderRepository.SaveChangesAsync(); // ✅ Lưu để lấy OrderId
+
+                decimal finalPrice = 0;
+                var orderDetails = new List<OrderDetail>();
+
+                // **Tạo từng OrderDetail và tính tổng giá trị đơn hàng**
+                foreach (var detail in requestProduct.RequestProductDetails)
+                {
+                    var unitPrice = 100; // 🔹 Lấy từ bảng Product nếu cần
+                    var totalAmount = detail.Quantity * unitPrice;
+
+                    var orderDetail = new OrderDetail
+                    {
+                        OrderId = order.OrderId,
+                        ProductId = detail.ProductId,
+                        Quantity = detail.Quantity,
+                        UnitPrice = unitPrice,
+                        TotalAmount = totalAmount,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    finalPrice += totalAmount;
+                    orderDetails.Add(orderDetail);
+                }
+
+                // ✅ Kiểm tra xem danh sách có rỗng không trước khi thêm vào database
+                if (orderDetails.Count > 0)
+                {
+                    await _orderRepository.AddOrderDetailAsync(orderDetails); // ✅ Thêm danh sách OrderDetail
+                }
+
+                order.FinalPrice = finalPrice;
+
+                await _orderRepository.UpdateOrderAsync(order); // ✅ Cập nhật tổng giá trị đơn hàng
+                await _orderRepository.SaveChangesAsync();
             }
-
-            await _orderRepository.AddOrderDetailAsync(orderDetails); // ✅ Thêm danh sách OrderDetail một lần để tối ưu
-            order.FinalPrice = finalPrice;
-
-            await _orderRepository.UpdateOrderAsync(order); // ✅ Cập nhật tổng giá trị đơn hàng
-            await _orderRepository.SaveChangesAsync();
+            catch (DbUpdateException ex) // ✅ Bắt lỗi từ Entity Framework
+            {
+                throw new Exception($"Database update failed: {ex.InnerException?.Message}", ex);
+            }
+            catch (Exception ex) // ✅ Bắt lỗi tổng quát
+            {
+                throw new Exception($"An error occurred: {ex.Message}", ex);
+            }
         }
 
     }

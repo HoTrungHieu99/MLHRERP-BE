@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class IntialDb : Migration
+    public partial class Intial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -478,8 +478,7 @@ namespace DataAccessLayer.Migrations
                 name: "RequestProduct",
                 columns: table => new
                 {
-                    RequestProductId = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RequestProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AgencyId = table.Column<long>(type: "bigint", nullable: false),
                     ApprovedBy = table.Column<long>(type: "bigint", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -622,7 +621,7 @@ namespace DataAccessLayer.Migrations
                     Discount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     FinalPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RequestId = table.Column<long>(type: "bigint", nullable: false)
+                    RequestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -641,7 +640,7 @@ namespace DataAccessLayer.Migrations
                 {
                     RequestDetailId = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RequestProductId = table.Column<long>(type: "bigint", nullable: false),
+                    RequestProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ProductId = table.Column<long>(type: "bigint", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false)
                 },
@@ -1168,7 +1167,8 @@ namespace DataAccessLayer.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Order_RequestId",
                 table: "Order",
-                column: "RequestId");
+                column: "RequestId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderDetail_OrderId",
@@ -1272,9 +1272,10 @@ namespace DataAccessLayer.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_RequestProductDetail_RequestProductId",
+                name: "IX_RequestProductDetail_RequestProductId_ProductId",
                 table: "RequestProductDetail",
-                column: "RequestProductId");
+                columns: new[] { "RequestProductId", "ProductId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_RolePermission_PermissionId",

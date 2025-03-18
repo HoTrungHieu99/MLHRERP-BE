@@ -333,10 +333,10 @@ namespace DataAccessLayer
                 .HasForeignKey(i => i.BatchId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Order>()
-                .HasOne(o => o.Request)
+            /*modelBuilder.Entity<Order>()
+                .HasOne(o => o.RequestProduct)
                 .WithMany()
-                .HasForeignKey(o => o.RequestId);
+                .HasForeignKey(o => o.RequestId);*/
 
             //request product
 
@@ -604,16 +604,27 @@ namespace DataAccessLayer
                 .HasForeignKey(wre => wre.WarehouseId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // 🔹 Thiết lập mối quan hệ 1-1 giữa Order và RequestProduct
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.RequestProduct)
+                .WithOne(rp => rp.Order)
+                .HasForeignKey<Order>(o => o.RequestId) // 🔹 FK trong Order
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade); // Khi xóa Order, RequestProduct cũng bị xóa
+
+            // Giữ nguyên quan hệ 1-N giữa Order và RequestExport (nếu cần)
             modelBuilder.Entity<RequestExport>()
                 .HasOne(re => re.Order)
                 .WithMany(o => o.RequestExports)
                 .HasForeignKey(re => re.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // ✅ Cấu hình quan hệ 1-N giữa Order và OrderDetail
             modelBuilder.Entity<OrderDetail>()
                 .HasOne(od => od.Order)
-                .WithMany()
-                .HasForeignKey(od => od.OrderId);
+                .WithMany(o => o.OrderDetails)
+                .HasForeignKey(od => od.OrderId)
+                .OnDelete(DeleteBehavior.Cascade); // ✅ Xóa Order sẽ xóa OrderDetail
 
             modelBuilder.Entity<OrderDetail>()
                 .HasOne(o => o.Product)
@@ -630,6 +641,7 @@ namespace DataAccessLayer
             modelBuilder.Entity<OrderDetail>()
                 .Property(od => od.TotalAmount)
                 .HasPrecision(18, 2);
+
 
         }
     }
