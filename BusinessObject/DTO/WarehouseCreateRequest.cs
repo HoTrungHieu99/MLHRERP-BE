@@ -21,5 +21,7 @@ namespace BusinessObject.DTO
         public string District { get; set; }  // Tên quận/huyện
         [Required]
         public string Province { get; set; }  // Tên tỉnh/thành phố
+
+        public string Note { get; set; }  // Ghi chú thêm cho kho
     }
 }

@@ -1,5 +1,7 @@
 ﻿using BusinessObject.DTO;
 using BusinessObject.Models;
+using DataAccessLayer;
+using Microsoft.EntityFrameworkCore;
 using Repo.IRepository;
 using Services.IService;
 using System;
@@ -10,61 +12,114 @@ using System.Threading.Tasks;
 
 namespace Services.Service
 {
-    /*public class ExportWarehouseReceiptService : IExportWarehouseReceiptService
+    public class ExportWarehouseReceiptService : IExportWarehouseReceiptService
     {
         private readonly IExportWarehouseReceiptRepository _repository;
+        private readonly MinhLongDbContext _context;
 
-        public ExportWarehouseReceiptService(IExportWarehouseReceiptRepository repository)
+        public ExportWarehouseReceiptService(IExportWarehouseReceiptRepository repository, MinhLongDbContext context)
         {
             _repository = repository;
+            _context = context;
         }
 
-        public async Task<ExportWarehouseReceipt> CreateExportWarehouseReceiptAsync(ExportRequest exportRequest)
+        public async Task<ExportWarehouseReceipt> CreateReceiptAsync(ExportWarehouseReceiptDTO dto)
         {
-            // Tạo phiếu xuất kho (ExportWarehouseReceipt)
-            var receipt = new ExportWarehouseReceipt
+            var warehouseProducts = await _repository.GetWarehouseProductsByIdsAsync(
+                dto.Details.Select(d => d.WarehouseProductId).ToList()
+            );
+
+            foreach (var detail in dto.Details)
             {
-                DocumentNumber = exportRequest.DocumentNumber,
-                DocumentDate = exportRequest.DocumentDate,
-                ExportDate = exportRequest.ExportDate,
-                ExportType = exportRequest.ExportType,
-                WarehouseName = exportRequest.WarehouseName,
-                ExportTransactionId = exportRequest.ExportTransactionId,
-            };
-
-            // Lưu phiếu xuất kho
-            var createdReceipt = await _repository.CreateExportWarehouseReceiptAsync(receipt);
-
-            // Tạo ExportTransaction (Giao dịch xuất kho)
-            var transaction = new ExportTransaction
-            {
-                DocumentNumber = exportRequest.DocumentNumber,
-                DocumentDate = exportRequest.DocumentDate,
-                ExportDate = exportRequest.ExportDate,
-                ExportType = exportRequest.ExportType,
-                TotalAmount = exportRequest.ProductDetails.Sum(p => p.Quantity * p.UnitPrice)
-            };
-
-            // Lưu ExportTransaction
-            var createdTransaction = await _repository.CreateExportTransactionAsync(transaction);
-
-            // Lưu các chi tiết sản phẩm trong ExportTransactionDetail
-            foreach (var product in exportRequest.ProductDetails)
-            {
-                var transactionDetail = new ExportTransactionDetail
+                var warehouseProduct = warehouseProducts.FirstOrDefault(p => p.WarehouseProductId == detail.WarehouseProductId);
+                if (warehouseProduct == null)
                 {
-                    ExportTransactionId = createdTransaction.ExportTransactionId,
-                    ProductId = product.ProductId,
-                    Quantity = product.Quantity,
-                    UnitPrice = product.UnitPrice,
-                    TotalAmount = product.Quantity * product.UnitPrice
-                };
+                    throw new Exception($"WarehouseProductId {detail.WarehouseProductId} not found in database.");
+                }
 
-                await _repository.CreateExportTransactionDetailAsync(transactionDetail);
+                if (warehouseProduct.Batch == null || string.IsNullOrEmpty(warehouseProduct.Batch.BatchCode))
+                {
+                    throw new Exception($"BatchNumber is missing for WarehouseProductId {detail.WarehouseProductId}.");
+                }
+
+                if (warehouseProduct.Quantity < detail.Quantity)
+                {
+                    throw new Exception($"Insufficient quantity for WarehouseProductId {detail.WarehouseProductId}. Available: {warehouseProduct.Quantity}, Requested: {detail.Quantity}");
+                }
             }
 
-            return createdReceipt;
+            var receiptDetails = dto.Details.Select(d =>
+            {
+                var warehouseProduct = warehouseProducts.First(p => p.WarehouseProductId == d.WarehouseProductId);
+                return new ExportWarehouseReceiptDetail
+                {
+                    WarehouseProductId = d.WarehouseProductId,
+                    ProductId = warehouseProduct.ProductId,
+                    ProductName = warehouseProduct.Product.ProductName,
+                    BatchNumber = warehouseProduct.Batch.BatchCode,
+                    Quantity = d.Quantity,
+                    UnitPrice = 0,
+                    TotalProductAmount = d.Quantity * 0,
+                    ExpiryDate = warehouseProduct.ExpirationDate
+                };
+            }).ToList();
+
+            var receipt = new ExportWarehouseReceipt
+            {
+                DocumentNumber = "EXP-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"),
+                DocumentDate = DateTime.UtcNow,
+                ExportDate = dto.ExportDate,
+                ExportType = dto.ExportType,
+                WarehouseId = dto.WarehouseId,
+                Status = "Pending",
+                TotalQuantity = receiptDetails.Sum(d => d.Quantity),
+                TotalAmount = receiptDetails.Sum(d => d.TotalProductAmount),
+                ExportWarehouseReceiptDetails = receiptDetails
+            };
+
+            return await _repository.CreateReceiptAsync(receipt);
         }
-    }*/
+
+        public async Task ApproveReceiptAsync(long id)
+        {
+            var receipt = await _repository.GetReceiptByIdAsync(id);
+            if (receipt == null) throw new Exception("Receipt not found");
+            receipt.Status = "Approved";
+
+            var warehouseProducts = await _repository.GetWarehouseProductsByIdsAsync(
+                receipt.ExportWarehouseReceiptDetails.Select(d => d.WarehouseProductId).ToList()
+            );
+
+            foreach (var detail in receipt.ExportWarehouseReceiptDetails)
+            {
+                var warehouseProduct = warehouseProducts.First(wp => wp.WarehouseProductId == detail.WarehouseProductId);
+
+                if (warehouseProduct.Quantity < detail.Quantity)
+                {
+                    throw new Exception($"Insufficient quantity in warehouse for product {warehouseProduct.ProductId}");
+                }
+
+                warehouseProduct.Quantity -= detail.Quantity;
+            }
+
+            var exportTransaction = new ExportTransaction
+            {
+                DocumentNumber = receipt.DocumentNumber,
+                DocumentDate = receipt.DocumentDate,
+                ExportDate = receipt.ExportDate,
+                ExportType = receipt.ExportType,
+                WarehouseId = receipt.WarehouseId,
+                Note = "Approved Export",
+                ExportTransactionDetail = receipt.ExportWarehouseReceiptDetails.Select(d => new ExportTransactionDetail
+                {
+                    WarehouseProductId = d.WarehouseProductId,
+                    Quantity = d.Quantity
+                }).ToList()
+            };
+
+            _context.ExportTransactions.Add(exportTransaction);
+            await _context.SaveChangesAsync();
+        }
+    }
 
 }

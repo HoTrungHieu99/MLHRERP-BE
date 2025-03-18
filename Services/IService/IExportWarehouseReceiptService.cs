@@ -8,9 +8,10 @@ using System.Threading.Tasks;
 
 namespace Services.IService
 {
-    /*public interface IExportWarehouseReceiptService
+    public interface IExportWarehouseReceiptService
     {
-        Task<ExportWarehouseReceipt> CreateExportWarehouseReceiptAsync(ExportRequest exportRequest);
-    }*/
+        Task<ExportWarehouseReceipt> CreateReceiptAsync(ExportWarehouseReceiptDTO dto);
+        Task ApproveReceiptAsync(long id);
+    }
 
 }

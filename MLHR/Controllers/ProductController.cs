@@ -20,7 +20,6 @@ namespace MLHR.Controllers
 
 
         [HttpGet("product")]
-        [Authorize(Roles = "4,2")]
         public async Task<IActionResult> GetProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var products = await _service.GetProductsAsync(page, pageSize);
@@ -32,7 +31,6 @@ namespace MLHR.Controllers
         }
 
         [HttpGet("product/{id}")]
-        [Authorize(Roles = "4,2")]
         public async Task<ActionResult<ProductResponseDto>> GetProduct(long id)
         {
             var product = await _service.GetProductByIdAsync(id);
@@ -89,7 +87,6 @@ namespace MLHR.Controllers
         }
 
         [HttpGet("by-category/{categoryId}")]
-        [Authorize(Roles = "4,2")]
         public async Task<ActionResult<IEnumerable<ProductSimpleResponseDto>>> GetProductsByCategory(long categoryId)
         {
             var products = await _service.GetProductsByCategoryIdAsync(categoryId);

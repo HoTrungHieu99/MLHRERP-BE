@@ -28,6 +28,7 @@ namespace MLHR.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "2")]
         public async Task<IActionResult> CreateRequest([FromBody] CreateRequestProductDto requestDto)
         {
             if (requestDto == null || requestDto.Products == null || requestDto.Products.Count == 0)
@@ -68,6 +69,7 @@ namespace MLHR.Controllers
 
         [Authorize] // Xác thực người dùng trước
         [HttpPut("{id}/approve")]
+        [Authorize(Roles = "4")]
         public async Task<IActionResult> ApproveRequest(Guid id)
         {
             try

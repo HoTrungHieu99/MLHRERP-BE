@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Services.IService;
 
 namespace MLHR.Controllers
@@ -59,6 +60,7 @@ namespace MLHR.Controllers
 
         // API thanh toán đơn hàng
         [HttpPut("{orderId}/payment")]
+        [Authorize(Roles = "2")]
         public async Task<IActionResult> ProcessPayment(Guid orderId)
         {
             var result = await _orderService.ProcessPaymentAsync(orderId);
@@ -68,6 +70,7 @@ namespace MLHR.Controllers
 
         // ✅ API để hủy đơn hàng
         [HttpPut("{orderId}/cancel")]
+        [Authorize(Roles = "2")]
         public async Task<IActionResult> CancelOrder(Guid orderId)
         {
             try

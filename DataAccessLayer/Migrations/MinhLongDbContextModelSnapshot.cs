@@ -242,7 +242,7 @@ namespace DataAccessLayer.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("NVARCHAR(255)");
 
                     b.Property<string>("Position")
                         .IsRequired()
@@ -860,7 +860,7 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("NVARCHAR(255)");
 
                     b.Property<bool>("IsApproved")
                         .HasColumnType("bit");
