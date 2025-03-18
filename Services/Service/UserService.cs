@@ -554,6 +554,11 @@ namespace Services.Service
         {
             return await _userRepository.GetAgencyIdByUserId(userId);
         }
+
+        public async Task<long?> GetEmployeeIdByUserId(Guid userId)
+        {
+            return await _userRepository.GetEmployeeIdByUserId(userId);
+        }
     }
 
 }

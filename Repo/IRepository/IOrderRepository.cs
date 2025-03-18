@@ -13,6 +13,6 @@ namespace Repo.IRepository
         Task UpdateOrderAsync(Order order);
         Task SaveChangesAsync();
 
-        Task AddOrderDetailAsync(OrderDetail orderDetail);
+        Task AddOrderDetailAsync(List<OrderDetail> orderDetails);
     }
 }

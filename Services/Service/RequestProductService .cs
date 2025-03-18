@@ -9,6 +9,7 @@ using DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using Repo.IRepository;
 using Services.IService;
+using System.Linq;
 
 namespace Services.Service
 {
@@ -38,29 +39,23 @@ namespace Services.Service
             return await _requestProductRepository.GetRequestByIdAsync(id);
         }
 
-        public async Task CreateOrUpdateRequestAsync(CreateRequestProductDto requestDto, int agencyId)
+        public async Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails)
         {
-            // 🔹 Kiểm tra nếu Agency có đơn hàng `Approved` trong 24 giờ qua
-            bool hasApprovedOrder = await _requestProductRepository.HasApprovedRequestInLast24Hours(agencyId);
-            if (hasApprovedOrder)
-            {
-                throw new Exception("You must wait 24 hours after your last approved order before creating a new one.");
-            }
+            var agencyId = requestProduct.AgencyId;
 
-            // 🔹 Kiểm tra nếu đã có RequestProduct Pending
+            // 🔹 Kiểm tra nếu đã có RequestProduct Pending của Agency
             var existingRequest = await _requestProductRepository.GetPendingRequestByAgencyAsync(agencyId);
 
             if (existingRequest != null)
             {
-                // 🔹 Cập nhật `RequestProductDetail` nếu sản phẩm đã có
-                foreach (var newItem in requestDto.Products)
+                foreach (var newItem in requestDetails)
                 {
                     var existingDetail = existingRequest.RequestProductDetails
-                        .Find(d => d.ProductId == newItem.ProductId);
+                        .FirstOrDefault(d => d.ProductId == newItem.ProductId);
 
                     if (existingDetail != null)
                     {
-                        existingDetail.Quantity += newItem.Quantity; // ✅ Cập nhật số lượng
+                        existingDetail.Quantity += newItem.Quantity; // ✅ Cập nhật số lượng nếu sản phẩm đã tồn tại
                     }
                     else
                     {
@@ -76,67 +71,62 @@ namespace Services.Service
             }
             else
             {
-                // 🔹 Tạo RequestProduct mới
-                var newRequest = new RequestProduct
-                {
-                    AgencyId = agencyId,
-                    RequestStatus = "Pending",
-                    CreatedAt = DateTime.UtcNow, // ✅ Lưu `CreatedAt` ở RequestProduct
-                    RequestProductDetails = new List<RequestProductDetail>()
-                };
+                // 🔹 Nếu không có đơn hàng Pending, tạo đơn mới
+                requestProduct.CreatedAt = DateTime.UtcNow;
+                requestProduct.RequestStatus = "Pending";
+                requestProduct.RequestProductDetails = requestDetails;
 
-                foreach (var item in requestDto.Products)
-                {
-                    newRequest.RequestProductDetails.Add(new RequestProductDetail
-                    {
-                        ProductId = item.ProductId,
-                        Quantity = item.Quantity
-                    });
-                }
-
-                await _requestProductRepository.AddRequestAsync(newRequest);
+                await _requestProductRepository.AddRequestAsync(requestProduct);
             }
 
             await _requestProductRepository.SaveChangesAsync();
         }
 
-        public async Task ApproveRequestAsync(int requestId, int approvedBy)
+        public async Task ApproveRequestAsync(int requestId, long approvedBy)
         {
             var requestProduct = await _requestProductRepository.GetRequestByIdAsync(requestId);
             if (requestProduct == null) throw new Exception("Request not found!");
 
+            // ✅ Kiểm tra nếu đơn hàng đã được duyệt trước đó
+            if (requestProduct.RequestStatus == "Approved")
+            {
+                throw new Exception("This request has already been approved and cannot be approved again.");
+            }
+
+            // **Cập nhật trạng thái RequestProduct**
             requestProduct.ApprovedBy = approvedBy;
             requestProduct.RequestStatus = "Approved";
             requestProduct.UpdatedAt = DateTime.UtcNow;
 
             await _requestProductRepository.UpdateRequestAsync(requestProduct);
-            await _requestProductRepository.SaveChangesAsync();
+            await _requestProductRepository.SaveChangesAsync(); // ✅ Lưu lại trạng thái RequestProduct
 
-            // **Bước 1: Tạo Order trước**
+            // **Tạo Order từ RequestProduct**
             var order = new Order
             {
                 OrderDate = DateTime.UtcNow,
                 SalesAgentId = approvedBy,
                 Status = "Pending",
-                RequestId = requestId, // Gán RequestId vào Order
+                RequestId = requestId,
                 Discount = 0,
                 FinalPrice = 0
             };
 
             await _orderRepository.AddOrderAsync(order);
-            await _orderRepository.SaveChangesAsync(); // Lưu để lấy OrderId
+            await _orderRepository.SaveChangesAsync(); // ✅ Lưu để lấy OrderId
 
             decimal finalPrice = 0;
+            var orderDetails = new List<OrderDetail>();
 
-            // **Bước 2: Tạo từng OrderDetail và tính tổng giá trị đơn hàng**
+            // **Tạo từng OrderDetail và tính tổng giá trị đơn hàng**
             foreach (var detail in requestProduct.RequestProductDetails)
             {
-                var unitPrice = 100; // Lấy từ bảng Product nếu cần
+                var unitPrice = 100; // 🔹 Lấy từ bảng Product nếu cần
                 var totalAmount = detail.Quantity * unitPrice;
 
                 var orderDetail = new OrderDetail
                 {
-                    OrderId = order.OrderId, // Sử dụng OrderId đã tạo
+                    OrderId = order.OrderId,
                     ProductId = detail.ProductId,
                     Quantity = detail.Quantity,
                     UnitPrice = unitPrice,
@@ -145,14 +135,15 @@ namespace Services.Service
                 };
 
                 finalPrice += totalAmount;
-
-                await _orderRepository.AddOrderDetailAsync(orderDetail);
+                orderDetails.Add(orderDetail);
             }
 
-            // **Cập nhật FinalPrice cho Order**
+            await _orderRepository.AddOrderDetailAsync(orderDetails); // ✅ Thêm danh sách OrderDetail một lần để tối ưu
             order.FinalPrice = finalPrice;
-            await _orderRepository.UpdateOrderAsync(order);
+
+            await _orderRepository.UpdateOrderAsync(order); // ✅ Cập nhật tổng giá trị đơn hàng
             await _orderRepository.SaveChangesAsync();
         }
+
     }
 }

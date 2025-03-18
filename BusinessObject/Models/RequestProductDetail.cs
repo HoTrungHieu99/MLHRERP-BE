@@ -5,9 +5,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace BusinessObject.Models
 {
+    [Index(nameof(RequestProductId), nameof(ProductId), IsUnique = true)]
     public class RequestProductDetail
     {
         [Key]

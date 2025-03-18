@@ -33,10 +33,10 @@ namespace Repo.Repository
             await _context.SaveChangesAsync();
         }
 
-        public async Task AddOrderDetailAsync(OrderDetail orderDetail)
+        public async Task AddOrderDetailAsync(List<OrderDetail> orderDetails) // ✅ Thêm phương thức này
         {
-            await _context.OrderDetails.AddAsync(orderDetail);
-            await _context.SaveChangesAsync();
+            await _context.OrderDetails.AddRangeAsync(orderDetails); // 🔹 Thêm danh sách `OrderDetail` cùng lúc
         }
+
     }
 }

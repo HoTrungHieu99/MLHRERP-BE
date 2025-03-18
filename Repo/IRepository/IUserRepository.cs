@@ -48,7 +48,7 @@ namespace Repo.IRepository
 
         Task<long?> GetAgencyIdByUserId(Guid userId);
 
-
+        Task<long?> GetEmployeeIdByUserId(Guid userId);
     }
 
 }

@@ -28,7 +28,7 @@ namespace Repo.Repository
         }
 
         // 🔹 Lấy đơn hàng Pending của Agency
-        public async Task<RequestProduct> GetPendingRequestByAgencyAsync(int agencyId)
+        public async Task<RequestProduct> GetPendingRequestByAgencyAsync(long agencyId)
         {
             return await _context.RequestProducts
                 .Include(r => r.RequestProductDetails)
@@ -36,12 +36,12 @@ namespace Repo.Repository
         }
 
         // 🔹 Kiểm tra nếu Agency có đơn hàng Approved trong 24 giờ qua
-        public async Task<bool> HasApprovedRequestInLast24Hours(int agencyId)
+        public async Task<bool> HasApprovedRequestInLast24Hours(long agencyId)
         {
             return await _context.RequestProducts
-                .AnyAsync(r => r.AgencyId == agencyId &&
-                               r.RequestStatus == "Approved" &&
-                               r.CreatedAt >= DateTime.UtcNow.AddHours(-24));
+            .AnyAsync(r => r.AgencyId == agencyId &&
+                        r.RequestStatus == "Approved" &&
+                        (r.UpdatedAt ?? r.CreatedAt) >= DateTime.UtcNow.AddHours(-24));
         }
 
         public async Task<RequestProduct> GetRequestByIdAsync(int id)
@@ -59,6 +59,7 @@ namespace Repo.Repository
 
         public async Task UpdateRequestAsync(RequestProduct requestProduct)
         {
+            requestProduct.UpdatedAt = DateTime.UtcNow; // ✅ Gán thời gian hiện tại trước khi update
             _context.RequestProducts.Update(requestProduct);
         }
 

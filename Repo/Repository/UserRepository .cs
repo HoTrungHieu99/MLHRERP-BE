@@ -321,6 +321,14 @@ namespace Repo.Repository
 
             return agencyAccount?.AgencyId; // Trả về AgencyId (int)
         }
+
+        public async Task<long?> GetEmployeeIdByUserId(Guid userId)
+        {
+            var employeeAccount = await _context.Employees
+                .FirstOrDefaultAsync(a => a.UserId == userId); // Truy vấn bằng GUID
+
+            return employeeAccount?.EmployeeId; // Trả về AgencyId (int)
+        }
     }
 
 

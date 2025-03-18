@@ -10,8 +10,8 @@ namespace Repo.IRepository
     public interface IRequestProductRepository
     {
         Task<IEnumerable<RequestProduct>> GetAllRequestsAsync();
-        Task<RequestProduct> GetPendingRequestByAgencyAsync(int agencyId);
-        Task<bool> HasApprovedRequestInLast24Hours(int agencyId);
+        Task<RequestProduct> GetPendingRequestByAgencyAsync(long agencyId);
+        Task<bool> HasApprovedRequestInLast24Hours(long agencyId);
         Task<RequestProduct> GetRequestByIdAsync(int id);
         Task AddRequestAsync(RequestProduct requestProduct);
         Task UpdateRequestAsync(RequestProduct requestProduct);

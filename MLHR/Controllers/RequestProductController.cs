@@ -66,12 +66,31 @@ namespace MLHR.Controllers
             return Ok(requestProduct);
         }
 
-        [Authorize(Roles = "SALE_MANAGER")]
-        [HttpPost("{id}/approve")]
-        public async Task<IActionResult> ApproveRequest(int id, [FromQuery] int approvedBy)
+        [Authorize(Roles = "4")]
+        [HttpPut("{id}/approve")]
+        public async Task<IActionResult> ApproveRequest(int id)
         {
-            await _requestProductService.ApproveRequestAsync(id, approvedBy);
-            return Ok(new { message = "Request approved and Order created!" });
+            try
+            {
+                // **Lấy UserId từ token dưới dạng GUID**
+                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+                // **Gọi Service để lấy AgencyId từ UserId**
+                var employeeId = await _userService.GetEmployeeIdByUserId(userId);
+                if (!employeeId.HasValue)
+                {
+                    return BadRequest("User does not belong to any employee.");
+                }
+
+                // ✅ Ép kiểu `agencyId` từ `long?` thành `long`
+                await _requestProductService.ApproveRequestAsync(id, employeeId.Value);
+
+                return Ok(new { message = "Request approved and Order created successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
     }
 }

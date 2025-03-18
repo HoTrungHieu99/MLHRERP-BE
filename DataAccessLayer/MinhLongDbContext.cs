@@ -557,6 +557,11 @@ namespace DataAccessLayer
                 .HasForeignKey(pt => pt.PaymentHistoryId)
                 .OnDelete(DeleteBehavior.Cascade); // Khi xóa PaymentHistory, xóa tất cả PaymentTransaction liên quan
 
+            // **Tạo Unique Index trên RequestProductId và ProductId**
+            modelBuilder.Entity<RequestProductDetail>()
+                .HasIndex(d => new { d.RequestProductId, d.ProductId })
+                .IsUnique();
+
             modelBuilder.Entity<PaymentTransaction>()
                 .Property(pt => pt.Amount)
                 .HasColumnType("decimal(10,2)");
