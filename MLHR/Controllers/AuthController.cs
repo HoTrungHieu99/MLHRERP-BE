@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.IService;
 using Services.Service;
+using System.Security.Claims;
 
 namespace MLHR.Controllers
 {
@@ -53,12 +54,44 @@ namespace MLHR.Controllers
             }
         }
 
-        [HttpPut("user/{userId}")]
-        public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UpdateUserRequest request)
+        [Authorize]
+        [HttpPut("user/{id?}")] // ✅ `id` là tùy chọn (nullable)
+        public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserRequest request)
         {
             try
             {
-                bool isUpdated = await _userService.UpdateUserAccountAsync(userId, request);
+                // 🔹 Lấy UserId & Role từ Token
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
+
+                if (string.IsNullOrEmpty(userIdClaim) || string.IsNullOrEmpty(roleClaim))
+                {
+                    return Unauthorized(new { message = "User is not authenticated." });
+                }
+
+                Guid userId = Guid.Parse(userIdClaim); // ✅ Chuyển đổi UserId từ Token
+                int role = int.Parse(roleClaim); // ✅ Chuyển Role từ Token
+
+                // ✅ Nếu `id` là "me" hoặc rỗng, tự động lấy UserId từ Token
+                if (string.IsNullOrEmpty(id) || id.ToLower() == "me")
+                {
+                    id = userId.ToString(); // Tự động gán UserId từ Token
+                }
+
+                // ✅ Chuyển đổi `id` sang GUID (nếu không phải "me")
+                if (!Guid.TryParse(id, out Guid targetUserId))
+                {
+                    return BadRequest(new { message = "Invalid User ID format." });
+                }
+
+                // ✅ Nếu không phải Admin và User cố cập nhật người khác -> Lỗi
+                if (role != 1 && targetUserId != userId)
+                {
+                    return Unauthorized(new { message = "You can only update your own account." });
+                }
+
+                // 🔹 Gọi Service để cập nhật User
+                bool isUpdated = await _userService.UpdateUserAccountAsync(targetUserId, request);
                 if (!isUpdated)
                     return BadRequest(new { message = "Update failed!" });
 
@@ -69,6 +102,8 @@ namespace MLHR.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+
 
         /*[HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
