@@ -24,5 +24,7 @@ namespace BusinessObject.DTO
 
         [Required]
         public string Ward { get; set; }  // Tên phường/xã
+
+        public string Note { get; set; }  // Ghi chú thêm cho kho
     }
 }
