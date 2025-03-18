@@ -9,6 +9,7 @@ namespace Repo.IRepository
 {
     public interface IExportRepository
     {
+        Task<List<RequestExport>> GetAllRequestExportsAsync();
         Task AddExportAsync(RequestExport export);
         Task AddExportDetailsAsync(List<RequestExportDetail> exportDetails);
         Task SaveChangesAsync();
