@@ -42,6 +42,7 @@ namespace Repo.IRepository
         Task<UserRole> GetUserRoleByUserIdAsync(Guid userId);
         Task<bool> UpdateUserRoleAsync(UserRole userRole);
         Task<User> GetUserByUsernameAsync(string username);
+
         List<UserRole> GetUserRoles(Guid userId);
 
         Task<List<RegisterAccount>> GetRegisterAccount();
@@ -49,6 +50,7 @@ namespace Repo.IRepository
         Task<long?> GetAgencyIdByUserId(Guid userId);
 
         Task<long?> GetEmployeeIdByUserId(Guid userId);
+
     }
 
 }

@@ -14,6 +14,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using MailKit;
 
 namespace Services.Service
 {
@@ -21,11 +22,13 @@ namespace Services.Service
     {
         private readonly IUserRepository _userRepository;
         private readonly JwtService _jwtService;
+        private readonly IEmailService _mailService;
 
-        public UserService(IUserRepository userRepository, JwtService jwtService)
+        public UserService(IUserRepository userRepository, JwtService jwtService, IEmailService mailService)
         {
             _userRepository = userRepository;
             _jwtService = jwtService;
+            _mailService = mailService;
         }
 
 
@@ -208,6 +211,10 @@ namespace Services.Service
         // ✅ Duyệt tài khoản và chuyển dữ liệu từ RegisterAccount vào User
         public async Task<bool> ApproveUserAsync(int registerId)
         {
+            RegisterAccount registerUser = await _userRepository.GetRegisterAccountByIdAsync(registerId);
+
+            _mailService.SendEmailRegisterAccountAsync(registerUser.Email, "Active Account SuccessFully!", "Hello, New Guy");
+
             // ✅ Gọi Repo để duyệt tài khoản
             return await _userRepository.ApproveUserAsync(registerId);
         }
