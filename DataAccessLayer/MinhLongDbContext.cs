@@ -358,7 +358,7 @@ namespace DataAccessLayer
                 .HasForeignKey(r => r.AgencyId)
                 .OnDelete(DeleteBehavior.NoAction); // Assuming Request is linked to an AgencyAccount
 
-            modelBuilder.Entity<RequestProductDetail>()
+            /*modelBuilder.Entity<RequestProductDetail>()
                .HasIndex(d => d.ProductId)
                .IsUnique();
 
@@ -366,7 +366,14 @@ namespace DataAccessLayer
                 .HasOne(r => r.Product)
                 .WithMany()
                 .HasForeignKey(r => r.ProductId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict);*/
+
+            // Cấu hình quan hệ 1-N giữa Product và ProductDetail
+            modelBuilder.Entity<RequestProductDetail>()
+                .HasOne(pd => pd.Product)
+                .WithMany(p => p.RequestProductDetail)
+                .HasForeignKey(pd => pd.ProductId)
+                .OnDelete(DeleteBehavior.Cascade); // Khi xóa Product, xóa luôn ProductDetail
 
             modelBuilder.Entity<OrderDetail>()
                 .Property(od => od.UnitPrice)
@@ -632,10 +639,10 @@ namespace DataAccessLayer
                 .HasForeignKey(o => o.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Product>()
+            /*modelBuilder.Entity<Product>()
                 .HasOne(p => p.RequestProductDetail)
                 .WithOne(d => d.Product)
-                .HasForeignKey<RequestProductDetail>(d => d.ProductId);
+                .HasForeignKey<RequestProductDetail>(d => d.ProductId);*/
            
 
             modelBuilder.Entity<OrderDetail>()
