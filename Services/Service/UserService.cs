@@ -76,6 +76,29 @@ namespace Services.Service
             {
                 throw new ArgumentException("Invalid email! Must contain '@'!");
             }
+            if (string.IsNullOrWhiteSpace(request.Password))
+            {
+                throw new ArgumentException("Password cannot be empty!");
+            }
+
+            // ✅ Kiểm tra độ dài tối thiểu 8 ký tự
+            if (request.Password.Length < 8)
+            {
+                throw new ArgumentException("Password must be at least 8 characters long!");
+            }
+
+            // ✅ Kiểm tra có ít nhất một chữ cái (a-z hoặc A-Z)
+            if (!request.Password.Any(char.IsLetter))
+            {
+                throw new ArgumentException("Password must contain at least one letter (a-z, A-Z)!");
+            }
+
+            // ✅ Kiểm tra có ít nhất một ký tự đặc biệt
+            if (!Regex.IsMatch(request.Password, @"[\W_]"))  // `\W` đại diện cho ký tự không phải chữ cái hoặc số
+            {
+                throw new ArgumentException("Password must contain at least one special character (@, #, $, etc.)!");
+            }
+
 
             // ✅ Kiểm tra số điện thoại hợp lệ (chỉ khi có dữ liệu)
             if (string.IsNullOrWhiteSpace(request.Phone) || !Regex.IsMatch(request.Phone, @"^0\d{9}$"))
@@ -158,12 +181,14 @@ namespace Services.Service
             request.DistrictName = request.DistrictName?.Trim();
             request.ProvinceName = request.ProvinceName?.Trim();
             request.AgencyName = request.AgencyName?.Trim();
+            request.Password = request.Password?.Trim();
 
             // ✅ Tạo đối tượng RegisterAccount
             var registerAccount = new RegisterAccount
             {
                 Username = request.Username?.Trim(),
                 Email = request.Email?.Trim(),
+                Password = request.Password?.Trim(),
                 Phone = request.Phone?.Trim(),
                 UserType = request.UserType,
                 FullName = request.FullName,
@@ -517,7 +542,7 @@ namespace Services.Service
 
             // Tạo JWT Token
             var token = _jwtService.GenerateJwtToken(user, roleId);
-            return new { roleName, token };
+            return new { roleName, roleId, token };
         }
 
         public async Task<List<RegisterAccount>> GetRegisterAccount()

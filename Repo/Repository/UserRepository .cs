@@ -42,7 +42,7 @@ namespace Repo.Repository
             try
             {
                 // ✅ Tạo mật khẩu ngẫu nhiên 9 ký tự
-                string rawPassword = PasswordHelper.GenerateRandomPassword();
+                string rawPassword = registerAccount.Password;
 
                 //registerAccount.Password = BCrypt.Net.BCrypt.HashPassword(rawPassword);
                 // ✅ Kiểm tra nếu Username, Email hoặc Phone đã tồn tại

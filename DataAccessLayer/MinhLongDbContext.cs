@@ -85,6 +85,7 @@ namespace DataAccessLayer
             modelBuilder.Entity<AgencyAccount>().ToTable("AgencyAccount");
             modelBuilder.Entity<AgencyLevel>().ToTable("AgencyLevel");
             modelBuilder.Entity<AgencyAccountLevel>().ToTable("AgencyAccountLevel");
+            modelBuilder.Entity<RegisterAccount>().ToTable("RegisterAccount");
             modelBuilder.Entity<Province>().ToTable("Province");
             modelBuilder.Entity<District>().ToTable("District");
             modelBuilder.Entity<Ward>().ToTable("Ward");
@@ -417,13 +418,6 @@ namespace DataAccessLayer
                 .HasOne(ewrd => ewrd.WarehouseProduct)
                 .WithMany()
                 .HasForeignKey(ewrd => ewrd.WarehouseProductId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // 🔹 ExportWarehouseReceiptDetail ↔ Product (1-Nhiều)
-            modelBuilder.Entity<ExportWarehouseReceiptDetail>()
-                .HasOne(ewrd => ewrd.Product)
-                .WithMany()
-                .HasForeignKey(ewrd => ewrd.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // 🔹 7. WarehouseLedger ↔ Warehouse (1-Nhiều)
