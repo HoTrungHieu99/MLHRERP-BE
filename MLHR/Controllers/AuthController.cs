@@ -17,7 +17,7 @@ namespace MLHR.Controllers
             _userService = userService;
         }
 
-        /// <summary>
+        /*/// <summary>
         /// Đăng nhập bằng Email & Password
         /// </summary>
         [HttpPost("auth/login")]
@@ -32,7 +32,7 @@ namespace MLHR.Controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
-        }
+        }*/
 
         [HttpPost("auth/logout")]
         public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
