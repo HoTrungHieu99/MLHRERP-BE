@@ -37,6 +37,7 @@ namespace Services.Service
                 CreatedDate = p.CreatedDate,
                 UpdatedBy = p.UpdatedBy,
                 UpdatedDate = p.UpdatedDate,
+                AvailableStock = p.AvailableStock,
                 Images = p.Images.Select(img => img.ImageUrl).ToList()
             }).ToList();
         }
@@ -60,7 +61,7 @@ namespace Services.Service
                 CreatedDate = product.CreatedDate,
                 UpdatedBy = product.UpdatedBy,
                 UpdatedDate = product.UpdatedDate,
-
+                AvailableStock = product.AvailableStock,
                 // ✅ Lấy danh sách URL hình ảnh từ database
                 Images = product.Images.Select(img => img.ImageUrl).ToList()
             };

@@ -46,6 +46,8 @@ namespace Repo.IRepository
 
         Task<List<RegisterAccount>> GetRegisterAccount();
 
+        Task<long?> GetAgencyIdByUserId(Guid userId);
+
 
     }
 

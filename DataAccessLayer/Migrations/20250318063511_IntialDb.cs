@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateRegisterTable : Migration
+    public partial class IntialDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -481,11 +481,9 @@ namespace DataAccessLayer.Migrations
                     RequestProductId = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     AgencyId = table.Column<long>(type: "bigint", nullable: false),
-                    ProductId = table.Column<long>(type: "bigint", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
                     ApprovedBy = table.Column<long>(type: "bigint", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     RequestStatus = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -501,12 +499,6 @@ namespace DataAccessLayer.Migrations
                         column: x => x.ApprovedBy,
                         principalTable: "Employee",
                         principalColumn: "EmployeeId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_RequestProduct_Product_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Product",
-                        principalColumn: "ProductId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -624,7 +616,7 @@ namespace DataAccessLayer.Migrations
                 name: "Order",
                 columns: table => new
                 {
-                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
                     OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     SalesAgentId = table.Column<long>(type: "bigint", nullable: false),
                     Discount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
@@ -638,6 +630,33 @@ namespace DataAccessLayer.Migrations
                     table.ForeignKey(
                         name: "FK_Order_RequestProduct_RequestId",
                         column: x => x.RequestId,
+                        principalTable: "RequestProduct",
+                        principalColumn: "RequestProductId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RequestProductDetail",
+                columns: table => new
+                {
+                    RequestDetailId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RequestProductId = table.Column<long>(type: "bigint", nullable: false),
+                    ProductId = table.Column<long>(type: "bigint", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RequestProductDetail", x => x.RequestDetailId);
+                    table.ForeignKey(
+                        name: "FK_RequestProductDetail_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "ProductId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RequestProductDetail_RequestProduct_RequestProductId",
+                        column: x => x.RequestProductId,
                         principalTable: "RequestProduct",
                         principalColumn: "RequestProductId",
                         onDelete: ReferentialAction.Cascade);
@@ -705,6 +724,105 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OrderDetail",
+                columns: table => new
+                {
+                    OrderDetailId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
+                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProductId = table.Column<long>(type: "bigint", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrderDetail", x => x.OrderDetailId);
+                    table.ForeignKey(
+                        name: "FK_OrderDetail_Order_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Order",
+                        principalColumn: "OrderId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OrderDetail_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "ProductId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PaymentHistory",
+                columns: table => new
+                {
+                    PaymentHistoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
+                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    SerieNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PrePaymentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    RemainingDebtAmount = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PaymentHistory", x => x.PaymentHistoryId);
+                    table.ForeignKey(
+                        name: "FK_PaymentHistory_Order_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Order",
+                        principalColumn: "OrderId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PaymentHistory_PaymentHistory_PrePaymentId",
+                        column: x => x.PrePaymentId,
+                        principalTable: "PaymentHistory",
+                        principalColumn: "PaymentHistoryId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RequestExport",
+                columns: table => new
+                {
+                    RequestExportId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RequestedBy = table.Column<long>(type: "bigint", nullable: false),
+                    RequestDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ApprovedBy = table.Column<long>(type: "bigint", nullable: true),
+                    ApprovedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RequestExport", x => x.RequestExportId);
+                    table.ForeignKey(
+                        name: "FK_RequestExport_Employee_ApprovedBy",
+                        column: x => x.ApprovedBy,
+                        principalTable: "Employee",
+                        principalColumn: "EmployeeId");
+                    table.ForeignKey(
+                        name: "FK_RequestExport_Employee_RequestedBy",
+                        column: x => x.RequestedBy,
+                        principalTable: "Employee",
+                        principalColumn: "EmployeeId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RequestExport_Order_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Order",
+                        principalColumn: "OrderId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Batch",
                 columns: table => new
                 {
@@ -735,6 +853,84 @@ namespace DataAccessLayer.Migrations
                         principalTable: "Product",
                         principalColumn: "ProductId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PaymentTransaction",
+                columns: table => new
+                {
+                    TransactionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
+                    PaymentHistoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
+                    PaymentStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TransactionReference = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PaymentTransaction", x => x.TransactionId);
+                    table.ForeignKey(
+                        name: "FK_PaymentTransaction_PaymentHistory_PaymentHistoryId",
+                        column: x => x.PaymentHistoryId,
+                        principalTable: "PaymentHistory",
+                        principalColumn: "PaymentHistoryId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RequestExportDetail",
+                columns: table => new
+                {
+                    RequestItemId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RequestExportId = table.Column<int>(type: "int", nullable: false),
+                    ProductId = table.Column<long>(type: "bigint", nullable: false),
+                    RequestedQuantity = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RequestExportDetail", x => x.RequestItemId);
+                    table.ForeignKey(
+                        name: "FK_RequestExportDetail_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "ProductId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RequestExportDetail_RequestExport_RequestExportId",
+                        column: x => x.RequestExportId,
+                        principalTable: "RequestExport",
+                        principalColumn: "RequestExportId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WarehouseRequestExport",
+                columns: table => new
+                {
+                    WarehouseRequestExportId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RequestExportId = table.Column<int>(type: "int", nullable: false),
+                    WarehouseId = table.Column<long>(type: "bigint", nullable: false),
+                    QuantityRequested = table.Column<int>(type: "int", nullable: false),
+                    QuantityApproved = table.Column<int>(type: "int", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WarehouseRequestExport", x => x.WarehouseRequestExportId);
+                    table.ForeignKey(
+                        name: "FK_WarehouseRequestExport_RequestExport_RequestExportId",
+                        column: x => x.RequestExportId,
+                        principalTable: "RequestExport",
+                        principalColumn: "RequestExportId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_WarehouseRequestExport_Warehouse_WarehouseId",
+                        column: x => x.WarehouseId,
+                        principalTable: "Warehouse",
+                        principalColumn: "WarehouseId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -975,6 +1171,31 @@ namespace DataAccessLayer.Migrations
                 column: "RequestId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrderDetail_OrderId",
+                table: "OrderDetail",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderDetail_ProductId",
+                table: "OrderDetail",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentHistory_OrderId",
+                table: "PaymentHistory",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentHistory_PrePaymentId",
+                table: "PaymentHistory",
+                column: "PrePaymentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentTransaction_PaymentHistoryId",
+                table: "PaymentTransaction",
+                column: "PaymentHistoryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Product_CategoryId",
                 table: "Product",
                 column: "CategoryId");
@@ -1010,6 +1231,31 @@ namespace DataAccessLayer.Migrations
                 column: "UpdatedBy");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RequestExport_ApprovedBy",
+                table: "RequestExport",
+                column: "ApprovedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RequestExport_OrderId",
+                table: "RequestExport",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RequestExport_RequestedBy",
+                table: "RequestExport",
+                column: "RequestedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RequestExportDetail_ProductId",
+                table: "RequestExportDetail",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RequestExportDetail_RequestExportId",
+                table: "RequestExportDetail",
+                column: "RequestExportId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RequestProduct_AgencyId",
                 table: "RequestProduct",
                 column: "AgencyId");
@@ -1020,9 +1266,15 @@ namespace DataAccessLayer.Migrations
                 column: "ApprovedBy");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RequestProduct_ProductId",
-                table: "RequestProduct",
-                column: "ProductId");
+                name: "IX_RequestProductDetail_ProductId",
+                table: "RequestProductDetail",
+                column: "ProductId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RequestProductDetail_RequestProductId",
+                table: "RequestProductDetail",
+                column: "RequestProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RolePermission_PermissionId",
@@ -1095,6 +1347,16 @@ namespace DataAccessLayer.Migrations
                 name: "IX_WarehouseReceipt_WarehouseId",
                 table: "WarehouseReceipt",
                 column: "WarehouseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WarehouseRequestExport_RequestExportId",
+                table: "WarehouseRequestExport",
+                column: "RequestExportId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WarehouseRequestExport_WarehouseId",
+                table: "WarehouseRequestExport",
+                column: "WarehouseId");
         }
 
         /// <inheritdoc />
@@ -1113,10 +1375,19 @@ namespace DataAccessLayer.Migrations
                 name: "Image");
 
             migrationBuilder.DropTable(
-                name: "Order");
+                name: "OrderDetail");
+
+            migrationBuilder.DropTable(
+                name: "PaymentTransaction");
 
             migrationBuilder.DropTable(
                 name: "RegisterAccount");
+
+            migrationBuilder.DropTable(
+                name: "RequestExportDetail");
+
+            migrationBuilder.DropTable(
+                name: "RequestProductDetail");
 
             migrationBuilder.DropTable(
                 name: "RolePermission");
@@ -1131,6 +1402,9 @@ namespace DataAccessLayer.Migrations
                 name: "WarehouseReceipt");
 
             migrationBuilder.DropTable(
+                name: "WarehouseRequestExport");
+
+            migrationBuilder.DropTable(
                 name: "AgencyLevel");
 
             migrationBuilder.DropTable(
@@ -1140,7 +1414,7 @@ namespace DataAccessLayer.Migrations
                 name: "WarehouseProduct");
 
             migrationBuilder.DropTable(
-                name: "RequestProduct");
+                name: "PaymentHistory");
 
             migrationBuilder.DropTable(
                 name: "Permission");
@@ -1152,19 +1426,22 @@ namespace DataAccessLayer.Migrations
                 name: "ExportTransaction");
 
             migrationBuilder.DropTable(
+                name: "RequestExport");
+
+            migrationBuilder.DropTable(
                 name: "Batch");
 
             migrationBuilder.DropTable(
-                name: "AgencyAccount");
-
-            migrationBuilder.DropTable(
-                name: "Employee");
+                name: "Order");
 
             migrationBuilder.DropTable(
                 name: "ImportTransactionDetail");
 
             migrationBuilder.DropTable(
                 name: "Product");
+
+            migrationBuilder.DropTable(
+                name: "RequestProduct");
 
             migrationBuilder.DropTable(
                 name: "ImportTransaction");
@@ -1174,6 +1451,12 @@ namespace DataAccessLayer.Migrations
 
             migrationBuilder.DropTable(
                 name: "TaxConfig");
+
+            migrationBuilder.DropTable(
+                name: "AgencyAccount");
+
+            migrationBuilder.DropTable(
+                name: "Employee");
 
             migrationBuilder.DropTable(
                 name: "Warehouse");

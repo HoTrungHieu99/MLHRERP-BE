@@ -27,6 +27,8 @@ namespace Services.IService
 
         Task<PagedResult<User>> GetUsersAsync(int page, int pageSize);
         Task<List<RegisterAccount>> GetRegisterAccount();
+
+        Task<long?> GetAgencyIdByUserId(Guid userId);
     }
 
 

@@ -549,6 +549,11 @@ namespace Services.Service
         {
             return await _userRepository.GetRegisterAccount();
         }
+
+        public async Task<long?> GetAgencyIdByUserId(Guid userId)
+        {
+            return await _userRepository.GetAgencyIdByUserId(userId);
+        }
     }
 
 }

@@ -53,5 +53,7 @@ namespace BusinessObject.Models
 
         public ICollection<ExportTransactionDetail> ExportTransactionDetail { get; set; }
         public ICollection<ExportWarehouseReceipt> ExportWarehouseReceipt { get; set; }
+
+        public RequestProductDetail RequestProductDetail { get; set; }
     }
 }
