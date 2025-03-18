@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MinhLongDbContext))]
-    [Migration("20250317094330_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250317173656_UpdateTable2")]
+    partial class UpdateTable2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -386,6 +386,42 @@ namespace DataAccessLayer.Migrations
                     b.HasIndex("RequestId");
 
                     b.ToTable("Order", (string)null);
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.OrderDetail", b =>
+                {
+                    b.Property<Guid>("OrderDetailId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("OrderDetailId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("OrderDetail", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Models.PaymentHistory", b =>
@@ -776,9 +812,6 @@ namespace DataAccessLayer.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("ProductId")
-                        .HasColumnType("bigint");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -786,7 +819,7 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("RequestProductId");
@@ -795,9 +828,34 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("ApprovedBy");
 
-                    b.HasIndex("ProductId");
-
                     b.ToTable("RequestProduct", (string)null);
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.RequestProductDetail", b =>
+                {
+                    b.Property<long>("RequestDetailId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("RequestDetailId"));
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<long>("RequestProductId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("RequestDetailId");
+
+                    b.HasIndex("ProductId")
+                        .IsUnique();
+
+                    b.HasIndex("RequestProductId");
+
+                    b.ToTable("RequestProductDetail", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Role", b =>
@@ -1276,6 +1334,25 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Request");
                 });
 
+            modelBuilder.Entity("BusinessObject.Models.OrderDetail", b =>
+                {
+                    b.HasOne("BusinessObject.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("BusinessObject.Models.PaymentHistory", b =>
                 {
                     b.HasOne("BusinessObject.Models.Order", "Order")
@@ -1367,8 +1444,7 @@ namespace DataAccessLayer.Migrations
                 {
                     b.HasOne("BusinessObject.Models.Employee", "ApprovedByEmployee")
                         .WithMany()
-                        .HasForeignKey("ApprovedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("ApprovedBy");
 
                     b.HasOne("BusinessObject.Models.Order", "Order")
                         .WithMany("RequestExports")
@@ -1378,7 +1454,7 @@ namespace DataAccessLayer.Migrations
                     b.HasOne("BusinessObject.Models.Employee", "RequestedByEmployee")
                         .WithMany()
                         .HasForeignKey("RequestedBy")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("ApprovedByEmployee");
@@ -1420,17 +1496,28 @@ namespace DataAccessLayer.Migrations
                         .HasForeignKey("ApprovedBy")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("BusinessObject.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("AgencyAccount");
 
                     b.Navigation("ApprovedByEmployee");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.RequestProductDetail", b =>
+                {
+                    b.HasOne("BusinessObject.Models.Product", "Product")
+                        .WithOne("RequestProductDetail")
+                        .HasForeignKey("BusinessObject.Models.RequestProductDetail", "ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.RequestProduct", "RequestProduct")
+                        .WithMany("RequestProductDetails")
+                        .HasForeignKey("RequestProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Product");
+
+                    b.Navigation("RequestProduct");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.RolePermission", b =>
@@ -1610,6 +1697,9 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("BusinessObject.Models.Product", b =>
                 {
                     b.Navigation("Images");
+
+                    b.Navigation("RequestProductDetail")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Province", b =>
@@ -1624,6 +1714,11 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("RequestExportDetails");
 
                     b.Navigation("WarehouseRequestExports");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.RequestProduct", b =>
+                {
+                    b.Navigation("RequestProductDetails");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Role", b =>

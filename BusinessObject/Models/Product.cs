@@ -50,5 +50,7 @@ namespace BusinessObject.Models
         public List<Image> Images { get; set; } = new List<Image>();
 
         public int AvailableStock { get; set; }
+
+        public RequestProductDetail RequestProductDetail { get; set; }
     }
 }

@@ -58,18 +58,18 @@ namespace MLHR.Controllers
         }
 
         // 🔹 Cập nhật Request (Chỉ cho phép chỉnh sửa `quantity` và `status`)
-        [HttpPut("{id}")]
-        [Authorize(Roles = "2")]
-        public async Task<ActionResult<RequestDto>> UpdateRequest(long id, [FromBody] UpdateRequestDto updateRequestDto)
-        {
-            if (id != updateRequestDto.RequestId)
-                return BadRequest(new { message = "Request ID does not match." });
+        /* [HttpPut("{id}")]
+         [Authorize(Roles = "2")]
+         public async Task<ActionResult<RequestDto>> UpdateRequest(long id, [FromBody] UpdateRequestDto updateRequestDto)
+         {
+             if (id != updateRequestDto.RequestId)
+                 return BadRequest(new { message = "Request ID does not match." });
 
-            var updatedRequest = await _requestService.UpdateRequestAsync(updateRequestDto);
-            if (updatedRequest == null) return NotFound(new { message = "Request not found." });
+             var updatedRequest = await _requestService.UpdateRequestAsync(updateRequestDto);
+             if (updatedRequest == null) return NotFound(new { message = "Request not found." });
 
-            return Ok(updatedRequest);
-        }
+             return Ok(updatedRequest);
+         }*/
 
         // 🔹 Phê duyệt Request (Chỉ dành cho Employee)
         [HttpPost("{id}/approve")]

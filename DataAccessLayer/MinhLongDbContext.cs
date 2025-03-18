@@ -57,6 +57,8 @@ namespace DataAccessLayer
         public DbSet<WarehouseProduct> WarehouseProduct { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<RequestProduct> RequestProducts { get; set; }
+        public DbSet<RequestProductDetail> RequestProductDetails { get; set; }
+
         public DbSet<Image> Images { get; set; }
 
         public DbSet<WarehouseReceipt> WarehouseReceipts { get; set; }
@@ -67,6 +69,7 @@ namespace DataAccessLayer
         public DbSet<RequestExportDetail> RequestExportDetails { get; set; }
         public DbSet<WarehouseRequestExport> WarehouseRequestExports { get; set; }
 
+        public DbSet<OrderDetail> OrderDetails { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // 🏷️ **Định danh bảng**
@@ -93,6 +96,7 @@ namespace DataAccessLayer
             modelBuilder.Entity<WarehouseProduct>().ToTable("WarehouseProduct");
             modelBuilder.Entity<Order>().ToTable("Order");
             modelBuilder.Entity<RequestProduct>().ToTable("RequestProduct");
+            modelBuilder.Entity<RequestProductDetail>().ToTable("RequestProductDetail");
             modelBuilder.Entity<Image>().ToTable("Image");
             modelBuilder.Entity<WarehouseReceipt>().ToTable("WarehouseReceipt");
             modelBuilder.Entity<PaymentHistory>().ToTable("PaymentHistory");
@@ -100,6 +104,7 @@ namespace DataAccessLayer
             modelBuilder.Entity<RequestExport>().ToTable("RequestExport");
             modelBuilder.Entity<RequestExportDetail>().ToTable("RequestExportDetail");
             modelBuilder.Entity<WarehouseRequestExport>().ToTable("WarehouseRequestExport");
+            modelBuilder.Entity<OrderDetail>().ToTable("OrderDetail");
 
 
             // 🔥 **Cấu hình quan hệ**
@@ -147,7 +152,9 @@ namespace DataAccessLayer
             modelBuilder.Entity<WarehouseProduct>().Property(i => i.WarehouseProductId).ValueGeneratedOnAdd();
             modelBuilder.Entity<Order>().Property(o => o.OrderId).HasDefaultValueSql("NEWID()");
             modelBuilder.Entity<Batch>().Property(b => b.BatchId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<OrderDetail>().Property(od => od.OrderDetailId).HasDefaultValueSql("NEWID()"); // Dành cho kiểu GUID
             modelBuilder.Entity<RequestProduct>().Property(r => r.RequestProductId).ValueGeneratedOnAdd();
+            modelBuilder.Entity<RequestProductDetail>().Property(rpd => rpd.RequestDetailId).ValueGeneratedOnAdd(); // Dành cho kiểu bigint tự động tăng
             modelBuilder.Entity<Image>().Property(i => i.ImageId).ValueGeneratedOnAdd();
             modelBuilder.Entity<WarehouseReceipt>().Property(wr => wr.WarehouseReceiptId).ValueGeneratedOnAdd();
             modelBuilder.Entity<PaymentHistory>().Property(ph => ph.PaymentHistoryId).HasDefaultValueSql("NEWID()");
@@ -307,6 +314,8 @@ namespace DataAccessLayer
                 .WithMany()
                 .HasForeignKey(o => o.RequestId);
 
+            //request product
+
             modelBuilder.Entity<RequestProduct>()
                 .HasOne(r => r.AgencyAccount)
                 .WithMany()
@@ -325,6 +334,27 @@ namespace DataAccessLayer
                 .HasForeignKey(r => r.AgencyId)
                 .OnDelete(DeleteBehavior.NoAction); // Assuming Request is linked to an AgencyAccount
 
+            modelBuilder.Entity<RequestProductDetail>()
+               .HasIndex(d => d.ProductId)
+               .IsUnique();
+
+            modelBuilder.Entity<RequestProductDetail>()
+                .HasOne(r => r.Product)
+                .WithMany()
+                .HasForeignKey(r => r.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OrderDetail>()
+                .Property(od => od.UnitPrice)
+                .HasPrecision(18, 2); // 18 chữ số, 2 số thập phân
+
+            modelBuilder.Entity<RequestExport>()
+                .HasOne(re => re.Order)
+                .WithMany()
+                .HasForeignKey(re => re.OrderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //done
             modelBuilder.Entity<Batch>()
                 .HasOne(b => b.ImportTransactionDetail)
                 .WithMany(d => d.Batches)
@@ -417,24 +447,6 @@ namespace DataAccessLayer
                 .WithOne(ph => ph.Order)
                 .HasForeignKey(ph => ph.OrderId);
 
-            modelBuilder.Entity<RequestExport>()
-        .ToTable("RequestExport")
-        .HasOne(re => re.RequestedByEmployee)
-        .WithMany()
-        .HasForeignKey(re => re.RequestedBy)
-        .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<RequestExport>()
-                .HasOne(re => re.ApprovedByEmployee)
-                .WithMany()
-                .HasForeignKey(re => re.ApprovedBy)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<RequestExport>()
-                .HasOne(re => re.Order)
-                .WithMany()
-                .HasForeignKey(re => re.OrderId)
-                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<RequestExportDetail>()
                 .ToTable("RequestExportDetail")
@@ -467,6 +479,27 @@ namespace DataAccessLayer
                 .WithMany(o => o.RequestExports)
                 .HasForeignKey(re => re.OrderId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OrderDetail>()
+                .HasOne(od => od.Order)
+                .WithMany()
+                .HasForeignKey(od => od.OrderId);
+
+            modelBuilder.Entity<OrderDetail>()
+                .HasOne(o => o.Product)
+                .WithMany()
+                .HasForeignKey(o => o.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.RequestProductDetail)
+                .WithOne(d => d.Product)
+                .HasForeignKey<RequestProductDetail>(d => d.ProductId);
+           
+
+            modelBuilder.Entity<OrderDetail>()
+                .Property(od => od.TotalAmount)
+                .HasPrecision(18, 2);
 
         }
     }

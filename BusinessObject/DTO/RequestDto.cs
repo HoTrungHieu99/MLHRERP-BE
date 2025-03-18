@@ -9,20 +9,12 @@ namespace BusinessObject.DTO
     public class RequestDto
     {
         public long RequestId { get; set; }
-        public string RequestStatus { get; set; } // PENDING, APPROVED, REJECTED
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-
         public long AgencyId { get; set; }
         public string AgencyName { get; set; }
+        public string RequestStatus { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
 
-        // ✅ Danh sách sản phẩm trong request
-        public List<RequestProductDto> Products { get; set; } = new List<RequestProductDto>();
-    }
-
-    public class RequestProductDto
-    {
-        public long ProductId { get; set; }
-        public int Quantity { get; set; }
+        public List<RequestItemDto> Items { get; set; }
     }
 }

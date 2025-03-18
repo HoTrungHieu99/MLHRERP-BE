@@ -5,19 +5,21 @@ using System.Text;
 using System.Threading.Tasks;
 using BusinessObject.DTO;
 using BusinessObject.Models;
+using DataAccessLayer;
+using Microsoft.EntityFrameworkCore;
 using Repo.IRepository;
 using Services.IService;
 
 namespace Services.Service
     {
-        public class RequestService : IRequestService
-        {
-            private readonly IRequestRepository _requestRepository;
+    public class RequestService : IRequestService
+    {
+        private readonly IRequestRepository _requestRepository;
 
-            public RequestService(IRequestRepository requestRepository)
-            {
-                _requestRepository = requestRepository;
-            }
+        public RequestService(IRequestRepository requestRepository)
+        {
+            _requestRepository = requestRepository;
+        }
 
         public async Task<IEnumerable<RequestDto>> GetAllRequestsAsync()
         {
@@ -26,15 +28,16 @@ namespace Services.Service
             return requests.Select(r => new RequestDto
             {
                 RequestId = r.RequestProductId,
-                ProductId = r.ProductId,
-                Quantity = r.Quantity,
+                AgencyId = r.AgencyId,
+                AgencyName = r.AgencyAccount?.AgencyName ?? "Unknown",
                 RequestStatus = r.RequestStatus,
                 CreatedAt = r.CreatedAt,
                 UpdatedAt = r.UpdatedAt,
-
-                // ✅ Lấy thông tin Agency từ bảng AgencyAccount
-                AgencyId = r.AgencyId,
-                AgencyName = r.AgencyAccount != null ? r.AgencyAccount.AgencyName : "Unknown"
+                Items = r.RequestProductDetails.Select(d => new RequestItemDto
+                {
+                    ProductId = d.ProductId,
+                    Quantity = d.Quantity
+                }).ToList()
             }).ToList();
         }
 
@@ -46,70 +49,61 @@ namespace Services.Service
             return new RequestDto
             {
                 RequestId = request.RequestProductId,
-                ProductId = request.ProductId,
-                Quantity = request.Quantity,
+                AgencyId = request.AgencyId,
+                AgencyName = request.AgencyAccount?.AgencyName ?? "Unknown",
                 RequestStatus = request.RequestStatus,
                 CreatedAt = request.CreatedAt,
                 UpdatedAt = request.UpdatedAt,
-
-                // ✅ Lấy thông tin Agency từ bảng AgencyAccount
-                AgencyId = request.AgencyId,
-                AgencyName = request.AgencyAccount != null ? request.AgencyAccount.AgencyName : "Unknown"
+                Items = request.RequestProductDetails.Select(d => new RequestItemDto
+                {
+                    ProductId = d.ProductId,
+                    Quantity = d.Quantity
+                }).ToList()
             };
         }
+
         public async Task<RequestDto> CreateRequestAsync(Guid userId, CreateRequestDto createRequestDto)
+        {
+
+            var agencyId = await _requestRepository.GetAgencyIdByUserIdAsync(userId);
+            if (agencyId == null) return null;
+
+            var request = new RequestProduct
             {
-                var agencyId = await _requestRepository.GetAgencyIdByUserIdAsync(userId);
-                if (agencyId == null) return null;
-
-                var request = new RequestProduct
+                AgencyId = agencyId.Value,
+                RequestStatus = "PENDING",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                RequestProductDetails = createRequestDto.Items.Select(i => new RequestProductDetail
                 {
-                    AgencyId = agencyId.Value,
-                    ProductId = createRequestDto.ProductId,
-                    Quantity = createRequestDto.Quantity,
-                    RequestStatus = "PENDING",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                    ProductId = i.ProductId,
+                    Quantity = i.Quantity
+                }).ToList()
+            };
 
-                var createdRequest = await _requestRepository.CreateRequestAsync(request);
+            var createdRequest = await _requestRepository.CreateRequestAsync(request);
 
-                return new RequestDto
-                {
-                    RequestId = createdRequest.RequestProductId,
-                    ProductId = createdRequest.ProductId,
-                    Quantity = createdRequest.Quantity,
-                    RequestStatus = createdRequest.RequestStatus,
-                    CreatedAt = createdRequest.CreatedAt,
-                    UpdatedAt = createdRequest.UpdatedAt
-                };
-            }
-
-            public async Task<RequestDto> UpdateRequestAsync(UpdateRequestDto updateRequestDto)
+            return new RequestDto
             {
-                var request = await _requestRepository.GetRequestByIdAsync(updateRequestDto.RequestId);
-                if (request == null) return null;
-
-                request.Quantity = updateRequestDto.Quantity;
-                request.RequestStatus = updateRequestDto.RequestStatus;
-                request.UpdatedAt = DateTime.UtcNow;
-
-                var updatedRequest = await _requestRepository.UpdateRequestAsync(request);
-
-                return new RequestDto
+                RequestId = createdRequest.RequestProductId,
+                AgencyId = createdRequest.AgencyId,
+                RequestStatus = createdRequest.RequestStatus,
+                CreatedAt = createdRequest.CreatedAt,
+                UpdatedAt = createdRequest.UpdatedAt,
+                Items = createdRequest.RequestProductDetails.Select(d => new RequestItemDto
                 {
-                    RequestId = updatedRequest.RequestProductId,
-                    ProductId = updatedRequest.ProductId,
-                    Quantity = updatedRequest.Quantity,
-                    RequestStatus = updatedRequest.RequestStatus,
-                    CreatedAt = updatedRequest.CreatedAt,
-                    UpdatedAt = updatedRequest.UpdatedAt
-                };
-            }
+                    ProductId = d.ProductId,
+                    Quantity = d.Quantity
+                }).ToList()
+            };
+        }
 
-            public async Task<bool> ApproveRequestAsync(long requestId, Guid userId)
-            {
-                return await _requestRepository.ApproveRequestAsync(requestId, userId);
-            }
+        public async Task<bool> ApproveRequestAsync(long requestId, Guid userId)
+        {
+            return await _requestRepository.ApproveRequestAsync(requestId, userId);
         }
     }
+
+
+
+}
