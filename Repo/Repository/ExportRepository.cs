@@ -1,5 +1,6 @@
 ﻿using BusinessObject.Models;
 using DataAccessLayer;
+using Microsoft.EntityFrameworkCore;
 using Repo.IRepository;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,14 @@ namespace Repo.Repository
         public ExportRepository(MinhLongDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<List<RequestExport>> GetAllRequestExportsAsync()
+        {
+            return await _context.RequestExports
+                .Include(re => re.RequestExportDetails)
+                .ThenInclude(red => red.Product) // Nếu cần thông tin sản phẩm
+                .ToListAsync();
         }
 
         public async Task AddExportAsync(RequestExport export)
