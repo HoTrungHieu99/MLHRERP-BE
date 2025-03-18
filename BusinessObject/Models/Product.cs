@@ -54,6 +54,8 @@ namespace BusinessObject.Models
         public ICollection<ExportTransactionDetail> ExportTransactionDetail { get; set; }
         public ICollection<ExportWarehouseReceipt> ExportWarehouseReceipt { get; set; }
 
-        public RequestProductDetail RequestProductDetail { get; set; }
+        // Navigation Property: Một Product có thể có nhiều ProductDetail
+        public ICollection<RequestProductDetail> RequestProductDetail { get; set; }
+
     }
 }

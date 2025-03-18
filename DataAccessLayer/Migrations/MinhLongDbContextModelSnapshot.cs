@@ -1019,8 +1019,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("RequestDetailId");
 
-                    b.HasIndex("ProductId")
-                        .IsUnique();
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("RequestProductId", "ProductId")
                         .IsUnique();
@@ -1803,9 +1802,9 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("BusinessObject.Models.RequestProductDetail", b =>
                 {
                     b.HasOne("BusinessObject.Models.Product", "Product")
-                        .WithOne("RequestProductDetail")
-                        .HasForeignKey("BusinessObject.Models.RequestProductDetail", "ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .WithMany("RequestProductDetail")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("BusinessObject.Models.RequestProduct", "RequestProduct")
@@ -2038,8 +2037,7 @@ namespace DataAccessLayer.Migrations
 
                     b.Navigation("Images");
 
-                    b.Navigation("RequestProductDetail")
-                        .IsRequired();
+                    b.Navigation("RequestProductDetail");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Province", b =>

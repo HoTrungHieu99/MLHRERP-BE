@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MinhLongDbContext))]
-    [Migration("20250318161453_UpdateDatabase2")]
-    partial class UpdateDatabase2
+    [Migration("20250318180327_Intial")]
+    partial class Intial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -245,7 +245,7 @@ namespace DataAccessLayer.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("NVARCHAR(255)");
 
                     b.Property<string>("Position")
                         .IsRequired()
@@ -863,7 +863,7 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FullName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("NVARCHAR(255)");
 
                     b.Property<bool>("IsApproved")
                         .HasColumnType("bit");
@@ -1022,8 +1022,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("RequestDetailId");
 
-                    b.HasIndex("ProductId")
-                        .IsUnique();
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("RequestProductId", "ProductId")
                         .IsUnique();
@@ -1806,9 +1805,9 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("BusinessObject.Models.RequestProductDetail", b =>
                 {
                     b.HasOne("BusinessObject.Models.Product", "Product")
-                        .WithOne("RequestProductDetail")
-                        .HasForeignKey("BusinessObject.Models.RequestProductDetail", "ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .WithMany("RequestProductDetail")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("BusinessObject.Models.RequestProduct", "RequestProduct")
@@ -2041,8 +2040,7 @@ namespace DataAccessLayer.Migrations
 
                     b.Navigation("Images");
 
-                    b.Navigation("RequestProductDetail")
-                        .IsRequired();
+                    b.Navigation("RequestProductDetail");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Province", b =>
