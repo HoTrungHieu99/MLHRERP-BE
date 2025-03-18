@@ -5,47 +5,28 @@ using Services.IService;
 
 namespace MLHR.Controllers
 {
-    /*[Route("api/[controller]")]
+    [Route("api/export-receipts")]
     [ApiController]
     public class ExportWarehouseReceiptController : ControllerBase
     {
         private readonly IExportWarehouseReceiptService _service;
-
         public ExportWarehouseReceiptController(IExportWarehouseReceiptService service)
         {
             _service = service;
         }
 
-        // POST: api/ExportWarehouseReceipt
         [HttpPost]
-        public async Task<ActionResult<ExportWarehouseReceipt>> CreateExportWarehouseReceiptAsync([FromBody] ExportRequest exportRequest)
+        public async Task<IActionResult> CreateReceipt([FromBody] ExportWarehouseReceiptDTO dto)
         {
-            if (exportRequest == null)
-            {
-                return BadRequest("Invalid data.");
-            }
-
-            // Tạo phiếu xuất kho từ request
-            var createdReceipt = await _service.CreateExportWarehouseReceiptAsync(exportRequest);
-
-            // Trả về kết quả sau khi lưu thành công
-            return CreatedAtAction(nameof(GetExportWarehouseReceiptByIdAsync), new { id = createdReceipt.ExportWarehouseReceiptId }, createdReceipt);
-        }
-
-        // GET: api/ExportWarehouseReceipt/{id}
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ExportWarehouseReceipt>> GetExportWarehouseReceiptByIdAsync(long id)
-        {
-            var receipt = await _service.GetExportWarehouseReceiptByIdAsync(id);
-
-            if (receipt == null)
-            {
-                return NotFound();
-            }
-
+            var receipt = await _service.CreateReceiptAsync(dto);
             return Ok(receipt);
         }
-    }*/
 
-
+        [HttpPut("{id}/approve")]
+        public async Task<IActionResult> ApproveReceipt(long id)
+        {
+            await _service.ApproveReceiptAsync(id);
+            return Ok("Receipt Approved");
+        }
+    }
 }

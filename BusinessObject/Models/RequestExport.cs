@@ -35,4 +35,5 @@ namespace BusinessObject.Models
         public ICollection<RequestExportDetail> RequestExportDetails { get; set; }
         public ICollection<WarehouseRequestExport> WarehouseRequestExports { get; set; }
     }
+
 }

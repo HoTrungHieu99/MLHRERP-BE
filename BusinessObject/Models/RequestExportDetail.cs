@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace BusinessObject.Models
 {
+
     public class RequestExportDetail
     {
         [Key]

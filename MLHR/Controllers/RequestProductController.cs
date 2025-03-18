@@ -28,6 +28,7 @@ namespace MLHR.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "2")]
         public async Task<IActionResult> CreateRequest([FromBody] CreateRequestProductDto requestDto)
         {
             if (requestDto == null || requestDto.Products == null || requestDto.Products.Count == 0)
@@ -66,23 +67,45 @@ namespace MLHR.Controllers
             return Ok(requestProduct);
         }
 
-        [Authorize(Roles = "4")]
+        [Authorize] // Xác thực người dùng trước
         [HttpPut("{id}/approve")]
-        public async Task<IActionResult> ApproveRequest(int id)
+        [Authorize(Roles = "4")]
+        public async Task<IActionResult> ApproveRequest(Guid id)
         {
             try
             {
-                // **Lấy UserId từ token dưới dạng GUID**
-                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                // **Lấy UserId từ Token**
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim == null)
+                {
+                    return Unauthorized(new { error = "User is not authenticated." });
+                }
 
-                // **Gọi Service để lấy AgencyId từ UserId**
+                var userId = Guid.Parse(userIdClaim.Value);
+
+                // **Lấy Role của User từ Token**
+                var roleClaim = User.FindFirst(ClaimTypes.Role);
+                if (roleClaim == null)
+                {
+                    return Forbid("User role not found.");
+                }
+
+                var userRole = roleClaim.Value;
+
+                // **Kiểm tra nếu Role khác "4" thì từ chối quyền**
+                if (userRole != "4")
+                {
+                    return StatusCode(403, "Only SALES MANAGEMENT (Role 4) can approve requests."); // 🚀 Cách đúng để trả về 403
+                }
+
+                // **Gọi Service để lấy EmployeeId từ UserId**
                 var employeeId = await _userService.GetEmployeeIdByUserId(userId);
                 if (!employeeId.HasValue)
                 {
                     return BadRequest("User does not belong to any employee.");
                 }
 
-                // ✅ Ép kiểu `agencyId` từ `long?` thành `long`
+                // ✅ Tiến hành duyệt Request
                 await _requestProductService.ApproveRequestAsync(id, employeeId.Value);
 
                 return Ok(new { message = "Request approved and Order created successfully!" });
@@ -92,5 +115,6 @@ namespace MLHR.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
     }
 }

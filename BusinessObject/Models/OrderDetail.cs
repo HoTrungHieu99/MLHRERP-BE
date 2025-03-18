@@ -18,11 +18,11 @@ namespace BusinessObject.Models
         public decimal UnitPrice { get; set; }
         public decimal TotalAmount { get; set; }
         public DateTime CreatedAt { get; set; }
-
-        [ForeignKey("OrderId")]
-        public Order Order { get; set; }
+        // Navigation property
+        public virtual Order Order { get; set; }
 
         [ForeignKey("ProductId")]
         public Product Product { get; set; }
+
     }
 }

@@ -544,8 +544,8 @@ namespace DataAccessLayer.Migrations
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("RequestId")
-                        .HasColumnType("bigint");
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<long>("SalesAgentId")
                         .HasColumnType("bigint");
@@ -556,7 +556,8 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("OrderId");
 
-                    b.HasIndex("RequestId");
+                    b.HasIndex("RequestId")
+                        .IsUnique();
 
                     b.ToTable("Order", (string)null);
                 });
@@ -970,11 +971,9 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("BusinessObject.Models.RequestProduct", b =>
                 {
-                    b.Property<long>("RequestProductId")
+                    b.Property<Guid>("RequestProductId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("RequestProductId"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<long>("AgencyId")
                         .HasColumnType("bigint");
@@ -1015,8 +1014,8 @@ namespace DataAccessLayer.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<long>("RequestProductId")
-                        .HasColumnType("bigint");
+                    b.Property<Guid>("RequestProductId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("RequestDetailId");
 
@@ -1625,19 +1624,19 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("BusinessObject.Models.Order", b =>
                 {
-                    b.HasOne("BusinessObject.Models.RequestProduct", "Request")
-                        .WithMany()
-                        .HasForeignKey("RequestId")
+                    b.HasOne("BusinessObject.Models.RequestProduct", "RequestProduct")
+                        .WithOne("Order")
+                        .HasForeignKey("BusinessObject.Models.Order", "RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Request");
+                    b.Navigation("RequestProduct");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.OrderDetail", b =>
                 {
                     b.HasOne("BusinessObject.Models.Order", "Order")
-                        .WithMany()
+                        .WithMany("OrderDetails")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2014,6 +2013,8 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("BusinessObject.Models.Order", b =>
                 {
+                    b.Navigation("OrderDetails");
+
                     b.Navigation("PaymentHistories");
 
                     b.Navigation("RequestExports");
@@ -2057,6 +2058,9 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("BusinessObject.Models.RequestProduct", b =>
                 {
+                    b.Navigation("Order")
+                        .IsRequired();
+
                     b.Navigation("RequestProductDetails");
                 });
 

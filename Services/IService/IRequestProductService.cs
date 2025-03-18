@@ -11,8 +11,8 @@ namespace Services.IService
     public interface IRequestProductService
     {
         Task<IEnumerable<RequestProduct>> GetAllRequestsAsync();
-        Task<RequestProduct> GetRequestByIdAsync(int id);
+        Task<RequestProduct> GetRequestByIdAsync(Guid id);
         Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails);
-        Task ApproveRequestAsync(int requestId, long approvedBy);
+        Task ApproveRequestAsync(Guid requestId, long approvedBy);
     }
 }

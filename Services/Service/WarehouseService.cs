@@ -25,7 +25,7 @@ namespace Services.Service
 
         public Warehouse GetWarehouseByUserId(Guid userId) => _warehouseRepo.GetWarehouseByUserId(userId);
 
-        public void CreateWarehouse(Guid userId, string warehousName, string street, string province, string district, string ward)
+        public void CreateWarehouse(Guid userId, string warehousName, string street, string province, string district, string ward, string note)
         {
             // Kiểm tra xem User đã có Warehouse chưa
             if (_warehouseRepo.GetWarehouseByUserId(userId) != null)
@@ -59,13 +59,14 @@ namespace Services.Service
             {
                 WarehouseName = warehousName,
                 UserId = userId,
-                AddressId = address.AddressId
+                AddressId = address.AddressId,
+                Note = note
             };
 
             _warehouseRepo.AddWarehouse(warehouse);
         }
 
-        public void UpdateWarehouse(Guid userId, int warehouseId, string warehousName, string street, string province, string district, string ward)
+        public void UpdateWarehouse(Guid userId, int warehouseId, string warehousName, string street, string province, string district, string ward, string note)
         {
             // Tìm Warehouse của User
             var warehouse = _warehouseRepo.GetWarehouseById(warehouseId);
@@ -99,6 +100,7 @@ namespace Services.Service
 
             // Cập nhật Warehouse
             warehouse.WarehouseName = warehousName;
+            warehouse.Note = note;
             _warehouseRepo.UpdateWarehouse(warehouse);
         }
 

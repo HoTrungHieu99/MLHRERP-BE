@@ -103,7 +103,13 @@ builder.Services.AddScoped<IRequestProductRepository, RequestProductRepository>(
 builder.Services.AddScoped<IRequestProductService, RequestProductService>();
 
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+
+builder.Services.AddScoped<IExportRepository, ExportRepository>();
+
+builder.Services.AddScoped<IExportWarehouseReceiptService, ExportWarehouseReceiptService>();
+builder.Services.AddScoped<IExportWarehouseReceiptRepository, ExportWarehouseReceiptRepository>();
 
 builder.Services.AddScoped<JwtService>();
 

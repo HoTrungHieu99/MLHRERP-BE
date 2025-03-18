@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 
 namespace Repo.IRepository
 {
-    /*public interface IExportWarehouseReceiptRepository
+    public interface IExportWarehouseReceiptRepository
     {
-        Task<ExportWarehouseReceipt> CreateExportWarehouseReceiptAsync(ExportWarehouseReceipt receipt);
-        Task<ExportTransaction> CreateExportTransactionAsync(ExportTransaction transaction);
-        Task<ExportTransactionDetail> CreateExportTransactionDetailAsync(ExportTransactionDetail detail);
-    }*/
+        Task<ExportWarehouseReceipt> CreateReceiptAsync(ExportWarehouseReceipt receipt);
+        Task<ExportWarehouseReceipt> GetReceiptByIdAsync(long id);
+        Task ApproveReceiptAsync(long id);
+        Task<List<WarehouseProduct>> GetWarehouseProductsByIdsAsync(List<long> warehouseProductIds); // ✅ Thêm phương thức mới
+    }
 
 }

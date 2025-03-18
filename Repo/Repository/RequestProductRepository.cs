@@ -44,7 +44,7 @@ namespace Repo.Repository
                         (r.UpdatedAt ?? r.CreatedAt) >= DateTime.UtcNow.AddHours(-24));
         }
 
-        public async Task<RequestProduct> GetRequestByIdAsync(int id)
+        public async Task<RequestProduct> GetRequestByIdAsync(Guid id)
         {
             return await _context.RequestProducts
                 .Include(r => r.RequestProductDetails)
@@ -66,6 +66,12 @@ namespace Repo.Repository
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<RequestProduct> GetRequestProductByRequestIdAsync(Guid requestId)
+        {
+            return await _context.RequestProducts
+                .FirstOrDefaultAsync(rp => rp.RequestProductId == requestId);
         }
     }
 
