@@ -87,7 +87,6 @@ namespace MLHR.Controllers
         }
 
         [HttpGet("by-category/{categoryId}")]
-        [Authorize(Roles = "4,2")]
         public async Task<ActionResult<IEnumerable<ProductSimpleResponseDto>>> GetProductsByCategory(long categoryId)
         {
             var products = await _service.GetProductsByCategoryIdAsync(categoryId);
