@@ -10,6 +10,7 @@ namespace BusinessObject.Models
         public long EmployeeId { get; set; }
 
         [Required]
+        [Column(TypeName = "NVARCHAR(255)")]
         public string FullName { get; set; }
         [Required]
         public string Position { get; set; }

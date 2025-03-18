@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO;
+﻿using System.Security.Claims;
+using BusinessObject.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.IService;
@@ -53,11 +54,21 @@ namespace MLHR.Controllers
             }
         }
 
-        [HttpPut("user/{userId}")]
-        public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UpdateUserRequest request)
+        [Authorize]
+        [HttpPut("user")]
+        public async Task<IActionResult> UpdateUser([FromBody] UpdateUserRequest request)
         {
             try
             {
+                // ✅ Lấy UserId từ Token
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim))
+                {
+                    return Unauthorized(new { message = "User is not authenticated." });
+                }
+
+                Guid userId = Guid.Parse(userIdClaim); // Chuyển đổi thành GUID
+
                 bool isUpdated = await _userService.UpdateUserAccountAsync(userId, request);
                 if (!isUpdated)
                     return BadRequest(new { message = "Update failed!" });
@@ -87,11 +98,22 @@ namespace MLHR.Controllers
             }
         }*/
 
-        [HttpPost("change-password/{userId}")]
-        public async Task<IActionResult> ChangePassword(Guid userId, [FromBody] ChangePasswordRequest request)
+
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
         {
             try
             {
+                // ✅ Lấy UserId từ Token
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim))
+                {
+                    return Unauthorized(new { message = "User is not authenticated." });
+                }
+
+                Guid userId = Guid.Parse(userIdClaim); // Chuyển đổi thành GUID
+
                 bool isSuccessful = await _userService.ChangePasswordAsync(userId, request);
                 if (!isSuccessful)
                     return BadRequest(new { message = "Failed to change password!" });

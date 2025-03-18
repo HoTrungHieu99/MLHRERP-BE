@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,6 +27,7 @@ namespace BusinessObject.Models
 
         public string UserType { get; set; } // "EMPLOYEE" hoặc "AGENCY"
 
+        [Column(TypeName = "NVARCHAR(255)")]
         public string? FullName { get; set; }
         public string? Position { get; set; }  // Chỉ dùng cho Employee
         public string? Department { get; set; }  // Chỉ dùng cho Employee
