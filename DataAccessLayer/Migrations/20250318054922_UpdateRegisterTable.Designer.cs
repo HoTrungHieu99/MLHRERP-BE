@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MinhLongDbContext))]
-    [Migration("20250317071759_IntialCreate")]
-    partial class IntialCreate
+    [Migration("20250318054922_UpdateRegisterTable")]
+    partial class UpdateRegisterTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -262,6 +262,182 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("Employee", (string)null);
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.ExportTransaction", b =>
+                {
+                    b.Property<long>("ExportTransactionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ExportTransactionId"));
+
+                    b.Property<DateTime>("DocumentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DocumentNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ExportDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExportType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("WarehouseId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ExportTransactionId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("ExportTransaction", (string)null);
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.ExportTransactionDetail", b =>
+                {
+                    b.Property<long>("ExportTransactionDetailId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ExportTransactionDetailId"));
+
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("ExportTransactionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("ProductId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalProductAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<long>("WarehouseProductId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ExportTransactionDetailId");
+
+                    b.HasIndex("ExportTransactionId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("WarehouseProductId");
+
+                    b.ToTable("ExportTransactionDetail", (string)null);
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.ExportWarehouseReceipt", b =>
+                {
+                    b.Property<long>("ExportWarehouseReceiptId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ExportWarehouseReceiptId"));
+
+                    b.Property<DateTime>("DocumentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DocumentNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ExportDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExportType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("ProductId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<int>("TotalQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<long>("WarehouseId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ExportWarehouseReceiptId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("ExportWarehouseReceipt", (string)null);
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.ExportWarehouseReceiptDetail", b =>
+                {
+                    b.Property<long>("ExportWarehouseReceiptDetailId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ExportWarehouseReceiptDetailId"));
+
+                    b.Property<string>("BatchNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("ExportWarehouseReceiptId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalProductAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<long>("WarehouseProductId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ExportWarehouseReceiptDetailId");
+
+                    b.HasIndex("ExportWarehouseReceiptId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("WarehouseProductId");
+
+                    b.ToTable("ExportWarehouseReceiptDetail");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Image", b =>
@@ -603,7 +779,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("RegisterId");
 
-                    b.ToTable("RegisterAccounts");
+                    b.ToTable("RegisterAccount", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Models.RequestProduct", b =>
@@ -823,6 +999,10 @@ namespace DataAccessLayer.Migrations
                     b.Property<int>("AddressId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -839,6 +1019,55 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("Warehouse", (string)null);
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.WarehouseLedger", b =>
+                {
+                    b.Property<long>("WarehouseLedgerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("WarehouseLedgerId"));
+
+                    b.Property<int>("BalanceQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("ExportTransactionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("ImportTransactionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("QuantityChange")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TransactionType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("WarehouseId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("WarehouseLedgerId");
+
+                    b.HasIndex("ExportTransactionId");
+
+                    b.HasIndex("ImportTransactionId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("WarehouseLedger", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Models.WarehouseProduct", b =>
@@ -1046,6 +1275,82 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BusinessObject.Models.ExportTransaction", b =>
+                {
+                    b.HasOne("BusinessObject.Models.Warehouse", "Warehouse")
+                        .WithMany("ExportTransactions")
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.ExportTransactionDetail", b =>
+                {
+                    b.HasOne("BusinessObject.Models.ExportTransaction", "ExportTransaction")
+                        .WithMany("ExportTransactionDetail")
+                        .HasForeignKey("ExportTransactionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.Product", null)
+                        .WithMany("ExportTransactionDetail")
+                        .HasForeignKey("ProductId");
+
+                    b.HasOne("BusinessObject.Models.WarehouseProduct", "WarehouseProduct")
+                        .WithMany("ExportTransactionDetails")
+                        .HasForeignKey("WarehouseProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExportTransaction");
+
+                    b.Navigation("WarehouseProduct");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.ExportWarehouseReceipt", b =>
+                {
+                    b.HasOne("BusinessObject.Models.Product", null)
+                        .WithMany("ExportWarehouseReceipt")
+                        .HasForeignKey("ProductId");
+
+                    b.HasOne("BusinessObject.Models.Warehouse", "Warehouse")
+                        .WithMany("ExportWarehouseReceipts")
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.ExportWarehouseReceiptDetail", b =>
+                {
+                    b.HasOne("BusinessObject.Models.ExportWarehouseReceipt", "ExportWarehouseReceipt")
+                        .WithMany("ExportWarehouseReceiptDetails")
+                        .HasForeignKey("ExportWarehouseReceiptId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.WarehouseProduct", "WarehouseProduct")
+                        .WithMany("ExportWarehouseReceiptDetails")
+                        .HasForeignKey("WarehouseProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExportWarehouseReceipt");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("WarehouseProduct");
+                });
+
             modelBuilder.Entity("BusinessObject.Models.Image", b =>
                 {
                     b.HasOne("BusinessObject.Models.Product", "Product")
@@ -1242,6 +1547,31 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BusinessObject.Models.WarehouseLedger", b =>
+                {
+                    b.HasOne("BusinessObject.Models.ExportTransaction", "ExportTransaction")
+                        .WithMany()
+                        .HasForeignKey("ExportTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BusinessObject.Models.ImportTransaction", "ImportTransaction")
+                        .WithMany()
+                        .HasForeignKey("ImportTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BusinessObject.Models.Warehouse", "Warehouse")
+                        .WithMany("WarehouseLedgers")
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExportTransaction");
+
+                    b.Navigation("ImportTransaction");
+
+                    b.Navigation("Warehouse");
+                });
+
             modelBuilder.Entity("BusinessObject.Models.WarehouseProduct", b =>
                 {
                     b.HasOne("BusinessObject.Models.Batch", "Batch")
@@ -1257,9 +1587,9 @@ namespace DataAccessLayer.Migrations
                         .IsRequired();
 
                     b.HasOne("BusinessObject.Models.Warehouse", "Warehouse")
-                        .WithMany()
+                        .WithMany("WarehouseProducts")
                         .HasForeignKey("WarehouseId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Batch");
@@ -1272,7 +1602,7 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("BusinessObject.Models.WarehouseReceipt", b =>
                 {
                     b.HasOne("BusinessObject.Models.Warehouse", "Warehouse")
-                        .WithMany()
+                        .WithMany("WarehouseReceipts")
                         .HasForeignKey("WarehouseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1302,6 +1632,16 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Wards");
                 });
 
+            modelBuilder.Entity("BusinessObject.Models.ExportTransaction", b =>
+                {
+                    b.Navigation("ExportTransactionDetail");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.ExportWarehouseReceipt", b =>
+                {
+                    b.Navigation("ExportWarehouseReceiptDetails");
+                });
+
             modelBuilder.Entity("BusinessObject.Models.ImportTransaction", b =>
                 {
                     b.Navigation("ImportTransactionDetails");
@@ -1319,6 +1659,10 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("BusinessObject.Models.Product", b =>
                 {
+                    b.Navigation("ExportTransactionDetail");
+
+                    b.Navigation("ExportWarehouseReceipt");
+
                     b.Navigation("Images");
                 });
 
@@ -1350,6 +1694,26 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("BusinessObject.Models.Ward", b =>
                 {
                     b.Navigation("Addresses");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.Warehouse", b =>
+                {
+                    b.Navigation("ExportTransactions");
+
+                    b.Navigation("ExportWarehouseReceipts");
+
+                    b.Navigation("WarehouseLedgers");
+
+                    b.Navigation("WarehouseProducts");
+
+                    b.Navigation("WarehouseReceipts");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.WarehouseProduct", b =>
+                {
+                    b.Navigation("ExportTransactionDetails");
+
+                    b.Navigation("ExportWarehouseReceiptDetails");
                 });
 #pragma warning restore 612, 618
         }

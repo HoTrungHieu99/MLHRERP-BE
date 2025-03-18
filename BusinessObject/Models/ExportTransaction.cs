@@ -8,22 +8,20 @@ using System.Threading.Tasks;
 
 namespace BusinessObject.Models
 {
-    public class ImportTransaction
+    public class ExportTransaction
     {
         [Key]
-        public long ImportTransactionId { get; set; }
+        public long ExportTransactionId { get; set; }
         public string DocumentNumber { get; set; }
         public DateTime DocumentDate { get; set; }
-        public string TypeImport { get; set; } // Standard, Return, Transfer
-        public string? Note { get; set; }
         public long WarehouseId { get; set; }
-        public string Supplier { get; set; }
-        public DateTime DateImport { get; set; }
+        public string ExportType { get; set; } // Sales, Disposal, Transfer
+        public DateTime ExportDate { get; set; }
+        public string Note { get; set; }
 
         [ForeignKey("WarehouseId")]
         public Warehouse Warehouse { get; set; }
 
-
-        public ICollection<ImportTransactionDetail> ImportTransactionDetails { get; set; }
+        public ICollection<ExportTransactionDetail> ExportTransactionDetail { get; set; }
     }
 }
