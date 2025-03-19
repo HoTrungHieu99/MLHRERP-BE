@@ -10,7 +10,7 @@ namespace MLHR.Controllers
 {
     [Route("api/")]
     [ApiController]
-    [Authorize] // Chỉ người dùng đăng nhập mới có quyền truy cập
+    //[Authorize] // Chỉ người dùng đăng nhập mới có quyền truy cập
     public class WarehouseController : ControllerBase
     {
         private readonly IWarehouseService _warehouseService;
@@ -21,7 +21,7 @@ namespace MLHR.Controllers
         }
 
         // Lấy Warehouse của Employee hiện tại
-        [Authorize(Roles = "3")]
+        //[Authorize(Roles = "3")]
         [HttpGet("warehouses")]
         public IActionResult GetMyWarehouse()
         {
@@ -35,7 +35,7 @@ namespace MLHR.Controllers
         }
 
         // Tạo Warehouse (chỉ cho Warehouse Manager)
-        [Authorize(Roles = "3")]
+        //[Authorize(Roles = "3")]
         [HttpPost("warehouses")]
         public IActionResult CreateWarehouse([FromBody] WarehouseCreateRequest request)
         {
@@ -50,7 +50,7 @@ namespace MLHR.Controllers
             return Ok("Warehouse has been created!");
         }
 
-        [Authorize(Roles = "3")]
+        //[Authorize(Roles = "3")]
         [HttpPut("warehouses/{warehouseId}")]
         public IActionResult UpdateWarehouse(int warehouseId, [FromBody] WarehouseUpdateRequest request)
         {
@@ -84,7 +84,7 @@ namespace MLHR.Controllers
             return Ok("Warehouse has been delete!");
         }*/
 
-        [Authorize(Roles = "3")]
+        //[Authorize(Roles = "3")]
         [HttpGet("{warehouseId}/products")]
         public async Task<ActionResult<IEnumerable<WarehouseProductDto>>> GetProductsByWarehouseId(long warehouseId)
         {
@@ -97,7 +97,7 @@ namespace MLHR.Controllers
         }
 
         // 🔹 API lấy một sản phẩm trong kho theo ID
-        [Authorize(Roles = "3")]
+        //[Authorize(Roles = "3")]
         [HttpGet("{warehouseId}/products/{warehouseProductId}")]
         public async Task<ActionResult<WarehouseProductDto>> GetProductById(long warehouseId, long warehouseProductId)
         {
