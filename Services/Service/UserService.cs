@@ -548,7 +548,7 @@ namespace Services.Service
 
 
             // Tạo JWT Token
-            var token = _jwtService.GenerateJwtToken(user, roleId);
+            var token = await _jwtService.GenerateJwtTokenAsync(user, roleId);
             return new { roleName, roleId, token };
         }
 

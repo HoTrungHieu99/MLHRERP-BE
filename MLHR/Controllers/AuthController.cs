@@ -36,6 +36,8 @@ namespace MLHR.Controllers
             }
         }
 
+
+
         [HttpPost("auth/logout")]
         public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
         {

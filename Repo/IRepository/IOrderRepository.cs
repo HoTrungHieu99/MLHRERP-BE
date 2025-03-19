@@ -22,5 +22,7 @@ namespace Repo.IRepository
         Task SaveAsync();
 
         Task<int> GetTotalQuantityByOrderIdAsync(Guid orderId);
+
+        Task<List<Order>> GetOrdersByAgencyIdAsync(long agencyId);
     }
 }

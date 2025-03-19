@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.IService;
+using System.Security.Claims;
 
 namespace MLHR.Controllers
 {
@@ -9,10 +10,13 @@ namespace MLHR.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public OrderController(IOrderService orderService)
+
+        public OrderController(IOrderService orderService, IHttpContextAccessor httpContextAccessor)
         {
             _orderService = orderService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         // ✅ API để lấy danh sách Order (Bao gồm chi tiết đơn hàng)
@@ -56,6 +60,40 @@ namespace MLHR.Controllers
                     SubTotal = od.Quantity * od.UnitPrice
                 })
             });
+        }
+
+        // API lấy danh sách Order dựa trên AgencyId của user đang đăng nhập
+        [HttpGet("my-orders")]
+        public async Task<IActionResult> GetOrdersForLoggedInAgency()
+        {
+            var agencyId = GetLoggedInAgencyId();
+            if (agencyId == null)
+            {
+                return Unauthorized(new { message = "User is not associated with any agency" });
+            }
+
+            var orders = await _orderService.GetOrdersByAgencyIdAsync(agencyId.Value);
+
+            if (orders == null || !orders.Any())
+            {
+                return NotFound(new { message = "No orders found for this agency" });
+            }
+
+            return Ok(orders);
+        }
+
+        private long? GetLoggedInAgencyId()
+        {
+            var claimsIdentity = _httpContextAccessor.HttpContext?.User.Identity as ClaimsIdentity;
+            if (claimsIdentity != null)
+            {
+                var agencyIdClaim = claimsIdentity.FindFirst("AgencyId");
+                if (agencyIdClaim != null && long.TryParse(agencyIdClaim.Value, out long agencyId))
+                {
+                    return agencyId;
+                }
+            }
+            return null;
         }
 
         // API thanh toán đơn hàng

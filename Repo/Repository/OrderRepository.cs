@@ -71,5 +71,12 @@ namespace Repo.Repository
                                  .SumAsync(od => od.Quantity);
         }
 
+        public async Task<List<Order>> GetOrdersByAgencyIdAsync(long agencyId)
+        {
+            return await _context.Orders
+                .Include(o => o.RequestProduct)
+                .Where(o => o.RequestProduct.AgencyId == agencyId)
+                .ToListAsync();
+        }
     }
 }

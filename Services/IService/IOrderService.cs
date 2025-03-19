@@ -13,5 +13,7 @@ namespace Services.IService
         Task<Order> GetOrderByIdAsync(Guid orderId);
         Task<bool> ProcessPaymentAsync(Guid orderId);
         Task<bool> CancelOrderAsync(Guid orderId);
+
+        Task<List<Order>> GetOrdersByAgencyIdAsync(long agencyId);
     }
 }

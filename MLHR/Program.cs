@@ -70,7 +70,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 // ✅ Đọc chuỗi kết nối từ appsettings.json
-var connectionString = builder.Configuration.GetConnectionString("ServerConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<MinhLongDbContext>(options =>
     options.UseSqlServer(connectionString));
 
@@ -113,6 +113,7 @@ builder.Services.AddScoped<IExportWarehouseReceiptService, ExportWarehouseReceip
 builder.Services.AddScoped<IExportWarehouseReceiptRepository, ExportWarehouseReceiptRepository>();
 
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddHttpContextAccessor();
 
 
 // ✅ Đăng ký Controllers với JSON Options

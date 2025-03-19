@@ -116,6 +116,11 @@ namespace Services.Service
             await _orderRepository.UpdateOrderAsync(order);
             return true;
         }
+
+        public async Task<List<Order>> GetOrdersByAgencyIdAsync(long agencyId)
+        {
+            return await _orderRepository.GetOrdersByAgencyIdAsync(agencyId);
+        }
     }
 
 }
