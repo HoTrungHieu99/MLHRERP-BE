@@ -38,15 +38,15 @@ namespace Services.Service
             }
 
             // ✅ Tính toán TotalAmount cho từng batch
-            var processedBatches = request.Batches.Select(b => new
+            var processedBatches = request.Batches.Select(b => new BatchResponseDto
             {
-                b.BatchCode,
-                b.ProductId,
-                b.Unit,
-                b.Quantity,
-                b.UnitCost,
-                TotalAmount = b.Quantity * b.UnitCost, // ✅ Tính TotalAmount
-                b.Status
+                BatchCode = b.BatchCode,
+                ProductId = b.ProductId,
+                Unit = b.Unit,
+                Quantity = b.Quantity,
+                UnitCost = b.UnitCost,
+                TotalAmount = b.Quantity * b.UnitCost, // ✅ Tính toán tổng giá trị
+                Status = b.Status
             }).ToList();
 
             // ✅ Tính TotalPrice bằng tổng TotalAmount của tất cả batch
@@ -56,7 +56,7 @@ namespace Services.Service
             DateTime ImportDate = DateTime.Now;
 
             // ✅ Chuyển danh sách thành JSON
-            string batchesJson = JsonConvert.SerializeObject(processedBatches);
+            string batchesJson = JsonConvert.SerializeObject(processedBatches, Formatting.Indented);
 
             var warehouseReceipt = new WarehouseReceipt
             {
@@ -80,9 +80,22 @@ namespace Services.Service
             return await _repository.ApproveAsync(id);
         }
 
-        public async Task<List<WarehouseReceipt>> GetAllReceiptsAsync()
+        public async Task<List<WarehouseReceiptDTO>> GetAllReceiptsAsync()
         {
-            return await _repository.GetAllAsync();
+            var receipts = await _repository.GetAllAsync();
+
+            return receipts.Select(receipt => new WarehouseReceiptDTO
+            {
+                DocumentNumber = receipt.DocumentNumber,
+                DocumentDate = receipt.DocumentDate,
+                WarehouseId = receipt.WarehouseId,
+                ImportType = receipt.ImportType,
+                Supplier = receipt.Supplier,
+                DateImport = receipt.DateImport,
+                TotalQuantity = receipt.TotalQuantity,
+                TotalPrice = receipt.TotalPrice,
+                Batches = JsonConvert.DeserializeObject<List<BatchResponseDto>>(receipt.BatchesJson) ?? new List<BatchResponseDto>() // ✅ Chuyển JSON thành danh sách BatchDTO
+            }).ToList();
         }
     }
 
