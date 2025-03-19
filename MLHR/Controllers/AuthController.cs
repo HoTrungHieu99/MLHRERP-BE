@@ -19,7 +19,7 @@ namespace MLHR.Controllers
             _userService = userService;
         }
 
-        /// <summary>
+        /*/// <summary>
         /// Đăng nhập bằng Username & Password
         /// </summary>
         [HttpPost("auth/login")]
@@ -34,7 +34,7 @@ namespace MLHR.Controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
-        }
+        }*/
 
 
 

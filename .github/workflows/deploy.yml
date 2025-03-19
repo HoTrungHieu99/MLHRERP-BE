@@ -3,7 +3,7 @@ name: MLHR-runner
 on:
   push:
     branches:
-      - QuocCode
+      - ServerDeploy2
 
 jobs:
   Deploy-MLHR-Container:
