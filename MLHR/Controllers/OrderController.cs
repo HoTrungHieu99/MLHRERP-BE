@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.IService;
+using Services.Service;
 using System.Security.Claims;
 
 namespace MLHR.Controllers
@@ -115,20 +116,20 @@ namespace MLHR.Controllers
             }
         }
 
-        // ✅ API để hủy đơn hàng
-        [HttpPut("{orderId}/cancel")]
-        [Authorize(Roles = "2")]
-        public async Task<IActionResult> CancelOrder(Guid orderId)
+        [HttpPut("{requestId}/cancel")]
+        public async Task<IActionResult> CancelRequest(Guid requestId)
         {
             try
             {
-                var result = await _orderService.CancelOrderAsync(orderId);
-                if (!result) return BadRequest("Không thể hủy đơn hàng! Đơn hàng không tồn tại hoặc đã được xử lý.");
-                return Ok("Đơn hàng đã được hủy thành công.");
+                var result = await _orderService.CancelOrderAsync(requestId);
+                if (!result)
+                    return BadRequest(new { message = "Failed to cancel request." });
+
+                return Ok(new { message = "Order canceled successfully." });
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { message = ex.Message });
             }
         }
     }

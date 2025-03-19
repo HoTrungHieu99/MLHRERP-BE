@@ -258,5 +258,28 @@ namespace Services.Service
             }
         }
 
+        public async Task<bool> CancelRequestAsync(Guid requestId, long approvedBy)
+        {
+            var requestProduct = await _requestProductRepository.GetRequestByIdAsync(requestId);
+
+            if (requestProduct == null)
+                throw new Exception("RequestProduct not found!");
+
+            if (requestProduct.RequestStatus == "Canceled")
+                throw new Exception("RequestProduct is already canceled!");
+
+            if (requestProduct.RequestStatus == "Approved")
+                throw new Exception("Cannot cancel an approved request!");
+
+            requestProduct.RequestStatus = "Canceled";
+            requestProduct.ApprovedBy = approvedBy;
+            requestProduct.UpdatedAt = DateTime.UtcNow;
+
+            await _requestProductRepository.UpdateRequestAsync(requestProduct);
+            await _requestProductRepository.SaveChangesAsync();
+
+            return true;
+        }
+
     }
 }

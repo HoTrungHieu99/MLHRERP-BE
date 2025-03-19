@@ -187,10 +187,16 @@ namespace Services.Service
         public async Task<bool> CancelOrderAsync(Guid orderId)
         {
             var order = await _orderRepository.GetOrderByIdAsync(orderId);
-            if (order == null || order.Status != "Pending") return false;
-
-            order.Status = "Cancel";
-            await _orderRepository.UpdateOrderAsync(order);
+            var requestProduct = await _requestProductRepository.GetRequestByIdAsync(order.RequestId);
+            if (order == null || order.Status == "Paid") return false;
+            
+            if(order.Status == "WaitPaid")
+            {
+                order.Status = "Canceled";
+                requestProduct.RequestStatus = "Canceled";
+                await _orderRepository.UpdateOrderAsync(order);
+               await _orderRepository.SaveAsync();
+            }
             return true;
         }
 
@@ -198,6 +204,8 @@ namespace Services.Service
         {
             return await _orderRepository.GetOrdersByAgencyIdAsync(agencyId);
         }
+
+
 
         
     }

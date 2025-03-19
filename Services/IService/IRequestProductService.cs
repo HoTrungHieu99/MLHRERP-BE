@@ -16,5 +16,7 @@ namespace Services.IService
         Task ApproveRequestAsync(Guid requestId, long approvedBy);
 
         Task<List<RequestProduct>> GetRequestProductsByAgencyIdAsync(long agencyId);
+
+        Task<bool> CancelRequestAsync(Guid requestId, long approvedBy);
     }
 }
