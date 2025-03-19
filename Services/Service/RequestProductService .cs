@@ -192,12 +192,12 @@ namespace Services.Service
                 throw new UnauthorizedAccessException("Không tìm thấy AgencyId từ User đang đăng nhập.");
             }
 
-            // ✅ Kiểm tra nếu Agency đã có đơn hàng Approved trong 24 giờ qua
+            /*// ✅ Kiểm tra nếu Agency đã có đơn hàng Approved trong 24 giờ qua
             bool hasRecentApprovedRequest = await _requestProductRepository.HasApprovedRequestInLast24Hours(agencyId.Value);
             if (hasRecentApprovedRequest)
             {
                 throw new BadRequestException("Bạn đã có một đơn hàng được duyệt trong vòng 24 giờ qua. Vui lòng đợi trước khi tạo đơn hàng mới.");
-            }
+            }*/
 
             var existingRequest = await _requestProductRepository.GetPendingRequestByAgencyAsync(agencyId.Value);
 

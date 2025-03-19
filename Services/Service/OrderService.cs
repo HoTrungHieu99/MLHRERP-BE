@@ -142,7 +142,7 @@ namespace Services.Service
                 {
                     RequestedByAgencyId = requestBy,  // ✅ Lấy AgencyId từ RequestProduct
                     RequestDate = requestProduct.CreatedAt,
-                    Status = "WaitPaid",
+                    Status = "Processing",
                     ApprovedBy = approvedBy,  // ✅ Lấy EmployeeId từ User đăng nhập
                     ApprovedDate = DateTime.UtcNow,
                     Note = "Order approved and exported",
