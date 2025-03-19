@@ -20,5 +20,6 @@ namespace Repo.IRepository
 
         Task<IEnumerable<WarehouseProductDto>> GetProductsByWarehouseIdAsync(long warehouseId);
         Task<WarehouseProductDto> GetProductByIdAsync(long warehouseProductId);
+        Task<Guid> GetUserIdByWarehouseIdAsync(long warehouseId);
     }
 }

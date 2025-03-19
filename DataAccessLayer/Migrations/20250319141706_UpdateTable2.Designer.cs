@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MinhLongDbContext))]
-    [Migration("20250319100644_UpdateTable2")]
+    [Migration("20250319141706_UpdateTable2")]
     partial class UpdateTable2
     {
         /// <inheritdoc />

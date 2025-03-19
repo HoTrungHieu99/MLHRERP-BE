@@ -10,7 +10,7 @@ namespace Services.IService
 {
     public interface IWarehouseReceiptService
     {
-        Task<bool> CreateReceiptAsync(WarehouseReceiptRequest request);
+        Task<bool> CreateReceiptAsync(WarehouseReceiptRequest request, Guid currentUserId);
         Task<bool> ApproveReceiptAsync(long id);
         Task<List<WarehouseReceiptDTO>> GetAllReceiptsAsync();
     }

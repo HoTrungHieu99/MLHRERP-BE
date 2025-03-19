@@ -105,5 +105,14 @@ namespace Repo.Repository
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<Guid> GetUserIdByWarehouseIdAsync(long warehouseId)
+        {
+            var userId = await _context.Warehouses
+                .Where(w => w.WarehouseId == warehouseId)
+                .Select(w => w.UserId)
+                .FirstAsync(); // dùng FirstAsync vì bạn đảm bảo tồn tại
+
+            return userId;
+        }
     }
 }
