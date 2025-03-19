@@ -17,6 +17,7 @@ namespace BusinessObject.Models
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal TotalAmount { get; set; }
+        public string Unit { get; set; }
         public DateTime CreatedAt { get; set; }
         // Navigation property
         public virtual Order Order { get; set; }

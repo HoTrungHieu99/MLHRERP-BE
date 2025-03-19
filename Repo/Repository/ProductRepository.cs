@@ -109,5 +109,14 @@ namespace Repo.Repository
                 .ToListAsync();
         }
 
+        public async Task<Product?> GetProductByIdAsync(long productId) // ✅ Đổi tên cho dễ hiểu
+        {
+            return await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.TaxConfig)
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.ProductId == productId);
+        }
+
     }
 }

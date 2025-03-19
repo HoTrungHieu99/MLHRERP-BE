@@ -27,6 +27,9 @@ namespace BusinessObject.Models
         // Navigation property
         public virtual List<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
         public ICollection<PaymentHistory> PaymentHistories { get; set; }
-        public ICollection<RequestExport> RequestExports { get; set; }
+        /*public ICollection<RequestExport> RequestExports { get; set; }*/
+        // ✅ Quan hệ 1-1: Một Order chỉ có một RequestExport
+        // ✅ Quan hệ 1-1: Một Order chỉ có một RequestExport
+        public virtual RequestExport RequestExport { get; set; }
     }
 }

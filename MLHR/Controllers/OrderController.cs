@@ -101,9 +101,18 @@ namespace MLHR.Controllers
         [Authorize(Roles = "2")]
         public async Task<IActionResult> ProcessPayment(Guid orderId)
         {
-            var result = await _orderService.ProcessPaymentAsync(orderId);
-            if (!result) return BadRequest("Thanh toán thất bại hoặc đơn hàng không hợp lệ.");
-            return Ok("Thanh toán thành công.");
+            try
+            {
+                var result = await _orderService.ProcessPaymentAsync(orderId);
+                if (result)
+                    return Ok(new { message = "Payment processed successfully!" });
+
+                return BadRequest(new { message = "Failed to process payment." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // ✅ API để hủy đơn hàng

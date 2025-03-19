@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Repo.IRepository;
 using Services.IService;
 using System.Linq;
+using Repo.Repository;
 
 namespace Services.Service
 {
@@ -18,15 +19,19 @@ namespace Services.Service
         private readonly IRequestProductRepository _requestProductRepository;
         private readonly IOrderRepository _orderRepository;
         //private readonly IOrderDetailRepository _orderDetailRepository;
+        private readonly IBatchRepository _batchRepository;
+        private readonly IProductRepository _productRepository;
 
         public RequestProductService(
             IRequestProductRepository requestProductRepository,
-            IOrderRepository orderRepository)
-            //,IOrderDetailRepository orderDetailRepository)
+            IOrderRepository orderRepository,
+            IBatchRepository batchRepository,
+            IProductRepository productRepository)
         {
             _requestProductRepository = requestProductRepository;
             _orderRepository = orderRepository;
-            //_orderDetailRepository = orderDetailRepository;
+            _batchRepository = batchRepository;
+            _productRepository = productRepository;
         }
 
         public async Task<IEnumerable<RequestProduct>> GetAllRequestsAsync()
@@ -39,7 +44,7 @@ namespace Services.Service
             return await _requestProductRepository.GetRequestByIdAsync(id);
         }
 
-        public async Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails)
+        /*public async Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails)
         {
             var agencyId = requestProduct.AgencyId;
 
@@ -80,6 +85,87 @@ namespace Services.Service
             }
 
             await _requestProductRepository.SaveChangesAsync();
+        }*/
+
+        public async Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails)
+        {
+            var agencyId = requestProduct.AgencyId;
+            var existingRequest = await _requestProductRepository.GetPendingRequestByAgencyAsync(agencyId);
+
+            foreach (var newItem in requestDetails)
+            {
+                // 🔹 Lấy thông tin sản phẩm từ bảng Product
+                var product = await _productRepository.GetByIdAsync(newItem.ProductId);
+                if (product == null)
+                {
+                    throw new ArgumentException($"ProductId {newItem.ProductId} không tồn tại.");
+                }
+
+                // 🔹 Kiểm tra số lượng trong kho
+                if (newItem.Quantity > product.AvailableStock)
+                {
+                    throw new ArgumentException($"Sản phẩm {newItem.ProductId} không đủ hàng. Bạn chỉ có thể đặt tối đa {product.AvailableStock}.");
+                }
+
+
+
+                // 🔹 Lấy giá UnitCost từ Batch và tính UnitPrice (UnitCost * 5%)
+                var batch = await _batchRepository.GetLatestBatchByProductIdAsync(newItem.ProductId);
+                if (batch == null)
+                {
+                    throw new ArgumentException($"Không tìm thấy lô hàng nào cho ProductId {newItem.ProductId}.");
+                }
+
+                decimal unitPrice = batch.UnitCost * 1.05m; // Giá = UnitCost * 5%
+
+                if (existingRequest != null)
+                {
+                    // 🔹 Nếu đã có đơn hàng Pending, cập nhật số lượng
+                    var existingDetail = existingRequest.RequestProductDetails.FirstOrDefault(d => d.ProductId == newItem.ProductId);
+                    if (existingDetail != null)
+                    {
+                        existingDetail.Quantity += newItem.Quantity;
+                    }
+                    else
+                    {
+                        existingRequest.RequestProductDetails.Add(new RequestProductDetail
+                        {
+                            ProductId = newItem.ProductId,
+                            Quantity = newItem.Quantity,
+                            Price = unitPrice
+                        });
+                    }
+                }
+                else
+                {
+                    // 🔹 Nếu không có đơn hàng Pending, tạo đơn mới
+                    if (requestProduct.RequestProductDetails == null)
+                    {
+                        requestProduct.RequestProductDetails = new List<RequestProductDetail>();
+                    }
+
+                    requestProduct.RequestProductDetails.Add(new RequestProductDetail
+                    {
+                        ProductId = newItem.ProductId,
+                        Quantity = newItem.Quantity,
+                        Unit = newItem.Unit,
+                        Price = unitPrice
+                    });
+                }
+            }
+
+            if (existingRequest != null)
+            {
+                await _requestProductRepository.UpdateRequestAsync(existingRequest);
+            }
+            else
+            {
+                requestProduct.CreatedAt = DateTime.UtcNow;
+                requestProduct.RequestStatus = "Pending";
+                await _requestProductRepository.AddRequestAsync(requestProduct);
+            }
+
+            await _requestProductRepository.SaveChangesAsync();
         }
 
         public async Task ApproveRequestAsync(Guid requestId, long approvedBy)
@@ -108,7 +194,7 @@ namespace Services.Service
                 {
                     OrderDate = DateTime.UtcNow,
                     SalesAgentId = approvedBy,
-                    Status = "Procesing",
+                    Status = "Processing",
                     RequestId = requestId,
                     Discount = 0,
                     FinalPrice = 0
@@ -123,7 +209,7 @@ namespace Services.Service
                 // **Tạo từng OrderDetail và tính tổng giá trị đơn hàng**
                 foreach (var detail in requestProduct.RequestProductDetails)
                 {
-                    var unitPrice = 100; // 🔹 Lấy từ bảng Product nếu cần
+                    var unitPrice = detail.Price; // 🔹 Lấy từ bảng Product nếu cần
                     var totalAmount = detail.Quantity * unitPrice;
 
                     var orderDetail = new OrderDetail
@@ -133,6 +219,7 @@ namespace Services.Service
                         Quantity = detail.Quantity,
                         UnitPrice = unitPrice,
                         TotalAmount = totalAmount,
+                        Unit = detail.Unit,
                         CreatedAt = DateTime.UtcNow
                     };
 

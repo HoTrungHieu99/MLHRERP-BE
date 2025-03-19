@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MinhLongDbContext))]
-    [Migration("20250318180327_Intial")]
+    [Migration("20250319065003_Intial")]
     partial class Intial
     {
         /// <inheritdoc />
@@ -588,6 +588,10 @@ namespace DataAccessLayer.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -922,13 +926,13 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("OrderId")
+                    b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("RequestDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("RequestedBy")
+                    b.Property<long>("RequestedByAgencyId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Status")
@@ -939,9 +943,8 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("ApprovedBy");
 
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("RequestedBy");
+                    b.HasIndex("OrderId")
+                        .IsUnique();
 
                     b.ToTable("RequestExport", (string)null);
                 });
@@ -1011,6 +1014,10 @@ namespace DataAccessLayer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("RequestDetailId"));
 
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<long>("ProductId")
                         .HasColumnType("bigint");
 
@@ -1019,6 +1026,10 @@ namespace DataAccessLayer.Migrations
 
                     b.Property<Guid>("RequestProductId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("RequestDetailId");
 
@@ -1745,24 +1756,18 @@ namespace DataAccessLayer.Migrations
                 {
                     b.HasOne("BusinessObject.Models.Employee", "ApprovedByEmployee")
                         .WithMany()
-                        .HasForeignKey("ApprovedBy");
+                        .HasForeignKey("ApprovedBy")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("BusinessObject.Models.Order", "Order")
-                        .WithMany("RequestExports")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("BusinessObject.Models.Employee", "RequestedByEmployee")
-                        .WithMany()
-                        .HasForeignKey("RequestedBy")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .WithOne("RequestExport")
+                        .HasForeignKey("BusinessObject.Models.RequestExport", "OrderId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("ApprovedByEmployee");
 
                     b.Navigation("Order");
-
-                    b.Navigation("RequestedByEmployee");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.RequestExportDetail", b =>
@@ -2019,7 +2024,8 @@ namespace DataAccessLayer.Migrations
 
                     b.Navigation("PaymentHistories");
 
-                    b.Navigation("RequestExports");
+                    b.Navigation("RequestExport")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BusinessObject.Models.PaymentHistory", b =>

@@ -71,7 +71,8 @@ namespace Repo.Repository
         public async Task<RequestProduct> GetRequestProductByRequestIdAsync(Guid requestId)
         {
             return await _context.RequestProducts
-                .FirstOrDefaultAsync(rp => rp.RequestProductId == requestId);
+            .Include(rp => rp.RequestProductDetails) // ✅ Bao gồm các sản phẩm trong Request
+            .FirstOrDefaultAsync(rp => rp.RequestProductId == requestId);
         }
     }
 

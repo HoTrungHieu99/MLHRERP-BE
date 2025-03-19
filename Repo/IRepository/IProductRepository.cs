@@ -17,5 +17,7 @@ namespace Repo.IRepository
         Task<bool> DeleteAsync(long id);
 
         Task<List<Product>> GetProductsByCategoryIdAsync(long categoryId);
+
+        Task<Product?> GetProductByIdAsync(long productId);
     }
 }

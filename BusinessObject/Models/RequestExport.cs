@@ -13,24 +13,23 @@ namespace BusinessObject.Models
         [Key]
         public int RequestExportId { get; set; }
 
-        [ForeignKey("RequestedByEmployee")]
-        public long RequestedBy { get; set; }
-        public Employee RequestedByEmployee { get; set; }
+        public long RequestedByAgencyId { get; set; }
 
         public DateTime RequestDate { get; set; }
 
         public string Status { get; set; } // Pending, Approved, Rejected
 
-        [ForeignKey("ApprovedByEmployee")]
+        [ForeignKey("ApprovedBy")]
         public long? ApprovedBy { get; set; }
         public Employee ApprovedByEmployee { get; set; }
 
         public DateTime? ApprovedDate { get; set; }
         public string Note { get; set; }
 
+        // ✅ Định nghĩa quan hệ 1-1 với Order
         [ForeignKey("Order")]
-        public Guid? OrderId { get; set; }
-        public Order Order { get; set; }
+        public Guid OrderId { get; set; }
+        public virtual Order Order { get; set; } // ✅ Đảm bảo đây là `virtual`
 
         public ICollection<RequestExportDetail> RequestExportDetails { get; set; }
         public ICollection<WarehouseRequestExport> WarehouseRequestExports { get; set; }

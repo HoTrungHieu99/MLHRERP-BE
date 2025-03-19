@@ -25,8 +25,8 @@ namespace Services.Service
             return requestExports.Select(re => new RequestExportDto
             {
                 RequestExportId = re.RequestExportId,
-                OrderId = re.OrderId??Guid.Empty,
-                RequestedBy = re.RequestedBy,
+                OrderId = re.OrderId,
+                RequestedBy = re.RequestedByAgencyId,
                 ApprovedBy = re.ApprovedBy ?? 0,
                 Status = re.Status,
                 ApprovedDate = re.ApprovedDate,

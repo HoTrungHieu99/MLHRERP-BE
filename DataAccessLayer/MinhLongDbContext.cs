@@ -352,11 +352,6 @@ namespace DataAccessLayer
                 .HasForeignKey(r => r.ApprovedBy)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<RequestProduct>()
-                .HasOne(r => r.AgencyAccount)
-                .WithMany()
-                .HasForeignKey(r => r.AgencyId)
-                .OnDelete(DeleteBehavior.NoAction); // Assuming Request is linked to an AgencyAccount
 
             /*modelBuilder.Entity<RequestProductDetail>()
                .HasIndex(d => d.ProductId)
@@ -379,11 +374,7 @@ namespace DataAccessLayer
                 .Property(od => od.UnitPrice)
                 .HasPrecision(18, 2); // 18 chữ số, 2 số thập phân
 
-            modelBuilder.Entity<RequestExport>()
-                .HasOne(re => re.Order)
-                .WithMany()
-                .HasForeignKey(re => re.OrderId)
-                .OnDelete(DeleteBehavior.Restrict);
+            
 
             //done
             modelBuilder.Entity<Batch>()
@@ -619,12 +610,6 @@ namespace DataAccessLayer
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade); // Khi xóa Order, RequestProduct cũng bị xóa
 
-            // Giữ nguyên quan hệ 1-N giữa Order và RequestExport (nếu cần)
-            modelBuilder.Entity<RequestExport>()
-                .HasOne(re => re.Order)
-                .WithMany(o => o.RequestExports)
-                .HasForeignKey(re => re.OrderId)
-                .OnDelete(DeleteBehavior.Restrict);
 
             // ✅ Cấu hình quan hệ 1-N giữa Order và OrderDetail
             modelBuilder.Entity<OrderDetail>()
@@ -649,7 +634,23 @@ namespace DataAccessLayer
                 .Property(od => od.TotalAmount)
                 .HasPrecision(18, 2);
 
+            modelBuilder.Entity<RequestProductDetail>()
+                .Property(od => od.Price)
+                .HasPrecision(18, 2);
 
+            // ✅ Quan hệ 1-1 giữa Order và RequestExport
+            modelBuilder.Entity<RequestExport>()
+                .HasOne(re => re.Order)
+                .WithOne(o => o.RequestExport) // ✅ Một Order chỉ có một RequestExport
+                .HasForeignKey<RequestExport>(re => re.OrderId)
+                .OnDelete(DeleteBehavior.NoAction); // 🔥 Xóa Order thì RequestExport cũng bị xóa
+
+            // ✅ Quan hệ N-1 giữa Employee và RequestExport (một Employee có thể duyệt nhiều RequestExport)
+            modelBuilder.Entity<RequestExport>()
+                .HasOne(re => re.ApprovedByEmployee)
+                .WithMany()
+                .HasForeignKey(re => re.ApprovedBy)
+                .OnDelete(DeleteBehavior.SetNull); // Nếu Employee bị xóa, ApprovedBy = NULL
         }
     }
 
