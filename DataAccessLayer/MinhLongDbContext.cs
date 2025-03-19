@@ -217,10 +217,7 @@ namespace DataAccessLayer
                 .HasOne(a => a.User)
                 .WithOne(u => u.AgencyAccount)
                 .HasForeignKey<AgencyAccount>(a => a.UserId);
-            // Đảm bảo mỗi User chỉ có 1 Warehouse
-            modelBuilder.Entity<Warehouse>()
-                .HasIndex(w => w.UserId)
-                .IsUnique();
+            
             // Liên kết Warehouse với Address (1 Warehouse - 1 Address)
             modelBuilder.Entity<Warehouse>()
                 .HasOne(w => w.Address)
@@ -655,6 +652,19 @@ namespace DataAccessLayer
                 .WithMany()
                 .HasForeignKey(re => re.ApprovedBy)
                 .OnDelete(DeleteBehavior.SetNull); // Nếu Employee bị xóa, ApprovedBy = NULL
+
+            modelBuilder.Entity<WarehouseManager>()
+                .HasOne(wm => wm.Warehouse)
+                .WithMany() // ✅ Một kho có thể có nhiều Thủ kho
+                .HasForeignKey(wm => wm.WarehouseId)
+                .OnDelete(DeleteBehavior.Cascade); // ✅ Xóa kho thì xóa quyền quản lý kho
+
+            modelBuilder.Entity<WarehouseManager>()
+                .HasOne(wm => wm.User)
+                .WithMany() // ✅ Một User có thể quản lý nhiều kho
+                .HasForeignKey(wm => wm.UserId)
+                .OnDelete(DeleteBehavior.Cascade); // ✅ Xóa User thì xóa quyền quản lý kho
+
         }
     }
 
