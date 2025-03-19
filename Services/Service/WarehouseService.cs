@@ -24,13 +24,13 @@ namespace Services.Service
 
         public List<Warehouse> GetAllWarehouses() => _warehouseRepo.GetAllWarehouses();
 
-        //public Warehouse GetWarehouseByUserId(Guid userId) => _warehouseRepo.GetWarehouseByUserId(userId);
+        public Warehouse GetWarehouseByUserId(Guid userId) => _warehouseRepo.GetWarehouseByUserId(userId);
 
         public void CreateWarehouse(Guid userId, string warehousName, string street, string province, string district, string ward, string note)
         {
-            /*// Kiểm tra xem User đã có Warehouse chưa
+            // Kiểm tra xem User đã có Warehouse chưa
             if (_warehouseRepo.GetWarehouseByUserId(userId) != null)
-                throw new Exception("Each Employee can only create one Warehouse!");*/
+                throw new Exception("Each Employee can only create one Warehouse!");
 
             // Lấy ID của Province
             var provinceId = _locationRepository.GetProvinceIdByName(province);
@@ -74,8 +74,8 @@ namespace Services.Service
             if (warehouse == null)
                 throw new Exception("Warehouse does not exist!");
 
-            /*if (warehouse.UserId != userId)
-                throw new Exception("You do not have permission to update this Warehouse!");*/
+            if (warehouse.UserId != userId)
+                throw new Exception("You do not have permission to update this Warehouse!");
 
             // Tìm Address liên kết với Warehouse
             var address = _locationRepository.GetAddressById(warehouse.AddressId);  // ✅ Đảm bảo gọi từ đúng Interface

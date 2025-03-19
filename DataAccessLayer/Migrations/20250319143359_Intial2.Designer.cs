@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MinhLongDbContext))]
-    [Migration("20250319114630_IntialDb")]
-    partial class IntialDb
+    [Migration("20250319143359_Intial2")]
+    partial class Intial2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1231,6 +1231,9 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("WarehouseName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1238,6 +1241,9 @@ namespace DataAccessLayer.Migrations
                     b.HasKey("WarehouseId");
 
                     b.HasIndex("AddressId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId")
                         .IsUnique();
 
                     b.ToTable("Warehouse", (string)null);
@@ -1290,29 +1296,6 @@ namespace DataAccessLayer.Migrations
                     b.HasIndex("WarehouseId");
 
                     b.ToTable("WarehouseLedger", (string)null);
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.WarehouseManager", b =>
-                {
-                    b.Property<int>("WarehouseManagerId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WarehouseManagerId"));
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<long>("WarehouseId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("WarehouseManagerId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("WarehouseId");
-
-                    b.ToTable("WarehouseManager");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.WarehouseProduct", b =>
@@ -1918,7 +1901,15 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BusinessObject.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Address");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.WarehouseLedger", b =>
@@ -1942,25 +1933,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("ExportTransaction");
 
                     b.Navigation("ImportTransaction");
-
-                    b.Navigation("Warehouse");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.WarehouseManager", b =>
-                {
-                    b.HasOne("BusinessObject.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BusinessObject.Models.Warehouse", "Warehouse")
-                        .WithMany()
-                        .HasForeignKey("WarehouseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
 
                     b.Navigation("Warehouse");
                 });

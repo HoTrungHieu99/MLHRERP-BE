@@ -11,7 +11,7 @@ namespace Repo.IRepository
     public interface IWarehouseRepository
     {
         List<Warehouse> GetAllWarehouses();
-        //Warehouse GetWarehouseByUserId(Guid userId);
+        Warehouse GetWarehouseByUserId(Guid userId);
         Warehouse GetWarehouseById(int warehouseId);
         Task<Warehouse> GetWarehouseByIdAsync(int warehouseId);
         void AddWarehouse(Warehouse warehouse);

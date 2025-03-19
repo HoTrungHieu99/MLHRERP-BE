@@ -20,7 +20,7 @@ namespace MLHR.Controllers
             _warehouseService = warehouseService;
         }
 
-        /*// Lấy Warehouse của Employee hiện tại
+        // Lấy Warehouse của Employee hiện tại
         [Authorize(Roles = "3")]
         [HttpGet("warehouses")]
         public IActionResult GetMyWarehouse()
@@ -32,7 +32,7 @@ namespace MLHR.Controllers
                 return NotFound("You do not have a Warehouse!");
 
             return Ok(warehouse);
-        }*/
+        }
 
         // Tạo Warehouse (chỉ cho Warehouse Manager)
         [Authorize(Roles = "3")]
