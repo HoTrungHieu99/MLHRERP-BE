@@ -116,7 +116,7 @@ namespace MLHR.Controllers
             }
         }
 
-        [HttpPut("{requestId}/cancel")]
+        [HttpPut("{orderId}/cancel")]
         public async Task<IActionResult> CancelRequest(Guid requestId)
         {
             try

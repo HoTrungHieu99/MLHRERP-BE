@@ -126,7 +126,7 @@ namespace Services.Service
                     throw new ArgumentException($"Không tìm thấy lô hàng nào cho ProductId {newItem.ProductId}.");
                 }
 
-                decimal unitPrice = batch.UnitCost * 1.05m; // Giá = UnitCost * 5%
+                decimal unitPrice = batch.SellingPrice??0; // Giá = UnitCost * 5%
 
                 if (existingRequest != null)
                 {
