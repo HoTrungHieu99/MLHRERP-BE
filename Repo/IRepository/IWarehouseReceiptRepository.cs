@@ -12,6 +12,6 @@ namespace Repo.IRepository
         Task<bool> AddAsync(WarehouseReceipt warehouseReceipt);
         Task<WarehouseReceipt> GetByIdAsync(long id);
         Task<List<WarehouseReceipt>> GetAllAsync();
-        Task<bool> ApproveAsync(long id);
+        Task<bool> ApproveAsync(long id, Guid currentUserId);
     }
 }

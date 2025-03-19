@@ -92,10 +92,11 @@ namespace Services.Service
             return await _repository.AddAsync(warehouseReceipt);
         }
 
-        public async Task<bool> ApproveReceiptAsync(long id)
+        public async Task<bool> ApproveReceiptAsync(long id, Guid currentUserId)
         {
-            return await _repository.ApproveAsync(id);
+            return await _repository.ApproveAsync(id, currentUserId);
         }
+
 
         public async Task<List<WarehouseReceiptDTO>> GetAllReceiptsAsync()
         {
