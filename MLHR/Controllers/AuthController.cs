@@ -22,7 +22,7 @@ namespace MLHR.Controllers
         /// <summary>
         /// Đăng nhập bằng Username & Password
         /// </summary>
-        [HttpPost("auth/login")]
+        /*[HttpPost("auth/login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             try
@@ -34,7 +34,7 @@ namespace MLHR.Controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
-        }
+        }*/
 
 
 
