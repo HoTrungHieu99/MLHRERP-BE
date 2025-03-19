@@ -51,7 +51,7 @@ namespace MLHR.Controllers
         }
 
         [Authorize(Roles = "3")]
-        [HttpPut("warehouses/{id}")]
+        [HttpPut("warehouses/{warehouseId}")]
         public IActionResult UpdateWarehouse(int warehouseId, [FromBody] WarehouseUpdateRequest request)
         {
             var roleId = int.Parse(User.FindFirst(ClaimTypes.Role)?.Value ?? "0");
@@ -71,7 +71,7 @@ namespace MLHR.Controllers
             }
         }
 
-        [Authorize(Roles = "3")]
+        /*[Authorize(Roles = "3")]
         [HttpDelete("warehouses/{id}")]
         public async Task<IActionResult> DeleteWarehouse(int warehouseId)
         {
@@ -82,6 +82,31 @@ namespace MLHR.Controllers
                 return NotFound(new { message = "Warehouse not found." });
             }
             return Ok("Warehouse has been delete!");
+        }*/
+
+        [Authorize(Roles = "3")]
+        [HttpGet("{warehouseId}/products")]
+        public async Task<ActionResult<IEnumerable<WarehouseProductDto>>> GetProductsByWarehouseId(long warehouseId)
+        {
+            var products = await _warehouseService.GetProductsByWarehouseIdAsync(warehouseId);
+            if (products == null || !products.Any())
+            {
+                return NotFound("No products found in this warehouse.");
+            }
+            return Ok(products);
+        }
+
+        // 🔹 API lấy một sản phẩm trong kho theo ID
+        [Authorize(Roles = "3")]
+        [HttpGet("{warehouseId}/products/{warehouseProductId}")]
+        public async Task<ActionResult<WarehouseProductDto>> GetProductById(long warehouseId, long warehouseProductId)
+        {
+            var product = await _warehouseService.GetProductByIdAsync(warehouseProductId);
+            if (product == null)
+            {
+                return NotFound("Product not found.");
+            }
+            return Ok(product);
         }
     }
 }

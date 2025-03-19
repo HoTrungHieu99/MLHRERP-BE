@@ -1,4 +1,5 @@
-﻿using BusinessObject.Models;
+﻿using BusinessObject.DTO;
+using BusinessObject.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,9 @@ namespace Services.IService
         void CreateWarehouse(Guid userId, string warehousName, string street, string province, string district, string ward, string note);
         void UpdateWarehouse(Guid userId, int warehouseId, string warehousName, string street, string province, string district, string ward, string note);
         Task<bool> DeleteWarehouseAsync(int warehouseId);
+
+        Task<IEnumerable<WarehouseProductDto>> GetProductsByWarehouseIdAsync(long warehouseId);
+        Task<WarehouseProductDto> GetProductByIdAsync(long warehouseProductId);
 
     }
 }

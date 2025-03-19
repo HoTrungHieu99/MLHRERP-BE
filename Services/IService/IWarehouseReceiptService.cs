@@ -12,7 +12,7 @@ namespace Services.IService
     {
         Task<bool> CreateReceiptAsync(WarehouseReceiptRequest request);
         Task<bool> ApproveReceiptAsync(long id);
-        Task<List<WarehouseReceipt>> GetAllReceiptsAsync();
+        Task<List<WarehouseReceiptDTO>> GetAllReceiptsAsync();
     }
 
 }

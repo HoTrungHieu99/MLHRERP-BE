@@ -20,7 +20,7 @@ namespace MLHR.Controllers
         }
 
         /// <summary>
-        /// Đăng nhập bằng Email & Password
+        /// Đăng nhập bằng Username & Password
         /// </summary>
         [HttpPost("auth/login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
