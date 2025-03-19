@@ -829,9 +829,12 @@ namespace DataAccessLayer.Migrations
                     BatchCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UnitCost = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
+                    DateOfManufacture = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Unit = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    SellingPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    ProfitMarginPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -910,6 +913,8 @@ namespace DataAccessLayer.Migrations
                     WarehouseId = table.Column<long>(type: "bigint", nullable: false),
                     QuantityRequested = table.Column<int>(type: "int", nullable: false),
                     QuantityApproved = table.Column<int>(type: "int", nullable: true),
+                    RemainingQuantity = table.Column<int>(type: "int", nullable: false),
+                    ApprovedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -921,6 +926,11 @@ namespace DataAccessLayer.Migrations
                         principalTable: "RequestExport",
                         principalColumn: "RequestExportId",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_WarehouseRequestExport_User_ApprovedBy",
+                        column: x => x.ApprovedBy,
+                        principalTable: "User",
+                        principalColumn: "UserId");
                     table.ForeignKey(
                         name: "FK_WarehouseRequestExport_Warehouse_WarehouseId",
                         column: x => x.WarehouseId,
@@ -1340,6 +1350,11 @@ namespace DataAccessLayer.Migrations
                 name: "IX_WarehouseReceipt_WarehouseId",
                 table: "WarehouseReceipt",
                 column: "WarehouseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WarehouseRequestExport_ApprovedBy",
+                table: "WarehouseRequestExport",
+                column: "ApprovedBy");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WarehouseRequestExport_RequestExportId",

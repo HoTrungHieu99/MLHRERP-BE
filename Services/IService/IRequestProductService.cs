@@ -12,7 +12,7 @@ namespace Services.IService
     {
         Task<IEnumerable<RequestProduct>> GetAllRequestsAsync();
         Task<RequestProduct> GetRequestByIdAsync(Guid id);
-        Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails);
+        Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails, Guid userId);
         Task ApproveRequestAsync(Guid requestId, long approvedBy);
 
         Task<List<RequestProduct>> GetRequestProductsByAgencyIdAsync(long agencyId);

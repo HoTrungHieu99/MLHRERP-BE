@@ -1,6 +1,7 @@
 ﻿using BusinessObject.DTO;
 using BusinessObject.Models;
 using DataAccessLayer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Repo.IRepository;
@@ -36,7 +37,7 @@ namespace Repo.Repository
 
         }
 
-        public async Task<bool> ApproveAsync(long id)
+        public async Task<bool> ApproveAsync(long id, Guid currentUserId)
         {
             var warehouseReceipt = await _context.WarehouseReceipts.FindAsync(id);
             if (warehouseReceipt.IsApproved == true)
@@ -45,6 +46,16 @@ namespace Repo.Repository
             }
             else
             {
+
+                var warehouseUserId = await _context.Warehouses
+                .Where(w => w.WarehouseId == warehouseReceipt.WarehouseId)
+                .Select(w => w.UserId)
+                .FirstOrDefaultAsync();
+
+                if (warehouseUserId != currentUserId)
+                {
+                    throw new BadHttpRequestException("Kho này không phải kho của bạn! Bạn không có quyền duyệt phiếu nhập này.");
+                }
 
                 // 🔥 Lấy WarehouseReceipt từ database
                 var receipt = await _context.WarehouseReceipts

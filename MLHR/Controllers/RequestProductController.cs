@@ -116,13 +116,20 @@ namespace MLHR.Controllers
                     });
                 }
 
-                await _requestProductService.CreateRequestAsync(requestProduct, requestDetails);
+                await _requestProductService.CreateRequestAsync(requestProduct, requestDetails, userId);
                 return Ok(requestProduct);
-            }catch (ArgumentException ex)
+            }
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message }); // ✅ Sử dụng BadRequest() ở Controller
             }
+            catch (Exception ex)
+            {
+                // Nếu là lỗi khác, thay vì 500, vẫn trả về lỗi 400 BadRequest với nội dung tùy chỉnh
+                return StatusCode(500, new { error = "Đã có lỗi xảy ra trong hệ thống." });
+            }
         }
+        
 
         [Authorize] // Xác thực người dùng trước
         [HttpPut("{id}/approve")]

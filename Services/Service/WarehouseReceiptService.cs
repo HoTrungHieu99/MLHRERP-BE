@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Repo.IRepository;
 using Repo.Repository;
+using Services.Exceptions;
 using Services.IService;
 using System;
 using System.Collections.Generic;
@@ -17,14 +18,16 @@ namespace Services.Service
     {
         private readonly IWarehouseReceiptRepository _repository;
         private readonly IBatchRepository _batchRepository; // ✅ Thêm Batch Repository để kiểm tra số lượng lô đã tạo
+        private readonly IWarehouseRepository _warehouseRepository;
 
-        public WarehouseReceiptService(IWarehouseReceiptRepository repository, IBatchRepository batchRepository)
+        public WarehouseReceiptService(IWarehouseReceiptRepository repository, IBatchRepository batchRepository, IWarehouseRepository warehouseRepository)
         {
             _repository = repository;
             _batchRepository = batchRepository;
+            _warehouseRepository = warehouseRepository;
         }
 
-        public async Task<bool> CreateReceiptAsync(WarehouseReceiptRequest request)
+        public async Task<bool> CreateReceiptAsync(WarehouseReceiptRequest request, Guid currentUserId)
         {
             var validateImportType = new HashSet<string>
     {
@@ -37,6 +40,15 @@ namespace Services.Service
             if (!validateImportType.Contains(request.ImportType))
             {
                 throw new Exception("ImportType is invalid! Only accepted: Nhập Sản Xuất, Nhập trả hàng, Nhập Mua, Nhập bổ sung!");
+            }
+
+            // ✅ Lấy UserId của Warehouse
+            var warehouseUserId = await _warehouseRepository.GetUserIdByWarehouseIdAsync(request.WarehouseId);
+
+            // ✅ Kiểm tra quyền sở hữu kho hàng
+            if (warehouseUserId != currentUserId)
+            {
+                throw new BadRequestException("Kho này không phải kho của bạn! Bạn không có quyền gì ở kho này.");
             }
 
             // ✅ Tạo Batch Code duy nhất
@@ -80,10 +92,11 @@ namespace Services.Service
             return await _repository.AddAsync(warehouseReceipt);
         }
 
-        public async Task<bool> ApproveReceiptAsync(long id)
+        public async Task<bool> ApproveReceiptAsync(long id, Guid currentUserId)
         {
-            return await _repository.ApproveAsync(id);
+            return await _repository.ApproveAsync(id, currentUserId);
         }
+
 
         public async Task<List<WarehouseReceiptDTO>> GetAllReceiptsAsync()
         {

@@ -11,6 +11,8 @@ using Repo.IRepository;
 using Services.IService;
 using System.Linq;
 using Repo.Repository;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Services.Exceptions;
 
 namespace Services.Service
 {
@@ -21,17 +23,20 @@ namespace Services.Service
         //private readonly IOrderDetailRepository _orderDetailRepository;
         private readonly IBatchRepository _batchRepository;
         private readonly IProductRepository _productRepository;
+        private readonly IUserRepository _userRepository;
 
         public RequestProductService(
             IRequestProductRepository requestProductRepository,
             IOrderRepository orderRepository,
             IBatchRepository batchRepository,
-            IProductRepository productRepository)
+            IProductRepository productRepository,
+            IUserRepository userRepository)
         {
             _requestProductRepository = requestProductRepository;
             _orderRepository = orderRepository;
             _batchRepository = batchRepository;
             _productRepository = productRepository;
+            _userRepository = userRepository;
         }
 
         public async Task<IEnumerable<RequestProduct>> GetAllRequestsAsync()
@@ -97,7 +102,7 @@ namespace Services.Service
             await _requestProductRepository.SaveChangesAsync();
         }*/
 
-        public async Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails)
+        /*public async Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails)
         {
             var agencyId = requestProduct.AgencyId;
             var existingRequest = await _requestProductRepository.GetPendingRequestByAgencyAsync(agencyId);
@@ -176,7 +181,100 @@ namespace Services.Service
             }
 
             await _requestProductRepository.SaveChangesAsync();
+        }*/
+
+        public async Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails, Guid userId)
+        {
+            // ✅ Lấy AgencyId từ UserId (GUID)
+            var agencyId = await _userRepository.GetAgencyIdByUserId(userId);
+            if (agencyId == null)
+            {
+                throw new UnauthorizedAccessException("Không tìm thấy AgencyId từ User đang đăng nhập.");
+            }
+
+            // ✅ Kiểm tra nếu Agency đã có đơn hàng Approved trong 24 giờ qua
+            bool hasRecentApprovedRequest = await _requestProductRepository.HasApprovedRequestInLast24Hours(agencyId.Value);
+            if (hasRecentApprovedRequest)
+            {
+                throw new BadRequestException("Bạn đã có một đơn hàng được duyệt trong vòng 24 giờ qua. Vui lòng đợi trước khi tạo đơn hàng mới.");
+            }
+
+            var existingRequest = await _requestProductRepository.GetPendingRequestByAgencyAsync(agencyId.Value);
+
+            foreach (var newItem in requestDetails)
+            {
+                // ✅ Lấy thông tin sản phẩm từ Product
+                var product = await _productRepository.GetByIdAsync(newItem.ProductId);
+                if (product == null)
+                {
+                    throw new ArgumentException($"ProductId {newItem.ProductId} không tồn tại.");
+                }
+
+                // ✅ Kiểm tra số lượng tồn kho
+                if (newItem.Quantity > product.AvailableStock)
+                {
+                    throw new ArgumentException($"Sản phẩm {newItem.ProductId} không đủ hàng. Bạn chỉ có thể đặt tối đa {product.AvailableStock}.");
+                }
+
+                // ✅ Lấy giá từ Batch và tính giá bán (SellingPrice)
+                var batch = await _batchRepository.GetLatestBatchByProductIdAsync(newItem.ProductId);
+                if (batch == null)
+                {
+                    throw new ArgumentException($"Không tìm thấy lô hàng nào cho ProductId {newItem.ProductId}.");
+                }
+
+                decimal unitPrice = batch.SellingPrice ?? 0;
+
+                if (existingRequest != null)
+                {
+                    var existingDetail = existingRequest.RequestProductDetails.FirstOrDefault(d => d.ProductId == newItem.ProductId);
+                    if (existingDetail != null)
+                    {
+                        existingDetail.Quantity += newItem.Quantity;
+                    }
+                    else
+                    {
+                        existingRequest.RequestProductDetails.Add(new RequestProductDetail
+                        {
+                            ProductId = newItem.ProductId,
+                            Quantity = newItem.Quantity,
+                            Price = unitPrice
+                        });
+                    }
+                }
+                else
+                {
+                    if (requestProduct.RequestProductDetails == null)
+                    {
+                        requestProduct.RequestProductDetails = new List<RequestProductDetail>();
+                    }
+
+                    requestProduct.RequestProductDetails.Add(new RequestProductDetail
+                    {
+                        ProductId = newItem.ProductId,
+                        Quantity = newItem.Quantity,
+                        Unit = newItem.Unit,
+                        Price = unitPrice
+                    });
+                }
+            }
+
+            if (existingRequest != null)
+            {
+                await _requestProductRepository.UpdateRequestAsync(existingRequest);
+            }
+            else
+            {
+                requestProduct.AgencyId = agencyId.Value; // Gán AgencyId từ User đăng nhập
+                requestProduct.CreatedAt = DateTime.UtcNow;
+                requestProduct.RequestStatus = "Pending";
+                await _requestProductRepository.AddRequestAsync(requestProduct);
+            }
+
+            await _requestProductRepository.SaveChangesAsync();
         }
+
+
 
         public async Task ApproveRequestAsync(Guid requestId, long approvedBy)
         {
