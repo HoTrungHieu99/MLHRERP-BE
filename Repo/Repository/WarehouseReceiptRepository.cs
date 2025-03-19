@@ -123,8 +123,9 @@ namespace Repo.Repository
                         Quantity = batch.Quantity,
                         UnitCost = batch.UnitCost,
                         TotalAmount = batch.UnitCost * batch.Quantity,
-                        ExpiryDate = receipt.DateImport.AddDays(product.DefaultExpiration ?? 0),
-                        Status = batch.Status
+                        DateOfManufacture = batch.DateOfManufacture,
+                        ExpiryDate = batch.DateOfManufacture.AddDays(product.DefaultExpiration ?? 0),
+                        Status = "CALCULATING_PRICE"
                     };
 
                     _context.Batches.Add(newBatch);

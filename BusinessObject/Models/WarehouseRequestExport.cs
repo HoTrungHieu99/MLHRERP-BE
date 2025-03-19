@@ -25,6 +25,10 @@ namespace BusinessObject.Models
         public int? QuantityApproved { get; set; }
         public int RemainingQuantity { get; set; }
 
+        [ForeignKey("User")]
+        public Guid? ApprovedBy { get; set; } // UserId của người duyệt
+        public User User { get; set; }
+
         public string Status { get; set; } // PENDING, APPROVED, REJECTED
     }
 

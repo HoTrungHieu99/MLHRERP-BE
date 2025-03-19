@@ -1,6 +1,7 @@
 ﻿using BusinessObject.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Services.IService;
 using Services.Service;
 
@@ -42,6 +43,8 @@ namespace MLHR.Controllers
             var result = await _service.ApproveReceiptAsync(id);
             return result ? Ok("Approved!") : NotFound("Receipt not found");
         }
+
+        
     }
 
 }

@@ -17,10 +17,18 @@ namespace BusinessObject.Models
         public string BatchCode { get; set; }
         public decimal UnitCost { get; set; }
         public int Quantity { get; set; }
+        public DateTime DateOfManufacture { get; set; }
         public DateTime ExpiryDate { get; set; }
         public string Unit{ get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
         public decimal TotalAmount { get; set; }
-        public decimal SellingPrice { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? SellingPrice { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? ProfitMarginPercent { get; set; } // Phần trăm lợi nhuận
         public string Status { get; set; } // Available, Expired
 
         [ForeignKey("ImportTransactionDetailId")]
