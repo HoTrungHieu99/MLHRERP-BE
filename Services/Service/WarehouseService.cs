@@ -1,4 +1,5 @@
-﻿using BusinessObject.Models;
+﻿using BusinessObject.DTO;
+using BusinessObject.Models;
 using Repo.IRepository;
 using Repo.Repository;
 using Services.IService;
@@ -115,6 +116,16 @@ namespace Services.Service
 
             await _warehouseRepo.DeleteWarehouseAsync(warehouse);
             return true;
+        }
+
+        public async Task<IEnumerable<WarehouseProductDto>> GetProductsByWarehouseIdAsync(long warehouseId)
+        {
+            return await _warehouseRepo.GetProductsByWarehouseIdAsync(warehouseId);
+        }
+
+        public async Task<WarehouseProductDto> GetProductByIdAsync(long warehouseProductId)
+        {
+            return await _warehouseRepo.GetProductByIdAsync(warehouseProductId);
         }
     }
 }

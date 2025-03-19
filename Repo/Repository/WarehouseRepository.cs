@@ -1,4 +1,5 @@
-﻿using BusinessObject.Models;
+﻿using BusinessObject.DTO;
+using BusinessObject.Models;
 using DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using Repo.IRepository;
@@ -64,6 +65,44 @@ namespace Repo.Repository
 
             _context.Warehouses.Remove(warehouse); // 🔥 Sau đó xóa Warehouse
             await _context.SaveChangesAsync(); // 🔥 Lưu thay đổi vào DB
+        }
+
+        public async Task<IEnumerable<WarehouseProductDto>> GetProductsByWarehouseIdAsync(long warehouseId)
+        {
+            return await _context.WarehouseProduct
+                .Where(wp => wp.WarehouseId == warehouseId)
+                .Select(wp => new WarehouseProductDto
+                {
+                    WarehouseProductId = wp.WarehouseProductId,
+                    ProductId = wp.ProductId,
+                    ProductName = wp.Product.ProductName,
+                    WarehouseId = wp.WarehouseId,
+                    BatchId = wp.BatchId,
+                    BatchCode = wp.Batch.BatchCode,
+                    ExpirationDate = wp.ExpirationDate,
+                    Quantity = wp.Quantity,
+                    Status = wp.Status
+                })
+                .ToListAsync();
+        }
+
+        public async Task<WarehouseProductDto> GetProductByIdAsync(long warehouseProductId)
+        {
+            return await _context.WarehouseProduct
+                .Where(wp => wp.WarehouseProductId == warehouseProductId)
+                .Select(wp => new WarehouseProductDto
+                {
+                    WarehouseProductId = wp.WarehouseProductId,
+                    ProductId = wp.ProductId,
+                    ProductName = wp.Product.ProductName,
+                    WarehouseId = wp.WarehouseId,
+                    BatchId = wp.BatchId,
+                    BatchCode = wp.Batch.BatchCode,
+                    ExpirationDate = wp.ExpirationDate,
+                    Quantity = wp.Quantity,
+                    Status = wp.Status
+                })
+                .FirstOrDefaultAsync();
         }
 
     }
