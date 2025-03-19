@@ -8,6 +8,7 @@ namespace BusinessObject.DTO
 {
     public class WarehouseReceiptDTO
     {
+        public long WarehouseReceiptId { get; set; }
         public string DocumentNumber { get; set; }
         public DateTime DocumentDate { get; set; }
         public long WarehouseId { get; set; }

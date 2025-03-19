@@ -10,6 +10,11 @@ namespace Repo.IRepository
     public interface IBatchRepository
     {
         Task<Batch?> GetLatestBatchByProductIdAsync(long productId);
+        Task<Batch> GetByIdAsync(long batchId);
+        Task<IEnumerable<Batch>> GetAllAsync();
+        Task<bool> UpdateAsync(Batch batch);
+        Task<IEnumerable<Batch>> GetBatchesByProductIdAsync(long productId);
+        Task<int> CountBatchesByDateAsync(DateTime date);
     }
 
 }

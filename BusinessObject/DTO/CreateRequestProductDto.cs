@@ -11,7 +11,6 @@ namespace BusinessObject.DTO
     {
         //public string RequestNumber { get; set; } // Mã số Request
         public string AgencyName { get; set; }
-        public string RequestStatus { get; set; }
         public string Note { get; set; } // Ghi chú của Request
         public List<RequestProductDetailDto> Products { get; set; }
     }

@@ -10,8 +10,7 @@ namespace BusinessObject.DTO
 {
     public class BatchRequest
     {
-        [Required]
-        public string BatchCode { get; set; } // Mã lô
+        public string? BatchCode { get; set; } // Mã lô
 
         [Required]
         public long ProductId { get; set; } // Mã sản phẩm
@@ -28,10 +27,10 @@ namespace BusinessObject.DTO
         [JsonIgnore]
         public decimal TotalAmount { get; set; } // Thành tiền
 
+        public string? Status { get; set; } // Trạng thái (Có sẵn, Hết hạn)
         [Required]
-        public string Status { get; set; } // Trạng thái (Có sẵn, Hết hạn)
+        public DateTime DateOfManufacture { get; set; } // ✅ Ngày sản xuất (Bắt buộc nhập)
 
-        
     }
 
 }

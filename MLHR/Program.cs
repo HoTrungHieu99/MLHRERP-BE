@@ -113,6 +113,7 @@ builder.Services.AddScoped<IExportWarehouseReceiptService, ExportWarehouseReceip
 builder.Services.AddScoped<IExportWarehouseReceiptRepository, ExportWarehouseReceiptRepository>();
 
 builder.Services.AddScoped<IBatchRepository, BatchRepository>();
+builder.Services.AddScoped<IBatchService, BatchService>();
 
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddHttpContextAccessor();
