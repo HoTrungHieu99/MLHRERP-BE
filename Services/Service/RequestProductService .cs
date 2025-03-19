@@ -49,6 +49,11 @@ namespace Services.Service
             return requestProduct;
         }
 
+        public async Task<List<RequestProduct>> GetRequestProductsByAgencyIdAsync(long agencyId)
+        {
+            return await _requestProductRepository.GetRequestProductAgencyIdAsync(agencyId);
+        }
+
         /*public async Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails)
         {
             var agencyId = requestProduct.AgencyId;
@@ -199,7 +204,7 @@ namespace Services.Service
                 {
                     OrderDate = DateTime.UtcNow,
                     SalesAgentId = approvedBy,
-                    Status = "Processing",
+                    Status = "WaitPaid",
                     RequestId = requestId,
                     Discount = 0,
                     FinalPrice = 0

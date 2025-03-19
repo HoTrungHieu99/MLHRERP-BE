@@ -3,6 +3,7 @@ using BusinessObject.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.IService;
+using Services.Service;
 using System.Security.Claims;
 
 namespace MLHR.Controllers
@@ -13,11 +14,13 @@ namespace MLHR.Controllers
     {
         private readonly IRequestProductService _requestProductService;
         private readonly IUserService _userService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public RequestProductController(IRequestProductService requestProductService, IUserService userService)
+        public RequestProductController(IRequestProductService requestProductService, IUserService userService, IHttpContextAccessor httpContextAccessor)
         {
             _requestProductService = requestProductService;
             _userService = userService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpGet]
@@ -25,6 +28,40 @@ namespace MLHR.Controllers
         {
             var requests = await _requestProductService.GetAllRequestsAsync();
             return Ok(requests);
+        }
+
+        // API lấy danh sách Order dựa trên AgencyId của user đang đăng nhập
+        [HttpGet("my-request-product")]
+        public async Task<IActionResult> GetOrdersForLoggedInAgency()
+        {
+            var agencyId = GetLoggedInAgencyId();
+            if (agencyId == null)
+            {
+                return Unauthorized(new { message = "User is not associated with any agency" });
+            }
+
+            var orders = await _requestProductService.GetRequestProductsByAgencyIdAsync(agencyId.Value);
+
+            if (orders == null || !orders.Any())
+            {
+                return NotFound(new { message = "No orders found for this agency" });
+            }
+
+            return Ok(orders);
+        }
+
+        private long? GetLoggedInAgencyId()
+        {
+            var claimsIdentity = _httpContextAccessor.HttpContext?.User.Identity as ClaimsIdentity;
+            if (claimsIdentity != null)
+            {
+                var agencyIdClaim = claimsIdentity.FindFirst("AgencyId");
+                if (agencyIdClaim != null && long.TryParse(agencyIdClaim.Value, out long agencyId))
+                {
+                    return agencyId;
+                }
+            }
+            return null;
         }
 
         [HttpGet("{requestId}")]

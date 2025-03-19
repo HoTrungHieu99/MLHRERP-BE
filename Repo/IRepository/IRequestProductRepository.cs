@@ -18,5 +18,7 @@ namespace Repo.IRepository
         Task SaveChangesAsync();
         Task<RequestProduct> GetRequestProductByRequestIdAsync(Guid requestId);
 
+        Task<List<RequestProduct>> GetRequestProductAgencyIdAsync(long agencyId);
+
     }
 }

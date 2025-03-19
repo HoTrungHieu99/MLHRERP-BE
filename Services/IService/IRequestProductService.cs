@@ -14,5 +14,7 @@ namespace Services.IService
         Task<RequestProduct> GetRequestByIdAsync(Guid id);
         Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails);
         Task ApproveRequestAsync(Guid requestId, long approvedBy);
+
+        Task<List<RequestProduct>> GetRequestProductsByAgencyIdAsync(long agencyId);
     }
 }

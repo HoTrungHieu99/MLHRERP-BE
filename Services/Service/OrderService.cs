@@ -114,7 +114,7 @@ namespace Services.Service
             {
                 // ✅ Lấy Order từ OrderId
                 var order = await _orderRepository.GetOrderByIdAsync(orderId);
-                if (order == null || order.Status != "Processing")
+                if (order == null || order.Status != "WaitPaid")
                     throw new Exception("Order not found or is not in a valid state.");
 
                 // ✅ Lấy RequestProduct từ RequestId của Order
@@ -142,7 +142,7 @@ namespace Services.Service
                 {
                     RequestedByAgencyId = requestBy,  // ✅ Lấy AgencyId từ RequestProduct
                     RequestDate = requestProduct.CreatedAt,
-                    Status = "Processing",
+                    Status = "WaitPaid",
                     ApprovedBy = approvedBy,  // ✅ Lấy EmployeeId từ User đăng nhập
                     ApprovedDate = DateTime.UtcNow,
                     Note = "Order approved and exported",

@@ -77,6 +77,17 @@ namespace Repo.Repository
             .Include(rp => rp.RequestProductDetails) // ✅ Bao gồm các sản phẩm trong Request
             .FirstOrDefaultAsync(rp => rp.RequestProductId == requestId);
         }
+
+        public async Task<List<RequestProduct>> GetRequestProductAgencyIdAsync(long agencyId)
+        {
+            return await _context.RequestProducts
+                .Where(rp => rp.AgencyId == agencyId) // ✅ Lọc theo AgencyId
+                .Include(rp => rp.RequestProductDetails) // ✅ Bao gồm danh sách sản phẩm
+                .ThenInclude(d => d.Product) // ✅ Bao gồm thông tin sản phẩm
+                .ToListAsync();
+        }
+
+        
     }
 
 }
