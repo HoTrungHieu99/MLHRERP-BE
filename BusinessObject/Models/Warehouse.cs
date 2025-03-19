@@ -17,6 +17,12 @@ namespace BusinessObject.Models
         public string WarehouseName { get; set; }
 
         [Required]
+        public Guid UserId { get; set; } // Người tạo Warehouse
+
+        [ForeignKey("UserId")]
+        public virtual User User { get; set; }
+
+        [Required]
         public int AddressId { get; set; }  // Liên kết với bảng Address
 
         [ForeignKey("AddressId")]

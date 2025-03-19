@@ -653,17 +653,10 @@ namespace DataAccessLayer
                 .HasForeignKey(re => re.ApprovedBy)
                 .OnDelete(DeleteBehavior.SetNull); // Nếu Employee bị xóa, ApprovedBy = NULL
 
-            modelBuilder.Entity<WarehouseManager>()
-                .HasOne(wm => wm.Warehouse)
-                .WithMany() // ✅ Một kho có thể có nhiều Thủ kho
-                .HasForeignKey(wm => wm.WarehouseId)
-                .OnDelete(DeleteBehavior.Cascade); // ✅ Xóa kho thì xóa quyền quản lý kho
-
-            modelBuilder.Entity<WarehouseManager>()
-                .HasOne(wm => wm.User)
-                .WithMany() // ✅ Một User có thể quản lý nhiều kho
-                .HasForeignKey(wm => wm.UserId)
-                .OnDelete(DeleteBehavior.Cascade); // ✅ Xóa User thì xóa quyền quản lý kho
+            // Đảm bảo mỗi User chỉ có 1 Warehouse
+            modelBuilder.Entity<Warehouse>()
+                .HasIndex(w => w.UserId)
+                .IsUnique();
 
         }
     }
