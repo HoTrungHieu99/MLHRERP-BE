@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Core;
 using BusinessObject.Models;
 using DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
@@ -47,9 +48,11 @@ namespace Repo.Repository
         public async Task<RequestProduct> GetRequestByIdAsync(Guid id)
         {
             return await _context.RequestProducts
-                .Include(r => r.RequestProductDetails)
-                .ThenInclude(d => d.Product)
-                .FirstOrDefaultAsync(r => r.RequestProductId == id);
+            .Include(rp => rp.AgencyAccount) // ✅ Bao gồm thông tin đại lý
+            .Include(rp => rp.ApprovedByEmployee) // ✅ Bao gồm nhân viên duyệt (nếu có)
+            .Include(rp => rp.RequestProductDetails) // ✅ Bao gồm danh sách sản phẩm trong request
+                .ThenInclude(rpd => rpd.Product) // ✅ Bao gồm thông tin sản phẩm
+            .FirstOrDefaultAsync(rp => rp.RequestProductId == id);
         }
 
         public async Task AddRequestAsync(RequestProduct requestProduct)

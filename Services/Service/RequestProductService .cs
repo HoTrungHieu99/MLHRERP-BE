@@ -41,7 +41,12 @@ namespace Services.Service
 
         public async Task<RequestProduct> GetRequestByIdAsync(Guid id)
         {
-            return await _requestProductRepository.GetRequestByIdAsync(id);
+            var requestProduct = await _requestProductRepository.GetRequestProductByRequestIdAsync(id);
+            if (requestProduct == null)
+            {
+                throw new KeyNotFoundException($"RequestProduct with ID {id} not found.");
+            }
+            return requestProduct;
         }
 
         /*public async Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails)

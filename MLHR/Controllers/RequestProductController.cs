@@ -27,6 +27,19 @@ namespace MLHR.Controllers
             return Ok(requests);
         }
 
+        [HttpGet("{requestId}")]
+        public async Task<IActionResult> GetRequestProductById(Guid requestId)
+        {
+            try
+            {
+                var requestProduct = await _requestProductService.GetRequestByIdAsync(requestId);
+                return Ok(requestProduct);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
         [HttpPost]
         [Authorize(Roles = "2")]
         public async Task<IActionResult> CreateRequest([FromBody] CreateRequestProductDto requestDto)
