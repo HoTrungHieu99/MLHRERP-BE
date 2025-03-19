@@ -23,6 +23,7 @@ namespace BusinessObject.Models
 
         public int QuantityRequested { get; set; }
         public int? QuantityApproved { get; set; }
+        public int RemainingQuantity { get; set; }
 
         public string Status { get; set; } // PENDING, APPROVED, REJECTED
     }

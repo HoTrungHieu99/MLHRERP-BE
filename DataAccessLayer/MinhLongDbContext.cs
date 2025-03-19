@@ -638,6 +638,10 @@ namespace DataAccessLayer
                 .Property(od => od.Price)
                 .HasPrecision(18, 2);
 
+            modelBuilder.Entity<Batch>()
+                .Property(od => od.SellingPrice)
+                .HasPrecision(18, 2);
+
             // ✅ Quan hệ 1-1 giữa Order và RequestExport
             modelBuilder.Entity<RequestExport>()
                 .HasOne(re => re.Order)

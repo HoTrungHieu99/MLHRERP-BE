@@ -20,6 +20,7 @@ namespace BusinessObject.Models
         public DateTime ExpiryDate { get; set; }
         public string Unit{ get; set; }
         public decimal TotalAmount { get; set; }
+        public decimal SellingPrice { get; set; }
         public string Status { get; set; } // Available, Expired
 
         [ForeignKey("ImportTransactionDetailId")]
