@@ -114,6 +114,7 @@ namespace Services.Service
             {
                 // ✅ Lấy Order từ OrderId
                 var order = await _orderRepository.GetOrderByIdAsync(orderId);
+                long requestExportCode = Math.Abs(order.OrderId.GetHashCode()) % 10000000;
                 if (order == null || order.Status != "WaitPaid")
                     throw new Exception("Order not found or is not in a valid state.");
 
@@ -147,7 +148,7 @@ namespace Services.Service
                     ApprovedDate = DateTime.Now,
                     Note = "Order approved and exported",
                     OrderId = order.OrderId,
-                    RequestExportCode = order.OrderCode,
+                    RequestExportCode = requestExportCode,
                 };
 
                 // ✅ Lưu RequestExport vào database

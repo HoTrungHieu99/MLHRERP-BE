@@ -67,7 +67,11 @@ namespace Services.Service
 
         public async Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails, Guid userId)
         {
-            long requestCodeID = Math.Abs(userId.GetHashCode()) % 1000000000;
+            /*long requestCodeID = Math.Abs(userId.GetHashCode()) % 1000000000;*/
+
+            Random random = new Random();
+            long requestCodeID = random.Next(1000000, 9999999); // Tạo số trong khoảng 100000 - 999999
+
             // ✅ Lấy AgencyId từ UserId (GUID)
             var agencyId = await _userRepository.GetAgencyIdByUserId(userId);
             if (agencyId == null)
@@ -165,6 +169,8 @@ namespace Services.Service
             try
             {
                 var requestProduct = await _requestProductRepository.GetRequestByIdAsync(requestId);
+                long requestOrderCode = Math.Abs(requestProduct.RequestProductId.GetHashCode()) % 10000000;
+
                 if (requestProduct == null) throw new Exception("Request not found!");
 
                 // ✅ Kiểm tra nếu đơn hàng đã được duyệt trước đó
@@ -184,7 +190,7 @@ namespace Services.Service
                 // **Tạo Order từ RequestProduct**
                 var order = new Order
                 {
-                    OrderCode = requestProduct.RequestCode,
+                    OrderCode = requestOrderCode,
                     OrderDate = DateTime.Now,
                     SalesAgentId = approvedBy,
                     Status = "WaitPaid",
