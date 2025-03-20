@@ -28,6 +28,7 @@ namespace MLHR.Controllers
             return Ok(orders.Select(o => new
             {
                 OrderId = o.OrderId,
+                orderCode = o.OrderCode,
                 OrderDate = o.OrderDate,
                 TotalAmount = o.OrderDetails.Sum(od => od.UnitPrice * od.Quantity), // Tính tổng tiền
                 Status = o.Status,
