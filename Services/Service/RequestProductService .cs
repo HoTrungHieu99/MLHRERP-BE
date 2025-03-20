@@ -146,7 +146,7 @@ namespace Services.Service
             else
             {
                 requestProduct.AgencyId = agencyId.Value; // Gán AgencyId từ User đăng nhập
-                requestProduct.CreatedAt = DateTime.UtcNow;
+                requestProduct.CreatedAt = DateTime.Now;
                 requestProduct.RequestStatus = "Pending";
                 await _requestProductRepository.AddRequestAsync(requestProduct);
             }
@@ -171,7 +171,7 @@ namespace Services.Service
                 // **Cập nhật trạng thái RequestProduct**
                 requestProduct.ApprovedBy = approvedBy;
                 requestProduct.RequestStatus = "Approved";
-                requestProduct.UpdatedAt = DateTime.UtcNow;
+                requestProduct.UpdatedAt = DateTime.Now;
 
                 await _requestProductRepository.UpdateRequestAsync(requestProduct);
                 await _requestProductRepository.SaveChangesAsync(); // ✅ Lưu lại trạng thái RequestProduct
@@ -180,7 +180,7 @@ namespace Services.Service
                 var order = new Order
                 {
                     OrderCode = requestProduct.RequestCode,
-                    OrderDate = DateTime.UtcNow,
+                    OrderDate = DateTime.Now,
                     SalesAgentId = approvedBy,
                     Status = "WaitPaid",
                     RequestId = requestId,
@@ -208,7 +208,7 @@ namespace Services.Service
                         UnitPrice = unitPrice,
                         TotalAmount = totalAmount,
                         Unit = detail.Unit,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = DateTime.Now
                     };
 
                     finalPrice += totalAmount;
@@ -251,7 +251,7 @@ namespace Services.Service
 
             requestProduct.RequestStatus = "Canceled";
             requestProduct.ApprovedBy = approvedBy;
-            requestProduct.UpdatedAt = DateTime.UtcNow;
+            requestProduct.UpdatedAt = DateTime.Now;
 
             await _requestProductRepository.UpdateRequestAsync(requestProduct);
             await _requestProductRepository.SaveChangesAsync();

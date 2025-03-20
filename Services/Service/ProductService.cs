@@ -79,7 +79,7 @@ namespace Services.Service
                 Description = productDto.Description,
                 TaxId = productDto.TaxId,
                 CreatedBy = userId,
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = DateTime.Now
             };
 
             // ✅ Lưu sản phẩm và danh sách hình ảnh
@@ -101,7 +101,7 @@ namespace Services.Service
             product.Description = productDto.Description;
             product.TaxId = productDto.TaxId;
             product.UpdatedBy = userId;
-            product.UpdatedDate = DateTime.UtcNow;
+            product.UpdatedDate = DateTime.Now;
 
             var updatedProduct = await _repository.UpdateAsync(product, productDto.Images);
             return await GetProductByIdAsync(updatedProduct.ProductId);

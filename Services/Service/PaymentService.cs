@@ -98,15 +98,15 @@ namespace Services.Service
             {
                 OrderId = orderId,
                 PaymentMethod = "PayOS",
-                PaymentDate = DateTime.UtcNow,
+                PaymentDate = DateTime.Now,
                 SerieNumber = null,
                 Status = paymentStatus,
-                DueDate =DateTime.UtcNow,
+                DueDate =DateTime.Now,
                 PrePaymentId = null,
                 RemainingDebtAmount = remainingDebt,
                 PaymentAmount = paymentAmount,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
                 TotalAmountPayment = order.FinalPrice
             };
 
@@ -116,7 +116,7 @@ namespace Services.Service
             var paymentTransaction = new PaymentTransaction
             {
                 PaymentHistoryId = paymentHistory.PaymentHistoryId,
-                PaymentDate = DateTime.UtcNow,
+                PaymentDate = DateTime.Now,
                 Amount = paymentAmount,
                 PaymentStatus = paymentStatus,
                 TransactionReference = createPaymentResult.paymentLinkId

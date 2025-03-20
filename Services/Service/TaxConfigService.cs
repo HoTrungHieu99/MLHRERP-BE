@@ -55,7 +55,7 @@ namespace Services.Service
                 TaxRate = taxConfigDto.TaxRate,
                 IsActive = taxConfigDto.IsActive,
                 Description = taxConfigDto.Description,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             var result = await _taxConfigRepository.AddAsync(taxConfig);
@@ -79,7 +79,7 @@ namespace Services.Service
             taxConfig.TaxRate = taxConfigDto.TaxRate;
             taxConfig.IsActive = taxConfigDto.IsActive;
             taxConfig.Description = taxConfigDto.Description;
-            taxConfig.UpdatedAt = DateTime.UtcNow;
+            taxConfig.UpdatedAt = DateTime.Now;
 
             var result = await _taxConfigRepository.UpdateAsync(taxConfig);
 

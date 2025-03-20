@@ -144,7 +144,7 @@ namespace Services.Service
                     RequestDate = requestProduct.CreatedAt,
                     Status = "Processing",
                     ApprovedBy = approvedBy,  // ✅ Lấy EmployeeId từ User đăng nhập
-                    ApprovedDate = DateTime.UtcNow,
+                    ApprovedDate = DateTime.Now,
                     Note = "Order approved and exported",
                     OrderId = order.OrderId,
                     RequestExportCode = order.OrderCode,

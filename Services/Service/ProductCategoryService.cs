@@ -67,7 +67,7 @@ namespace Services.Service
                 Notes = categoryDto.Notes,
                 IsActive = categoryDto.IsActive,
                 CreatedBy = userId,
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = DateTime.Now
             };
 
             var createdCategory = await _repository.AddAsync(category);
@@ -96,7 +96,7 @@ namespace Services.Service
             existingCategory.Notes = categoryDto.Notes;
             existingCategory.IsActive = categoryDto.IsActive;
             existingCategory.UpdatedBy = userId;
-            existingCategory.UpdatedDate = DateTime.UtcNow;
+            existingCategory.UpdatedDate = DateTime.Now;
 
             var updatedCategory = await _repository.UpdateAsync(existingCategory);
 
