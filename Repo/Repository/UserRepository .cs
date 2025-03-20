@@ -28,7 +28,11 @@ namespace Repo.Repository
 
         public async Task<List<User>> GetUsersAsync(int skip, int take)
         {
-            return await _context.Users.Skip(skip).Take(take).ToListAsync();
+            return await _context.Users
+                    .Include(u => u.Employee) // Lấy thông tin Employee của User
+                    .Skip(skip)
+                    .Take(take)
+                    .ToListAsync();
         }
 
         public List<UserRole> GetUserRoles(Guid userId)

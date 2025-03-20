@@ -152,14 +152,27 @@ namespace MLHR.Controllers
         [HttpGet("user")]
         public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
-            var users = await _userService.GetUsersAsync(page, pageSize);
+            var pagedUsers = await _userService.GetUsersAsync(page, pageSize);
 
-            if (users == null || users.Items.Count == 0)
+            var result = new
             {
-                return NotFound(new { message = "Không có dữ liệu." });
-            }
+                Users = pagedUsers.Items.Select(u => new
+                {
+                    UserId = u.UserId,
+                    Username = u.Username,
+                    Password = u.Password,
+                    UserType = u.UserType,
+                    Phone = u.Phone,
+                    Email = u.Email,
+                    Status = u.Status,
+                    Employee = u.Employee != null ? new
+                    {
+                        Department = u.Employee.Department
+                    } : null
+                })
+            };
 
-            return Ok(users);
+            return Ok(result);
         }
 
         [HttpPut("{userId}/UnActive")]
@@ -172,7 +185,7 @@ namespace MLHR.Controllers
                 return NotFound(new { success = false, message = result.Message });
             }
 
-            return Ok(new { success = true, message = result.Message });
+            return Ok(new {message = result.Message });
         }
 
 

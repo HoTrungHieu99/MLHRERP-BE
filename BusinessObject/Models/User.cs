@@ -33,7 +33,8 @@ namespace BusinessObject.Models
         public bool Status { get; set; } = false;
 
         public ICollection<UserRole> UserRoles { get; set; }
-        public Employee Employee { get; set; }
+        // Quan hệ 1-1 với Employee
+        public virtual Employee Employee { get; set; }
         public AgencyAccount AgencyAccount { get; set; }
     }
 }

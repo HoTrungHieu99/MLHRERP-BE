@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MinhLongDbContext))]
-    [Migration("20250320184801_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250320213602_Update-Db")]
+    partial class UpdateDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -304,8 +304,8 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("OrderCode")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("OrderCode")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("RequestExportId")
                         .HasColumnType("int");
@@ -390,8 +390,8 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("OrderCode")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<long>("OrderCode")
+                        .HasColumnType("bigint");
 
                     b.Property<long?>("ProductId")
                         .HasColumnType("bigint");

@@ -19,10 +19,12 @@ namespace BusinessObject.Models
 
         public Guid UserId { get; set; }
         [ForeignKey("UserId")]
-        public User User { get; set; }
+        // Điều này cho phép điều hướng ngược
+        public virtual User User { get; set; }
 
         public int AddressId { get; set; }
         [ForeignKey("AddressId")]
         public Address Address { get; set; }
+
     }
 }

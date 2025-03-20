@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class UpdateDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -800,7 +800,7 @@ namespace DataAccessLayer.Migrations
                     Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RequestExportId = table.Column<int>(type: "int", nullable: false),
                     AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OrderCode = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    OrderCode = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -833,7 +833,7 @@ namespace DataAccessLayer.Migrations
                     TotalAmount = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     RequestExportId = table.Column<int>(type: "int", nullable: false),
                     AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OrderCode = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    OrderCode = table.Column<long>(type: "bigint", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     WarehouseId = table.Column<long>(type: "bigint", nullable: false),
                     ProductId = table.Column<long>(type: "bigint", nullable: true)
