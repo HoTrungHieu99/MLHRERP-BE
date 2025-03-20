@@ -19,6 +19,14 @@ namespace BusinessObject.Models
         public DateTime ExportDate { get; set; }
         public string Note { get; set; }
 
+        [ForeignKey("RequestExport")]
+        public int RequestExportId { get; set; }
+        public RequestExport RequestExport { get; set; }
+
+        public string AgencyName { get; set; }
+
+        public Guid OrderCode { get; set; }
+
         [ForeignKey("WarehouseId")]
         public Warehouse Warehouse { get; set; }
 

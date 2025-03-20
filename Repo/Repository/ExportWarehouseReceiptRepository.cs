@@ -36,14 +36,25 @@ namespace Repo.Repository
 
         public async Task<ExportWarehouseReceipt> GetReceiptByIdAsync(long id)
         {
-            return await _context.ExportWarehouseReceipts.Include(r => r.ExportWarehouseReceiptDetails)
-                                                           .FirstOrDefaultAsync(r => r.ExportWarehouseReceiptId == id);
+            return await _context.ExportWarehouseReceipts
+                .Include(r => r.ExportWarehouseReceiptDetails)
+                .Include(r => r.RequestExport)
+                    .ThenInclude(req => req.Order)
+                        .ThenInclude(o => o.RequestProduct)
+                        .ThenInclude(x => x.AgencyAccount)
+                .FirstOrDefaultAsync(r => r.ExportWarehouseReceiptId == id);
         }
 
         public async Task ApproveReceiptAsync(long id)
         {
-            var receipt = await _context.ExportWarehouseReceipts.Include(r => r.ExportWarehouseReceiptDetails)
-                                                                  .FirstOrDefaultAsync(r => r.ExportWarehouseReceiptId == id);
+            var receipt = await _context.ExportWarehouseReceipts
+                .Include(r => r.ExportWarehouseReceiptDetails)
+                .Include(r => r.RequestExport)
+                    .ThenInclude(req => req.Order)
+                        .ThenInclude(o => o.RequestProduct)
+                        .ThenInclude(x => x.AgencyAccount)
+                .FirstOrDefaultAsync(r => r.ExportWarehouseReceiptId == id);
+
             if (receipt == null) throw new Exception("Receipt not found");
             receipt.Status = "Approved";
 
@@ -55,6 +66,9 @@ namespace Repo.Repository
                 ExportType = receipt.ExportType,
                 WarehouseId = receipt.WarehouseId,
                 Note = "Approved Export",
+                RequestExportId = receipt.RequestExportId,  // 🔥 Thêm RequestExportId
+                OrderCode = receipt.RequestExport.Order.OrderId,  // 🔥 Lấy OrderCode
+                AgencyName = receipt.RequestExport.Order.RequestProduct.AgencyAccount.AgencyName,  // 🔥 Lấy AgencyName
                 ExportTransactionDetail = receipt.ExportWarehouseReceiptDetails.Select(d => new ExportTransactionDetail
                 {
                     WarehouseProductId = d.WarehouseProductId,

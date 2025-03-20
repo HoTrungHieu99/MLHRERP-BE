@@ -21,6 +21,13 @@ namespace BusinessObject.Models
         public int TotalQuantity { get; set; }               // Tổng số lượng xuất
         public decimal TotalAmount { get; set; }             // Tổng tiền
 
+        [ForeignKey("RequestExport")]
+        public int RequestExportId { get; set; }
+        public RequestExport RequestExport { get; set; }
+
+        public string AgencyName { get; set; }
+        public Guid OrderCode { get; set; }
+
         [Required]
         public string Status { get; set; } = "Pending"; // Trạng thái của phiếu xuất kho (Pending, Approved, Rejected)
 

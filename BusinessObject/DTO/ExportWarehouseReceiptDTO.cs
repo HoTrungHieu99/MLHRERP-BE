@@ -16,6 +16,11 @@ namespace BusinessObject.DTO
         public decimal TotalAmount { get; set; }
         public string Status { get; set; } = "Pending";
         public long WarehouseId { get; set; }
+
+        public int RequestExportId { get; set; }
+
+        public Guid OrderCode { get; set; }
+        public string AgencyName { get; set; }
         public List<ExportWarehouseReceiptDetailDTO> Details { get; set; }
     }
 

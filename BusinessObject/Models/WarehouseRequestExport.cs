@@ -21,6 +21,10 @@ namespace BusinessObject.Models
         public long WarehouseId { get; set; }
         public Warehouse Warehouse { get; set; }
 
+        [ForeignKey("Product")]
+        public long ProductId { get; set; }
+        public Product Product { get; set; }
+
         public int QuantityRequested { get; set; }
         public int? QuantityApproved { get; set; }
         public int RemainingQuantity { get; set; }

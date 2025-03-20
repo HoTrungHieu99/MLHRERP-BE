@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MinhLongDbContext))]
-    [Migration("20250320091132_UpdateDatabase")]
-    partial class UpdateDatabase
+    [Migration("20250320113048_UpdateTable2")]
+    partial class UpdateTable2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -282,6 +282,10 @@ namespace DataAccessLayer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ExportTransactionId"));
 
+                    b.Property<string>("AgencyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("DocumentDate")
                         .HasColumnType("datetime2");
 
@@ -300,10 +304,18 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("OrderCode")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("RequestExportId")
+                        .HasColumnType("int");
+
                     b.Property<long>("WarehouseId")
                         .HasColumnType("bigint");
 
                     b.HasKey("ExportTransactionId");
+
+                    b.HasIndex("RequestExportId");
 
                     b.HasIndex("WarehouseId");
 
@@ -324,7 +336,7 @@ namespace DataAccessLayer.Migrations
                     b.Property<long>("ExportTransactionId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("ProductId")
+                    b.Property<long>("ProductId")
                         .HasColumnType("bigint");
 
                     b.Property<int>("Quantity")
@@ -360,6 +372,10 @@ namespace DataAccessLayer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ExportWarehouseReceiptId"));
 
+                    b.Property<string>("AgencyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("DocumentDate")
                         .HasColumnType("datetime2");
 
@@ -374,8 +390,14 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("OrderCode")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<long?>("ProductId")
                         .HasColumnType("bigint");
+
+                    b.Property<int>("RequestExportId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -394,6 +416,8 @@ namespace DataAccessLayer.Migrations
                     b.HasKey("ExportWarehouseReceiptId");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("RequestExportId");
 
                     b.HasIndex("WarehouseId");
 
@@ -622,6 +646,9 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWID()");
 
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(10,2)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -630,9 +657,6 @@ namespace DataAccessLayer.Migrations
 
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("PaymentAmount")
-                        .HasColumnType("decimal(10,2)");
 
                     b.Property<DateTime>("PaymentDate")
                         .HasColumnType("datetime2");
@@ -654,9 +678,6 @@ namespace DataAccessLayer.Migrations
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("TotalAmountPayment")
-                        .HasColumnType("decimal(10,2)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -1403,6 +1424,9 @@ namespace DataAccessLayer.Migrations
                     b.Property<Guid?>("ApprovedBy")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint");
+
                     b.Property<int?>("QuantityApproved")
                         .HasColumnType("int");
 
@@ -1425,6 +1449,8 @@ namespace DataAccessLayer.Migrations
                     b.HasKey("WarehouseRequestExportId");
 
                     b.HasIndex("ApprovedBy");
+
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("RequestExportId");
 
@@ -1549,11 +1575,19 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("BusinessObject.Models.ExportTransaction", b =>
                 {
+                    b.HasOne("BusinessObject.Models.RequestExport", "RequestExport")
+                        .WithMany()
+                        .HasForeignKey("RequestExportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BusinessObject.Models.Warehouse", "Warehouse")
                         .WithMany("ExportTransactions")
                         .HasForeignKey("WarehouseId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("RequestExport");
 
                     b.Navigation("Warehouse");
                 });
@@ -1566,9 +1600,11 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BusinessObject.Models.Product", null)
+                    b.HasOne("BusinessObject.Models.Product", "Product")
                         .WithMany("ExportTransactionDetail")
-                        .HasForeignKey("ProductId");
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("BusinessObject.Models.WarehouseProduct", "WarehouseProduct")
                         .WithMany("ExportTransactionDetails")
@@ -1577,6 +1613,8 @@ namespace DataAccessLayer.Migrations
                         .IsRequired();
 
                     b.Navigation("ExportTransaction");
+
+                    b.Navigation("Product");
 
                     b.Navigation("WarehouseProduct");
                 });
@@ -1587,11 +1625,19 @@ namespace DataAccessLayer.Migrations
                         .WithMany("ExportWarehouseReceipt")
                         .HasForeignKey("ProductId");
 
+                    b.HasOne("BusinessObject.Models.RequestExport", "RequestExport")
+                        .WithMany()
+                        .HasForeignKey("RequestExportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BusinessObject.Models.Warehouse", "Warehouse")
                         .WithMany("ExportWarehouseReceipts")
                         .HasForeignKey("WarehouseId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("RequestExport");
 
                     b.Navigation("Warehouse");
                 });
@@ -1984,6 +2030,12 @@ namespace DataAccessLayer.Migrations
                         .WithMany()
                         .HasForeignKey("ApprovedBy");
 
+                    b.HasOne("BusinessObject.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BusinessObject.Models.RequestExport", "RequestExport")
                         .WithMany("WarehouseRequestExports")
                         .HasForeignKey("RequestExportId")
@@ -1995,6 +2047,8 @@ namespace DataAccessLayer.Migrations
                         .HasForeignKey("WarehouseId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Product");
 
                     b.Navigation("RequestExport");
 

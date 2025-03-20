@@ -119,6 +119,9 @@ builder.Services.AddScoped<IBatchService, BatchService>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 
+builder.Services.AddScoped<IWarehouseRequestExportRepository, WarehouseRequestExportRepository>();
+builder.Services.AddScoped<IWarehouseRequestExportService, WarehouseRequestExportService>();
+
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddHttpContextAccessor();
 
