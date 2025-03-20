@@ -58,27 +58,6 @@ namespace MLHR.Controllers
             }
         }
 
-        [HttpPost("approve-all/{warehouseId}/{requestExportId}")]
-        public async Task<IActionResult> ApproveAllRequestsByWarehouse(int warehouseId, int requestExportId, [FromBody] Dictionary<int, int> quantitiesApproved)
-        {
-            try
-            {
-                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
-                if (userId == Guid.Empty)
-                    return Unauthorized(new { message = "Invalid user ID" });
-
-                var result = await _service.ApproveAllRequestsByWarehouseAsync(warehouseId, requestExportId, quantitiesApproved, userId);
-
-                if (result)
-                    return Ok(new { message = "All requests approved successfully" });
-
-                return BadRequest(new { message = "Approval failed" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
 
     }
 }

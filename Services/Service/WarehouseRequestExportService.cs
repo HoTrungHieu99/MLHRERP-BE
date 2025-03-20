@@ -52,13 +52,8 @@ namespace Services.Service
             if (requests == null || !requests.Any())
                 throw new KeyNotFoundException("No warehouse requests found for this WarehouseId and RequestExportId");
 
-            Dictionary<long, int> remainingProducts = new Dictionary<long, int>();
-
             foreach (var request in requests)
             {
-                if (request.Status != "PENDING")
-                    throw new InvalidOperationException($"Request {request.WarehouseRequestExportId} has already been processed");
-
                 if (!quantitiesApproved.ContainsKey(request.WarehouseRequestExportId))
                     continue; // Nếu không có số lượng duyệt, bỏ qua
 
@@ -71,23 +66,9 @@ namespace Services.Service
                 request.ApprovedBy = approvedBy;
                 request.Status = "APPROVED";
                 request.RemainingQuantity = request.QuantityRequested - approvedQuantity;
-
-                if (request.RemainingQuantity > 0)
-                {
-                    if (remainingProducts.ContainsKey(request.ProductId))
-                        remainingProducts[request.ProductId] += request.RemainingQuantity;
-                    else
-                        remainingProducts.Add(request.ProductId, request.RemainingQuantity);
-                }
             }
 
             await _repository.UpdateManyAsync(requests);
-
-            if (remainingProducts.Any())
-            {
-                await _repository.CreateNewRequestForOtherWarehouseAsync(warehouseId, requestExportId, remainingProducts);
-            }
-
             return true;
         }
     }

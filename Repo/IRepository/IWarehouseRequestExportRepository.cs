@@ -18,7 +18,5 @@ namespace Repo.IRepository
         Task<List<WarehouseRequestExport>> GetByWarehouseAndRequestExportAsync(int warehouseId, int requestExportId);
 
         Task UpdateManyAsync(List<WarehouseRequestExport> requests);
-
-        Task CreateNewRequestForOtherWarehouseAsync(int warehouseId, int requestExportId, Dictionary<long, int> remainingProducts);
     }
 }

@@ -48,6 +48,17 @@ namespace Services.Service
                 }
             }
 
+            var requestExport = await _context.RequestExports
+        .Include(r => r.Order)
+            .ThenInclude(o => o.RequestProduct)
+            .ThenInclude(x => x.AgencyAccount)
+        .FirstOrDefaultAsync(r => r.RequestExportId == dto.RequestExportId);
+
+            if (requestExport == null)
+            {
+                throw new Exception($"RequestExportId {dto.RequestExportId} not found in database.");
+            }
+
             var receiptDetails = dto.Details.Select(d =>
             {
                 var warehouseProduct = warehouseProducts.First(p => p.WarehouseProductId == d.WarehouseProductId);
@@ -74,7 +85,10 @@ namespace Services.Service
                 Status = "Pending",
                 TotalQuantity = receiptDetails.Sum(d => d.Quantity),
                 TotalAmount = receiptDetails.Sum(d => d.TotalProductAmount),
-                ExportWarehouseReceiptDetails = receiptDetails
+                ExportWarehouseReceiptDetails = receiptDetails,
+                RequestExportId = dto.RequestExportId,
+                OrderCode = requestExport.Order.OrderId, // 🔥 Lấy từ RequestExport
+                AgencyName = requestExport.Order.RequestProduct.AgencyAccount.AgencyName // 🔥 Lấy từ SalesAgent
             };
 
             return await _repository.CreateReceiptAsync(receipt);
@@ -123,6 +137,9 @@ namespace Services.Service
                 ExportType = receipt.ExportType,
                 WarehouseId = receipt.WarehouseId,
                 Note = "Approved Export",
+                RequestExportId = receipt.RequestExportId, // 🔥 Thêm RequestExportId
+                OrderCode = receipt.RequestExport.Order.OrderId, // 🔥 Lấy OrderCode
+                AgencyName = receipt.RequestExport.Order.RequestProduct.AgencyAccount.AgencyName, // 🔥 Lấy AgencyName
                 ExportTransactionDetail = receipt.ExportWarehouseReceiptDetails.Select(d => new ExportTransactionDetail
                 {
                     WarehouseProductId = d.WarehouseProductId,
