@@ -32,6 +32,13 @@ namespace BusinessObject.Models
         [Required]
         public DateTime ExpiryDate { get; set; } // Ngày hết hạn của lô hàng
 
+        [Required]
+        public long ProductId { get; set; }
+
+        [ForeignKey("ProductId")]
+        public Product Product { get; set; }
+        [Required]
+
         // 🔹 Khóa ngoại đến ExportTransaction
         [ForeignKey("ExportTransactionId")]
         public ExportTransaction ExportTransaction { get; set; }

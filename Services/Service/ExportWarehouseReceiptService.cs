@@ -58,8 +58,8 @@ namespace Services.Service
                     ProductName = warehouseProduct.Product.ProductName,
                     BatchNumber = warehouseProduct.Batch.BatchCode,
                     Quantity = d.Quantity,
-                    UnitPrice = 0,
-                    TotalProductAmount = d.Quantity * 0,
+                    UnitPrice = warehouseProduct.Batch.SellingPrice ?? 0,
+                    TotalProductAmount = d.Quantity * (warehouseProduct.Batch.SellingPrice ?? 0),
                     ExpiryDate = warehouseProduct.ExpirationDate
                 };
             }).ToList();
@@ -84,6 +84,7 @@ namespace Services.Service
         {
             var receipt = await _repository.GetReceiptByIdAsync(id);
             if (receipt == null) throw new Exception("Receipt not found");
+
             receipt.Status = "Approved";
 
             var warehouseProducts = await _repository.GetWarehouseProductsByIdsAsync(
@@ -100,6 +101,18 @@ namespace Services.Service
                 }
 
                 warehouseProduct.Quantity -= detail.Quantity;
+
+                var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == warehouseProduct.ProductId);
+                if (product != null)
+                {
+                    if (product.AvailableStock < detail.Quantity)
+                    {
+                        throw new Exception($"Product stock is insufficient for product {product.ProductId}");
+                    }
+
+                    product.AvailableStock -= detail.Quantity;
+                    _context.Products.Update(product);
+                }
             }
 
             var exportTransaction = new ExportTransaction
@@ -113,7 +126,11 @@ namespace Services.Service
                 ExportTransactionDetail = receipt.ExportWarehouseReceiptDetails.Select(d => new ExportTransactionDetail
                 {
                     WarehouseProductId = d.WarehouseProductId,
-                    Quantity = d.Quantity
+                    ProductId = d.ProductId,
+                    Quantity = d.Quantity,
+                    UnitPrice = d.UnitPrice,
+                    TotalProductAmount = d.TotalProductAmount,
+                    ExpiryDate = d.ExpiryDate
                 }).ToList()
             };
 
@@ -122,4 +139,4 @@ namespace Services.Service
         }
     }
 
-}
+    }

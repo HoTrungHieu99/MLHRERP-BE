@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MinhLongDbContext))]
-    [Migration("20250319141706_UpdateTable2")]
-    partial class UpdateTable2
+    [Migration("20250320094148_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1400,6 +1400,9 @@ namespace DataAccessLayer.Migrations
                     b.Property<Guid?>("ApprovedBy")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint");
+
                     b.Property<int?>("QuantityApproved")
                         .HasColumnType("int");
 
@@ -1422,6 +1425,8 @@ namespace DataAccessLayer.Migrations
                     b.HasKey("WarehouseRequestExportId");
 
                     b.HasIndex("ApprovedBy");
+
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("RequestExportId");
 
@@ -1981,6 +1986,12 @@ namespace DataAccessLayer.Migrations
                         .WithMany()
                         .HasForeignKey("ApprovedBy");
 
+                    b.HasOne("BusinessObject.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("BusinessObject.Models.RequestExport", "RequestExport")
                         .WithMany("WarehouseRequestExports")
                         .HasForeignKey("RequestExportId")
@@ -1992,6 +2003,8 @@ namespace DataAccessLayer.Migrations
                         .HasForeignKey("WarehouseId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Product");
 
                     b.Navigation("RequestExport");
 
