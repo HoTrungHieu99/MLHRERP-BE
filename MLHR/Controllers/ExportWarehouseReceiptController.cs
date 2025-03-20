@@ -32,5 +32,16 @@ namespace MLHR.Controllers
             await _service.ApproveReceiptAsync(id);
             return Ok("Receipt Approved");
         }
+
+        [HttpGet("get-all/{warehouseId}")]
+        public async Task<IActionResult> GetAllByWarehouseId(long warehouseId)
+        {
+            var receipts = await _service.GetAllReceiptsByWarehouseIdAsync(warehouseId);
+            if (receipts == null || !receipts.Any())
+            {
+                return NotFound(new { message = "No export receipts found for this warehouse." });
+            }
+            return Ok(receipts);
+        }
     }
 }

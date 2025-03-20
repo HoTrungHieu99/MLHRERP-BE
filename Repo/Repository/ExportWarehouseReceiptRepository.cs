@@ -67,7 +67,7 @@ namespace Repo.Repository
                 WarehouseId = receipt.WarehouseId,
                 Note = "Approved Export",
                 RequestExportId = receipt.RequestExportId,  // 🔥 Thêm RequestExportId
-                OrderCode = receipt.RequestExport.Order.OrderId,  // 🔥 Lấy OrderCode
+                OrderCode = receipt.RequestExport.Order.OrderCode,  // 🔥 Lấy OrderCode
                 AgencyName = receipt.RequestExport.Order.RequestProduct.AgencyAccount.AgencyName,  // 🔥 Lấy AgencyName
                 ExportTransactionDetail = receipt.ExportWarehouseReceiptDetails.Select(d => new ExportTransactionDetail
                 {

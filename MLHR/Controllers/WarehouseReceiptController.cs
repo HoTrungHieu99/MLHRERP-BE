@@ -22,9 +22,10 @@ namespace MLHR.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [HttpGet("by-warehouse/{warehouseId}")]
+        public async Task<IActionResult> GetAllByWarehouseId(long warehouseId)
         {
-            var receipts = await _service.GetAllReceiptsAsync();
+            var receipts = await _service.GetAllReceiptsByWarehouseIdAsync(warehouseId);
             return Ok(receipts);
         }
 
