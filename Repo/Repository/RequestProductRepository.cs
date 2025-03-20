@@ -75,6 +75,7 @@ namespace Repo.Repository
         public async Task<RequestProduct> GetRequestProductByRequestIdAsync(Guid requestId)
         {
             return await _context.RequestProducts
+             .Where(rq => rq.RequestProductId == requestId)
             .Include(rp => rp.RequestProductDetails) // ✅ Bao gồm các sản phẩm trong Request
             .FirstOrDefaultAsync(rp => rp.RequestProductId == requestId);
         }
@@ -88,7 +89,16 @@ namespace Repo.Repository
                 .ToListAsync();
         }
 
-        
+
+        public async Task<List<RequestProduct>> GetRequestProductByIdAsync(Guid requestId)
+        {
+            return await _context.RequestProducts
+                .Where(rp => rp.RequestProductId == requestId) // ✅ Lọc theo AgencyId
+                .Include(rp => rp.RequestProductDetails) // ✅ Bao gồm danh sách sản phẩm
+                .ThenInclude(d => d.Product) // ✅ Bao gồm thông tin sản phẩm
+                .ToListAsync();
+        }
+
     }
 
 }
