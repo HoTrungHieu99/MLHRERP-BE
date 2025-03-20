@@ -25,7 +25,7 @@ namespace BusinessObject.Models
 
         public string AgencyName { get; set; }
 
-        public Guid OrderCode { get; set; }
+        public long OrderCode { get; set; }
 
         [ForeignKey("WarehouseId")]
         public Warehouse Warehouse { get; set; }

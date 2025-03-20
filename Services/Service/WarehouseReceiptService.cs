@@ -98,11 +98,14 @@ namespace Services.Service
         }
 
 
-        public async Task<List<WarehouseReceiptDTO>> GetAllReceiptsAsync()
+        public async Task<List<WarehouseReceiptDTO>> GetAllReceiptsByWarehouseIdAsync(long warehouseId)
         {
             var receipts = await _repository.GetAllAsync();
 
-            return receipts.Select(receipt => new WarehouseReceiptDTO
+            // Lọc theo warehouseId
+            var filteredReceipts = receipts.Where(receipt => receipt.WarehouseId == warehouseId).ToList();
+
+            return filteredReceipts.Select(receipt => new WarehouseReceiptDTO
             {
                 WarehouseReceiptId = receipt.WarehouseReceiptId,
                 DocumentNumber = receipt.DocumentNumber,

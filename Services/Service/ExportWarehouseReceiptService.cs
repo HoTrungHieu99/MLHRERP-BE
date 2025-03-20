@@ -87,7 +87,7 @@ namespace Services.Service
                 TotalAmount = receiptDetails.Sum(d => d.TotalProductAmount),
                 ExportWarehouseReceiptDetails = receiptDetails,
                 RequestExportId = dto.RequestExportId,
-                OrderCode = requestExport.Order.OrderId, // 🔥 Lấy từ RequestExport
+                OrderCode = requestExport.Order.OrderCode, // 🔥 Lấy từ RequestExport
                 AgencyName = requestExport.Order.RequestProduct.AgencyAccount.AgencyName // 🔥 Lấy từ SalesAgent
             };
 
@@ -138,7 +138,7 @@ namespace Services.Service
                 WarehouseId = receipt.WarehouseId,
                 Note = "Approved Export",
                 RequestExportId = receipt.RequestExportId, // 🔥 Thêm RequestExportId
-                OrderCode = receipt.RequestExport.Order.OrderId, // 🔥 Lấy OrderCode
+                OrderCode = receipt.RequestExport.Order.OrderCode, // 🔥 Lấy OrderCode
                 AgencyName = receipt.RequestExport.Order.RequestProduct.AgencyAccount.AgencyName, // 🔥 Lấy AgencyName
                 ExportTransactionDetail = receipt.ExportWarehouseReceiptDetails.Select(d => new ExportTransactionDetail
                 {
@@ -153,6 +153,14 @@ namespace Services.Service
 
             _context.ExportTransactions.Add(exportTransaction);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<ExportWarehouseReceipt>> GetAllReceiptsByWarehouseIdAsync(long warehouseId)
+        {
+            return await _context.ExportWarehouseReceipts
+                .Where(r => r.WarehouseId == warehouseId)
+                .Include(r => r.ExportWarehouseReceiptDetails) // Nếu cần lấy chi tiết sản phẩm
+                .ToListAsync();
         }
     }
 
