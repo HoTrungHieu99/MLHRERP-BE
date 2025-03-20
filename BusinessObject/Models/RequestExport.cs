@@ -13,6 +13,8 @@ namespace BusinessObject.Models
         [Key]
         public int RequestExportId { get; set; }
 
+        public long RequestExportCode { get; set; }
+
         public long RequestedByAgencyId { get; set; }
 
         public DateTime RequestDate { get; set; }

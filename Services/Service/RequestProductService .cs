@@ -13,6 +13,7 @@ using System.Linq;
 using Repo.Repository;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Services.Exceptions;
+using MailKit.Search;
 
 namespace Services.Service
 {
@@ -61,6 +62,7 @@ namespace Services.Service
 
         public async Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails, Guid userId)
         {
+            long requestCodeID = Math.Abs(userId.GetHashCode()) % 1000000000;
             // ✅ Lấy AgencyId từ UserId (GUID)
             var agencyId = await _userRepository.GetAgencyIdByUserId(userId);
             if (agencyId == null)
@@ -138,6 +140,7 @@ namespace Services.Service
 
             if (existingRequest != null)
             {
+                existingRequest.RequestCode = requestCodeID; // Gán requestCode cho đơn hàng đã tồn tại
                 await _requestProductRepository.UpdateRequestAsync(existingRequest);
             }
             else
@@ -147,7 +150,7 @@ namespace Services.Service
                 requestProduct.RequestStatus = "Pending";
                 await _requestProductRepository.AddRequestAsync(requestProduct);
             }
-
+            requestProduct.RequestCode = requestCodeID;
             await _requestProductRepository.SaveChangesAsync();
         }
 
@@ -176,6 +179,7 @@ namespace Services.Service
                 // **Tạo Order từ RequestProduct**
                 var order = new Order
                 {
+                    OrderCode = requestProduct.RequestCode,
                     OrderDate = DateTime.UtcNow,
                     SalesAgentId = approvedBy,
                     Status = "WaitPaid",
