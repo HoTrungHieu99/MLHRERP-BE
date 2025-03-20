@@ -214,6 +214,7 @@ namespace Services.Service
             RegisterAccount registerUser = await _userRepository.GetRegisterAccountByIdAsync(registerId);
 
             _mailService.SendEmailRegisterAccountAsync(registerUser.Email, "Active Account SuccessFully!", "Hello, New Guy");
+            /*registerUser.AccountRegisterStatus = "Approved";*/
 
             // ✅ Gọi Repo để duyệt tài khoản
             return await _userRepository.ApproveUserAsync(registerId);
@@ -540,6 +541,11 @@ namespace Services.Service
                 throw new ArgumentException("Invalid username or password.");
             }
 
+            if (user == null || request.Password != user.Password)
+            {
+                throw new ArgumentException("Invalid username or password.");
+            }
+
 
             // Lấy RoleId từ UserRole
             var userRole = await _userRepository.GetUserRoleByUserIdAsync(user.UserId);
@@ -575,6 +581,18 @@ namespace Services.Service
             if (registerUser.AccountRegisterStatus == "Pending")
             {
                 registerUser.AccountRegisterStatus = "Canceled";
+                await _userRepository.UpdateRegisterAsync(registerUser);
+                await _userRepository.SaveAsync();
+            }
+            return true;
+        }
+
+        public async Task<bool> UnActiveRegister(int registerId)
+        {
+            RegisterAccount registerUser = await _userRepository.GetRegisterAccountByIdAsync(registerId);
+            if (registerUser.IsApproved = true)
+            {
+                registerUser.IsApproved = false;
                 await _userRepository.UpdateRegisterAsync(registerUser);
                 await _userRepository.SaveAsync();
             }

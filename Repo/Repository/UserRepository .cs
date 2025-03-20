@@ -174,6 +174,7 @@ namespace Repo.Repository
 
                     // ✅ Đánh dấu tài khoản đã được duyệt
                     registerAccount.IsApproved = true;
+                    registerAccount.AccountRegisterStatus = "Approved";
                     /*// ✅ Xóa RegisterAccount sau khi duyệt
                     _context.RegisterAccounts.Remove(registerAccount);*/
                     await _context.SaveChangesAsync();

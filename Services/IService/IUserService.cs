@@ -32,6 +32,8 @@ namespace Services.IService
         Task<long?> GetEmployeeIdByUserId(Guid userId);
 
         Task<bool> CancelUserAsync(int registerId);
+        Task<bool> UnActiveRegister(int registerId);
+        UnActiveRegister
     }
 
 
