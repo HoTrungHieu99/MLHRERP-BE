@@ -37,7 +37,7 @@ namespace DataAccessLayer
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile("appsettings.json")
                 .Build();
-            optionsBuilder.UseSqlServer(configuration.GetConnectionString("ServerConnection"));
+            optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         }
 
 
@@ -541,7 +541,11 @@ namespace DataAccessLayer
                 .HasColumnType("decimal(10,2)");
 
             modelBuilder.Entity<PaymentHistory>()
-                .Property(ph => ph.Amount)
+                .Property(ph => ph.PaymentAmount)
+                .HasColumnType("decimal(10,2)");
+
+            modelBuilder.Entity<PaymentHistory>()
+                .Property(ph => ph.TotalAmountPayment)
                 .HasColumnType("decimal(10,2)");
 
             // 🏷️ Cấu hình bảng PaymentTransaction
