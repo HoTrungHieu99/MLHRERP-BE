@@ -34,7 +34,6 @@ namespace Services.IService
         Task<bool> CancelUserAsync(int registerId);
         Task<(bool IsSuccess, string Message)> UnActiveUser(Guid userId);
 
-        Task<bool> ActiveUser(Guid userId);
     }
 
 
