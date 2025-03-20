@@ -541,7 +541,7 @@ namespace Services.Service
                 throw new ArgumentException("Invalid username or password.");
             }
 
-            if (user.Status = false)
+            if (user.Status == false)
             {
                 throw new ArgumentException("Your Account Cannot Login!");
             }
@@ -587,17 +587,46 @@ namespace Services.Service
             return true;
         }
 
-        public async Task<bool> UnActiveUser(Guid userId)
+        public async Task<(bool IsSuccess, string Message)> UnActiveUser(Guid userId)
+        {
+            // Lấy thông tin User từ database
+            User user = await _userRepository.GetUserByIdAsync(userId);
+
+            // Kiểm tra nếu user có tồn tại hay không
+            if (user == null)
+            {
+                return (false, "User không tồn tại.");
+            }
+
+            // Đảo ngược trạng thái của user
+            user.Status = !user.Status;
+
+            // Cập nhật trạng thái mới vào database
+            await _userRepository.UpdateUserAsync(user);
+            await _userRepository.SaveAsync();
+
+            // Xây dựng message phản hồi dựa trên trạng thái mới
+            string message = user.Status
+                ? "Tài khoản đã được kích hoạt."
+                : "Tài khoản đã bị vô hiệu hóa.";
+
+            return (true, message);
+        }
+
+
+        /*public async Task<bool> ActiveUser(Guid userId)
         {
             User user = await _userRepository.GetUserByIdAsync(userId);
-            if (user.Status = true)
+            if (user.Status = false)
             {
-                user.Status = false;
+                user.Status = true;
                 await _userRepository.UpdateUserAsync(user);
                 await _userRepository.SaveAsync();
             }
             return true;
-        }
+        }*/
+
+        
     }
 
 }
