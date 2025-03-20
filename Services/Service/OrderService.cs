@@ -146,7 +146,8 @@ namespace Services.Service
                     ApprovedBy = approvedBy,  // ✅ Lấy EmployeeId từ User đăng nhập
                     ApprovedDate = DateTime.UtcNow,
                     Note = "Order approved and exported",
-                    OrderId = order.OrderId
+                    OrderId = order.OrderId,
+                    RequestExportCode = order.OrderCode,
                 };
 
                 // ✅ Lưu RequestExport vào database

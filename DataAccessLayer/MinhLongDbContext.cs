@@ -541,7 +541,11 @@ namespace DataAccessLayer
                 .HasColumnType("decimal(10,2)");
 
             modelBuilder.Entity<PaymentHistory>()
-                .Property(ph => ph.Amount)
+                .Property(ph => ph.PaymentAmount)
+                .HasColumnType("decimal(10,2)");
+
+            modelBuilder.Entity<PaymentHistory>()
+                .Property(ph => ph.TotalAmountPayment)
                 .HasColumnType("decimal(10,2)");
 
             // 🏷️ Cấu hình bảng PaymentTransaction

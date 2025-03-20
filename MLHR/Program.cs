@@ -1,4 +1,5 @@
-﻿using DataAccessLayer;
+﻿using BusinessObject.DTO;
+using DataAccessLayer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -115,8 +116,17 @@ builder.Services.AddScoped<IExportWarehouseReceiptRepository, ExportWarehouseRec
 builder.Services.AddScoped<IBatchRepository, BatchRepository>();
 builder.Services.AddScoped<IBatchService, BatchService>();
 
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+
+builder.Services.AddScoped<IWarehouseRequestExportRepository, WarehouseRequestExportRepository>();
+builder.Services.AddScoped<IWarehouseRequestExportService, WarehouseRequestExportService>();
+
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddHttpContextAccessor();
+
+var configuration = builder.Configuration;
+builder.Services.Configure<PayOSSettings>(configuration.GetSection("PayOS"));
 
 
 // ✅ Đăng ký Controllers với JSON Options

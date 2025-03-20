@@ -48,6 +48,17 @@ namespace Services.Service
                 }
             }
 
+            var requestExport = await _context.RequestExports
+        .Include(r => r.Order)
+            .ThenInclude(o => o.RequestProduct)
+            .ThenInclude(x => x.AgencyAccount)
+        .FirstOrDefaultAsync(r => r.RequestExportId == dto.RequestExportId);
+
+            if (requestExport == null)
+            {
+                throw new Exception($"RequestExportId {dto.RequestExportId} not found in database.");
+            }
+
             var receiptDetails = dto.Details.Select(d =>
             {
                 var warehouseProduct = warehouseProducts.First(p => p.WarehouseProductId == d.WarehouseProductId);
@@ -58,8 +69,8 @@ namespace Services.Service
                     ProductName = warehouseProduct.Product.ProductName,
                     BatchNumber = warehouseProduct.Batch.BatchCode,
                     Quantity = d.Quantity,
-                    UnitPrice = 0,
-                    TotalProductAmount = d.Quantity * 0,
+                    UnitPrice = warehouseProduct.Batch.SellingPrice ?? 0,
+                    TotalProductAmount = d.Quantity * (warehouseProduct.Batch.SellingPrice ?? 0),
                     ExpiryDate = warehouseProduct.ExpirationDate
                 };
             }).ToList();
@@ -74,7 +85,10 @@ namespace Services.Service
                 Status = "Pending",
                 TotalQuantity = receiptDetails.Sum(d => d.Quantity),
                 TotalAmount = receiptDetails.Sum(d => d.TotalProductAmount),
-                ExportWarehouseReceiptDetails = receiptDetails
+                ExportWarehouseReceiptDetails = receiptDetails,
+                RequestExportId = dto.RequestExportId,
+                OrderCode = requestExport.Order.OrderId, // 🔥 Lấy từ RequestExport
+                AgencyName = requestExport.Order.RequestProduct.AgencyAccount.AgencyName // 🔥 Lấy từ SalesAgent
             };
 
             return await _repository.CreateReceiptAsync(receipt);
@@ -84,6 +98,7 @@ namespace Services.Service
         {
             var receipt = await _repository.GetReceiptByIdAsync(id);
             if (receipt == null) throw new Exception("Receipt not found");
+
             receipt.Status = "Approved";
 
             var warehouseProducts = await _repository.GetWarehouseProductsByIdsAsync(
@@ -100,6 +115,18 @@ namespace Services.Service
                 }
 
                 warehouseProduct.Quantity -= detail.Quantity;
+
+                var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductId == warehouseProduct.ProductId);
+                if (product != null)
+                {
+                    if (product.AvailableStock < detail.Quantity)
+                    {
+                        throw new Exception($"Product stock is insufficient for product {product.ProductId}");
+                    }
+
+                    product.AvailableStock -= detail.Quantity;
+                    _context.Products.Update(product);
+                }
             }
 
             var exportTransaction = new ExportTransaction
@@ -110,10 +137,17 @@ namespace Services.Service
                 ExportType = receipt.ExportType,
                 WarehouseId = receipt.WarehouseId,
                 Note = "Approved Export",
+                RequestExportId = receipt.RequestExportId, // 🔥 Thêm RequestExportId
+                OrderCode = receipt.RequestExport.Order.OrderId, // 🔥 Lấy OrderCode
+                AgencyName = receipt.RequestExport.Order.RequestProduct.AgencyAccount.AgencyName, // 🔥 Lấy AgencyName
                 ExportTransactionDetail = receipt.ExportWarehouseReceiptDetails.Select(d => new ExportTransactionDetail
                 {
                     WarehouseProductId = d.WarehouseProductId,
-                    Quantity = d.Quantity
+                    ProductId = d.ProductId,
+                    Quantity = d.Quantity,
+                    UnitPrice = d.UnitPrice,
+                    TotalProductAmount = d.TotalProductAmount,
+                    ExpiryDate = d.ExpiryDate
                 }).ToList()
             };
 
@@ -122,4 +156,4 @@ namespace Services.Service
         }
     }
 
-}
+    }
