@@ -77,8 +77,8 @@ namespace Services.Service
 
             var receipt = new ExportWarehouseReceipt
             {
-                DocumentNumber = "EXP-" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"),
-                DocumentDate = DateTime.UtcNow,
+                DocumentNumber = "EXP-" + DateTime.Now.ToString("yyyyMMdd-HHmmss"),
+                DocumentDate = DateTime.Now,
                 ExportDate = dto.ExportDate,
                 ExportType = dto.ExportType,
                 WarehouseId = dto.WarehouseId,
