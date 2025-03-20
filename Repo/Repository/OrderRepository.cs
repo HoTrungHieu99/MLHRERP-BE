@@ -21,7 +21,9 @@ namespace Repo.Repository
 
         public async Task<IEnumerable<Order>> GetAllOrdersAsync()
         {
-            return await _context.Orders.Include(o => o.OrderDetails).ToListAsync();
+            return await _context.Orders.
+                /*Include(o => o.OrderDetails).*/
+                ToListAsync();
         }
 
         public async Task AddOrderAsync(Order order)

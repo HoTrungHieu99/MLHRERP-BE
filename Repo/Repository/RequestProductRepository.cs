@@ -23,8 +23,8 @@ namespace Repo.Repository
         public async Task<IEnumerable<RequestProduct>> GetAllRequestsAsync()
         {
             return await _context.RequestProducts
-                .Include(r => r.RequestProductDetails)
-                .ThenInclude(d => d.Product)
+                /*.Include(r => r.RequestProductDetails)
+                .ThenInclude(d => d.Product)*/
                 .ToListAsync();
         }
 
@@ -64,6 +64,7 @@ namespace Repo.Repository
         {
             requestProduct.UpdatedAt = DateTime.UtcNow; // ✅ Gán thời gian hiện tại trước khi update
             _context.RequestProducts.Update(requestProduct);
+            //_context.SaveChanges();
         }
 
         public async Task SaveChangesAsync()

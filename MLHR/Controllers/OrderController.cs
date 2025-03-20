@@ -117,11 +117,11 @@ namespace MLHR.Controllers
         }
 
         [HttpPut("{orderId}/cancel")]
-        public async Task<IActionResult> CancelRequest(Guid requestId)
+        public async Task<IActionResult> CancelRequest(Guid orderId)
         {
             try
             {
-                var result = await _orderService.CancelOrderAsync(requestId);
+                var result = await _orderService.CancelOrderAsync(orderId);
                 if (!result)
                     return BadRequest(new { message = "Failed to cancel request." });
 
