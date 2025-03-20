@@ -41,5 +41,7 @@ namespace BusinessObject.Models
         public string ProvinceName { get; set; }
 
         public bool IsApproved { get; set; } = false;  // Mặc định chưa duyệt
+
+        public string AccountRegisterStatus { get; set; } = "Pending";
     }
 }

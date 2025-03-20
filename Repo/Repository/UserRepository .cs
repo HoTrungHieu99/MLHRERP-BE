@@ -329,6 +329,16 @@ namespace Repo.Repository
 
             return employeeAccount?.EmployeeId; // Trả về AgencyId (int)
         }
+
+        public async Task UpdateRegisterAsync(RegisterAccount registerAccount)
+        {
+            _context.RegisterAccounts.Update(registerAccount);
+        }
+
+        public async Task SaveAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
     }
 
 

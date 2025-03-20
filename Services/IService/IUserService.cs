@@ -30,6 +30,8 @@ namespace Services.IService
 
         Task<long?> GetAgencyIdByUserId(Guid userId);
         Task<long?> GetEmployeeIdByUserId(Guid userId);
+
+        Task<bool> CancelUserAsync(int registerId);
     }
 
 

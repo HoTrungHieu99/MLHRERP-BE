@@ -566,6 +566,20 @@ namespace Services.Service
         {
             return await _userRepository.GetEmployeeIdByUserId(userId);
         }
+
+        public async Task<bool> CancelUserAsync(int registerId)
+        {
+            RegisterAccount registerUser = await _userRepository.GetRegisterAccountByIdAsync(registerId);
+            if (registerUser.AccountRegisterStatus == "Approved") return false;
+
+            if (registerUser.AccountRegisterStatus == "Pending")
+            {
+                registerUser.AccountRegisterStatus = "Canceled";
+                await _userRepository.UpdateRegisterAsync(registerUser);
+                await _userRepository.SaveAsync();
+            }
+            return true;
+        }
     }
 
 }

@@ -51,7 +51,8 @@ namespace Repo.IRepository
 
         Task<long?> GetEmployeeIdByUserId(Guid userId);
 
-
+        Task UpdateRegisterAsync(RegisterAccount registerAccount);
+        Task SaveAsync();
     }
 
 }
