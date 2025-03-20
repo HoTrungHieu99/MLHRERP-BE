@@ -541,9 +541,9 @@ namespace Services.Service
                 throw new ArgumentException("Invalid username or password.");
             }
 
-            if (user == null || request.Password != user.Password)
+            if (user.Status = false)
             {
-                throw new ArgumentException("Invalid username or password.");
+                throw new ArgumentException("Your Account Cannot Login!");
             }
 
 
@@ -587,13 +587,13 @@ namespace Services.Service
             return true;
         }
 
-        public async Task<bool> UnActiveRegister(int registerId)
+        public async Task<bool> UnActiveUser(Guid userId)
         {
-            RegisterAccount registerUser = await _userRepository.GetRegisterAccountByIdAsync(registerId);
-            if (registerUser.IsApproved = true)
+            User user = await _userRepository.GetUserByIdAsync(userId);
+            if (user.Status = true)
             {
-                registerUser.IsApproved = false;
-                await _userRepository.UpdateRegisterAsync(registerUser);
+                user.Status = false;
+                await _userRepository.UpdateUserAsync(user);
                 await _userRepository.SaveAsync();
             }
             return true;

@@ -96,7 +96,7 @@ namespace MLHR.Controllers
             }
         }
 
-        [HttpPut("{registerId}/UnActive")]
+        /*[HttpPut("{registerId}/UnActive")]
         public async Task<IActionResult> UnActiveRegister(int registerId)
         {
             try
@@ -111,7 +111,7 @@ namespace MLHR.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
-        }
+        }*/
     }
 
 }

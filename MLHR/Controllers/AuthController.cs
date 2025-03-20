@@ -162,6 +162,21 @@ namespace MLHR.Controllers
             return Ok(users);
         }
 
-        
+        [HttpPut("{userId}/UnActive")]
+        public async Task<IActionResult> UnActiveRegister(Guid userId)
+        {
+            try
+            {
+                var result = await _userService.UnActiveUser(userId);
+                if (!result)
+                    return BadRequest(new { message = "Failed to cancel RegisterAccount." });
+
+                return Ok(new { message = "RegisterAccount canceled successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }
