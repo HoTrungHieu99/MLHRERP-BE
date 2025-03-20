@@ -60,6 +60,11 @@ namespace Services.Service
             return await _requestProductRepository.GetRequestProductAgencyIdAsync(agencyId);
         }
 
+        public async Task<List<RequestProduct>> GetRequestProductsByIdAsync(Guid requestId)
+        {
+            return await _requestProductRepository.GetRequestProductByIdAsync(requestId);
+        }
+
         public async Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails, Guid userId)
         {
             long requestCodeID = Math.Abs(userId.GetHashCode()) % 1000000000;

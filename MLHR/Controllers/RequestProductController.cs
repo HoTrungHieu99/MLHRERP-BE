@@ -69,7 +69,7 @@ namespace MLHR.Controllers
         {
             try
             {
-                var requestProduct = await _requestProductService.GetRequestByIdAsync(requestId);
+                var requestProduct = await _requestProductService.GetRequestProductsByIdAsync(requestId);
                 return Ok(requestProduct);
             }
             catch (KeyNotFoundException ex)
