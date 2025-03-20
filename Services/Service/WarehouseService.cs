@@ -59,7 +59,7 @@ namespace Services.Service
             var warehouse = new Warehouse
             {
                 WarehouseName = warehousName,
-                //UserId = userId,
+                UserId = userId,
                 AddressId = address.AddressId,
                 Note = note
             };
