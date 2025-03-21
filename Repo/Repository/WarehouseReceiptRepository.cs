@@ -44,127 +44,132 @@ namespace Repo.Repository
             {
                 throw new Exception("The order was previously activated!");
             }
-            else
-            {
 
-                var warehouseUserId = await _context.Warehouses
+            var warehouseUserId = await _context.Warehouses
                 .Where(w => w.WarehouseId == warehouseReceipt.WarehouseId)
                 .Select(w => w.UserId)
                 .FirstOrDefaultAsync();
 
-                if (warehouseUserId != currentUserId)
-                {
-                    throw new BadHttpRequestException("Kho này không phải kho của bạn! Bạn không có quyền duyệt phiếu nhập này.");
-                }
-
-                // 🔥 Lấy WarehouseReceipt từ database
-                var receipt = await _context.WarehouseReceipts
-                    .Where(w => w.WarehouseReceiptId == id)
-                    .Select(w => new
-                    {
-                        w.DocumentNumber,
-                        w.DocumentDate,
-                        w.WarehouseId,
-                        w.ImportType,
-                        w.Supplier,
-                        w.DateImport,
-                        w.Note,
-                        w.TotalQuantity,  // ✅ Lấy TotalQuantity
-                        w.TotalPrice,     // ✅ Lấy TotalPrice
-                        w.BatchesJson
-                    })
-                    .FirstOrDefaultAsync();
-
-                if (receipt == null) return false;
-
-                // 🔥 Tạo ImportTransaction từ WarehouseReceipt
-                var importTransaction = new ImportTransaction
-                {
-                    DocumentNumber = receipt.DocumentNumber,
-                    DocumentDate = receipt.DocumentDate,
-                    WarehouseId = receipt.WarehouseId,
-                    TypeImport = receipt.ImportType,
-                    Supplier = receipt.Supplier,
-                    DateImport = receipt.DateImport,
-                    Note = receipt.Note,
-                };
-
-                _context.ImportTransactions.Add(importTransaction);
-                await _context.SaveChangesAsync(); // ✅ Lưu ImportTransaction trước khi dùng ID của nó
-
-                // 🔥 Tạo hoặc lấy ImportTransactionDetail
-                var importDetail = await _context.ImportTransactionDetails
-                    .FirstOrDefaultAsync(d => d.ImportTransactionId == importTransaction.ImportTransactionId);
-
-                if (importDetail == null)
-                {
-                    importDetail = new ImportTransactionDetail
-                    {
-                        ImportTransactionId = importTransaction.ImportTransactionId,
-                        TotalQuantity = receipt.TotalQuantity, // ✅ Lấy TotalQuantity từ WarehouseReceipt
-                        TotalPrice = receipt.TotalPrice,       // ✅ Lấy TotalPrice từ WarehouseReceipt
-                    };
-
-                    _context.ImportTransactionDetails.Add(importDetail);
-                    await _context.SaveChangesAsync(); // ✅ Lưu vào database để có ID
-                }
-
-                // ✅ Lấy `ImportTransactionDetailId` chính xác để dùng cho Batch
-                long importTransactionDetailId = importDetail.ImportTransactionDetailId;
-
-                // 🔥 Chuyển đổi JSON thành danh sách batch
-                var batches = JsonConvert.DeserializeObject<List<BatchRequest>>(receipt.BatchesJson);
-
-                foreach (var batch in batches)
-                {
-                    var product = await _context.Products.FindAsync(batch.ProductId);
-                    if (product == null)
-                    {
-                        throw new Exception($"Product with ID {batch.ProductId} not found.");
-                    }
-
-
-                    // 🔥 Tạo Batch từ WarehouseReceipt với `importTransactionDetailId` chính xác
-                    var newBatch = new Batch
-                    {
-                        ImportTransactionDetailId = importTransactionDetailId, // ✅ Đảm bảo có giá trị hợp lệ
-                        BatchCode = batch.BatchCode,
-                        ProductId = batch.ProductId,
-                        Unit = batch.Unit,
-                        Quantity = batch.Quantity,
-                        UnitCost = batch.UnitCost,
-                        TotalAmount = batch.UnitCost * batch.Quantity,
-                        DateOfManufacture = batch.DateOfManufacture,
-                        ExpiryDate = batch.DateOfManufacture.AddDays(product.DefaultExpiration ?? 0),
-                        Status = "CALCULATING_PRICE"
-                    };
-
-                    _context.Batches.Add(newBatch);
-                    await _context.SaveChangesAsync(); // ✅ Lưu Batch sau khi có ImportTransactionDetailId
-
-
-                    // ✅ Tạo mới Inventory nếu chưa có
-                    var inventory = new WarehouseProduct
-                    {
-                        ProductId = batch.ProductId,
-                        WarehouseId = receipt.WarehouseId,
-                        BatchId = newBatch.BatchId,
-                        ExpirationDate = newBatch.ExpiryDate,
-                        Quantity = batch.Quantity,
-                        Status = batch.Status
-                    };
-
-                    _context.WarehouseProduct.Add(inventory);
-
-                    product.AvailableStock += batch.Quantity;
-
-                    warehouseReceipt.IsApproved = true;
-                    await _context.SaveChangesAsync();
-                }
-
-                return true;
+            if (warehouseUserId != currentUserId)
+            {
+                throw new BadHttpRequestException("Kho này không phải kho của bạn! Bạn không có quyền duyệt phiếu nhập này.");
             }
 
+            var receipt = await _context.WarehouseReceipts
+                .Where(w => w.WarehouseReceiptId == id)
+                .Select(w => new
+                {
+                    w.DocumentNumber,
+                    w.DocumentDate,
+                    w.WarehouseId,
+                    w.ImportType,
+                    w.Supplier,
+                    w.DateImport,
+                    w.Note,
+                    w.TotalQuantity,
+                    w.TotalPrice,
+                    w.BatchesJson
+                })
+                .FirstOrDefaultAsync();
+
+            if (receipt == null) return false;
+
+            var importTransaction = new ImportTransaction
+            {
+                DocumentNumber = receipt.DocumentNumber,
+                DocumentDate = receipt.DocumentDate,
+                WarehouseId = receipt.WarehouseId,
+                TypeImport = receipt.ImportType,
+                Supplier = receipt.Supplier,
+                DateImport = receipt.DateImport,
+                Note = receipt.Note,
+            };
+
+            _context.ImportTransactions.Add(importTransaction);
+            await _context.SaveChangesAsync();
+
+            var importDetail = await _context.ImportTransactionDetails
+                .FirstOrDefaultAsync(d => d.ImportTransactionId == importTransaction.ImportTransactionId);
+
+            if (importDetail == null)
+            {
+                importDetail = new ImportTransactionDetail
+                {
+                    ImportTransactionId = importTransaction.ImportTransactionId,
+                    TotalQuantity = receipt.TotalQuantity,
+                    TotalPrice = receipt.TotalPrice,
+                };
+
+                _context.ImportTransactionDetails.Add(importDetail);
+                await _context.SaveChangesAsync();
+            }
+
+            long importTransactionDetailId = importDetail.ImportTransactionDetailId;
+
+            var batches = JsonConvert.DeserializeObject<List<BatchRequest>>(receipt.BatchesJson);
+            var updatedBatchDtos = new List<BatchResponseDto>();
+
+            foreach (var batch in batches)
+            {
+                var product = await _context.Products.FindAsync(batch.ProductId);
+                if (product == null)
+                {
+                    throw new Exception($"Product with ID {batch.ProductId} not found.");
+                }
+
+                var newBatch = new Batch
+                {
+                    ImportTransactionDetailId = importTransactionDetailId,
+                    BatchCode = batch.BatchCode,
+                    ProductId = batch.ProductId,
+                    Unit = batch.Unit,
+                    Quantity = batch.Quantity,
+                    UnitCost = batch.UnitCost,
+                    TotalAmount = batch.UnitCost * batch.Quantity,
+                    DateOfManufacture = batch.DateOfManufacture,
+                    ExpiryDate = batch.DateOfManufacture.AddDays(product.DefaultExpiration ?? 0),
+                    Status = "CALCULATING_PRICE"
+                };
+
+                _context.Batches.Add(newBatch);
+                await _context.SaveChangesAsync();
+
+                var inventory = new WarehouseProduct
+                {
+                    ProductId = batch.ProductId,
+                    WarehouseId = receipt.WarehouseId,
+                    BatchId = newBatch.BatchId,
+                    ExpirationDate = newBatch.ExpiryDate,
+                    Quantity = batch.Quantity,
+                    Status = newBatch.Status
+                };
+
+                _context.WarehouseProduct.Add(inventory);
+                product.AvailableStock += batch.Quantity;
+
+                // ✅ Thêm vào danh sách cập nhật BatchesJson
+                updatedBatchDtos.Add(new BatchResponseDto
+                {
+                    BatchCode = newBatch.BatchCode,
+                    ProductId = newBatch.ProductId,
+                    Unit = newBatch.Unit,
+                    Quantity = newBatch.Quantity,
+                    UnitCost = newBatch.UnitCost,
+                    TotalAmount = newBatch.TotalAmount,
+                    Status = newBatch.Status,
+                    DateOfManufacture = newBatch.DateOfManufacture
+                });
+
+                await _context.SaveChangesAsync();
+            }
+
+            // ✅ Cập nhật lại BatchesJson với trạng thái thực tế
+            warehouseReceipt.BatchesJson = JsonConvert.SerializeObject(updatedBatchDtos, Formatting.Indented);
+            warehouseReceipt.IsApproved = true;
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
 

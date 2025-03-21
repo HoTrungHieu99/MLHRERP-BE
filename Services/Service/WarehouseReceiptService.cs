@@ -65,7 +65,7 @@ namespace Services.Service
                 Quantity = b.Quantity,
                 UnitCost = b.UnitCost,
                 TotalAmount = b.Quantity * b.UnitCost,
-                Status = "",
+                Status = "PENDING",
                 DateOfManufacture = b.DateOfManufacture // ✅ Lưu ngày sản xuất
             }).ToList();
 

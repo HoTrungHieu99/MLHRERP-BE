@@ -37,5 +37,38 @@ namespace Services.Service
         {
             return await _batchRepository.GetBatchesByProductIdAsync(productId);
         }
+
+        public async Task<(bool Success, string Message, object? Data)> UpdateProfitMarginAsync(long batchId, decimal profitMarginPercent)
+        {
+            if (profitMarginPercent < 0)
+                return (false, "Profit margin percentage must be greater than or equal to 0.", null);
+
+            var batch = await _batchRepository.GetByIdAsync(batchId);
+            if (batch == null)
+                return (false, "Batch not found.", null);
+
+            if (batch.Status != "CALCULATING_PRICE")
+                return (false, "Cannot update profit margin. Batch is not in 'CALCULATING_PRICE' state.", null);
+
+            batch.ProfitMarginPercent = profitMarginPercent;
+            batch.SellingPrice = batch.UnitCost * (1 + (profitMarginPercent / 100));
+            batch.Status = "ACTIVE";
+
+            // ✅ Gọi repo xử lý update + đồng bộ
+            bool updated = await _batchRepository.UpdateBatchAndRelatedDataAsync(batch);
+
+            if (!updated)
+                return (false, "Failed to update batch and related data.", null);
+
+            return (true, "Success", new
+            {
+                batch.BatchId,
+                batch.BatchCode,
+                batch.UnitCost,
+                ProfitMarginPercent = batch.ProfitMarginPercent,
+                SellingPrice = batch.SellingPrice,
+                Status = batch.Status
+            });
+        }
     }
 }
