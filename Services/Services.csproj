@@ -11,6 +11,7 @@
     <PackageReference Include="CloudinaryDotNet" Version="1.27.4" />
     <PackageReference Include="MailKit" Version="4.11.0" />
     <PackageReference Include="payOS.Net5" Version="1.0.7" />
+    <PackageReference Include="SkiaSharp" Version="3.116.1" />
   </ItemGroup>
 
   <ItemGroup>
