@@ -1,6 +1,8 @@
-﻿using BusinessObject.Models;
+﻿using BusinessObject.DTO;
+using BusinessObject.Models;
 using DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Repo.IRepository;
 using System;
 using System.Collections.Generic;
@@ -58,6 +60,44 @@ namespace Repo.Repository
 
             return await _context.Batches
                 .CountAsync(b => b.BatchCode.StartsWith($"BA{datePart}"));
+        }
+
+        public async Task<bool> UpdateBatchAndRelatedDataAsync(Batch batch)
+        {
+            // ✅ Cập nhật chính bản ghi Batch
+            _context.Batches.Update(batch);
+
+            // ✅ Cập nhật trạng thái các dòng WarehouseProduct liên quan
+            var warehouseProducts = await _context.WarehouseProduct
+                .Where(wp => wp.BatchId == batch.BatchId)
+                .ToListAsync();
+
+            foreach (var wp in warehouseProducts)
+            {
+                wp.Status = batch.Status;
+            }
+
+            // ✅ Cập nhật trạng thái trong BatchesJson của WarehouseReceipt
+            var warehouseReceipt = await _context.WarehouseReceipts
+                .Where(wr => wr.BatchesJson.Contains(batch.BatchCode))
+                .FirstOrDefaultAsync();
+
+            if (warehouseReceipt != null && !string.IsNullOrEmpty(warehouseReceipt.BatchesJson))
+            {
+                var batchList = JsonConvert.DeserializeObject<List<BatchRequest>>(warehouseReceipt.BatchesJson);
+
+                // ✅ Cập nhật tất cả các batch có cùng BatchCode
+                foreach (var b in batchList.Where(b => b.BatchCode == batch.BatchCode))
+                {
+                    b.Status = batch.Status;
+                }
+
+                warehouseReceipt.BatchesJson = JsonConvert.SerializeObject(batchList, Formatting.Indented);
+            }
+
+            // ✅ Lưu tất cả thay đổi
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 

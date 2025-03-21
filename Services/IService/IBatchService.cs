@@ -13,5 +13,7 @@ namespace Services.IService
         Task<IEnumerable<Batch>> GetAllBatchesAsync();
         Task<bool> UpdateBatchAsync(Batch batch);
         Task<IEnumerable<Batch>> GetBatchesByProductIdAsync(long productId);
+
+        Task<(bool Success, string Message, object? Data)> UpdateProfitMarginAsync(long batchId, decimal profitMarginPercent);
     }
 }
