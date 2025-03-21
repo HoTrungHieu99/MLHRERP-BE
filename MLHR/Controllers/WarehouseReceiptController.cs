@@ -77,5 +77,20 @@ namespace MLHR.Controllers
 
 
         }
+
+
+        [HttpGet("{warehouseReceiptId}")]
+        public async Task<IActionResult> GetWarehouseReceiptById(long warehouseReceiptId)
+        {
+            try
+            {
+                var requestProduct = await _service.GetWarehouseReceiptDTOIdAsync(warehouseReceiptId);
+                return Ok(requestProduct);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
     }
 }

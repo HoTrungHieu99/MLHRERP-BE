@@ -13,5 +13,7 @@ namespace Repo.IRepository
         Task<WarehouseReceipt> GetByIdAsync(long id);
         Task<List<WarehouseReceipt>> GetAllAsync();
         Task<bool> ApproveAsync(long id, Guid currentUserId);
+
+        Task<List<WarehouseReceipt>> GetWarehouseReceiptDTOIdAsync(long Id);
     }
 }

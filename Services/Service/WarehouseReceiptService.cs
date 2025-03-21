@@ -65,7 +65,7 @@ namespace Services.Service
                 Quantity = b.Quantity,
                 UnitCost = b.UnitCost,
                 TotalAmount = b.Quantity * b.UnitCost,
-                Status = "PENDING",
+                Status = "",
                 DateOfManufacture = b.DateOfManufacture // ✅ Lưu ngày sản xuất
             }).ToList();
 
@@ -118,6 +118,28 @@ namespace Services.Service
                 TotalPrice = receipt.TotalPrice,
                 Batches = JsonConvert.DeserializeObject<List<BatchResponseDto>>(receipt.BatchesJson) ?? new List<BatchResponseDto>()
             }).ToList();
+        }
+
+        public async Task<List<WarehouseReceiptDTO>> GetWarehouseReceiptDTOIdAsync(long Id)
+        {
+            var receipts = await _repository.GetAllAsync();
+            var filteredReceipts = receipts.Where(receipt => receipt.WarehouseReceiptId == Id).ToList();
+
+            return filteredReceipts.Select(receipt => new WarehouseReceiptDTO
+            {
+                WarehouseReceiptId = receipt.WarehouseReceiptId,
+                DocumentNumber = receipt.DocumentNumber,
+                DocumentDate = receipt.DocumentDate,
+                WarehouseId = receipt.WarehouseId,
+                ImportType = receipt.ImportType,
+                Supplier = receipt.Supplier,
+                DateImport = receipt.DateImport,
+                TotalQuantity = receipt.TotalQuantity,
+                TotalPrice = receipt.TotalPrice,
+                Batches = JsonConvert.DeserializeObject<List<BatchResponseDto>>(receipt.BatchesJson) ?? new List<BatchResponseDto>()
+            }).ToList();
+
+            /*return await _repository.GetWarehouseReceiptDTOIdAsync(Id);*/
         }
     }
 

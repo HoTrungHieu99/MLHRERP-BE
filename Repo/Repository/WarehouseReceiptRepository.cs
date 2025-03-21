@@ -173,6 +173,13 @@ namespace Repo.Repository
             return await _context.WarehouseReceipts.ToListAsync();
         }
 
+        public async Task<List<WarehouseReceipt>> GetWarehouseReceiptDTOIdAsync(long Id)
+        {
+            return await _context.WarehouseReceipts
+                .Where(rp => rp.WarehouseId == Id) // ✅ Lọc theo AgencyId
+                .ToListAsync();
+        }
+
     }
 
 }
