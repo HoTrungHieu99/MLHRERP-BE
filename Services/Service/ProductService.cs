@@ -14,10 +14,12 @@ namespace Services.Service
     public class ProductService : IProductService
     {
         private readonly IProductRepository _repository;
+        private readonly IImageService _imageService;
 
-        public ProductService(IProductRepository repository)
+        public ProductService(IProductRepository repository, IImageService imageService)
         {
             _repository = repository;
+            _imageService = imageService;
         }
 
         public async Task<List<ProductResponseDto>> GetProductsAsync(int page, int pageSize)
@@ -67,7 +69,7 @@ namespace Services.Service
             };
         }
 
-        public async Task<ProductResponseDto> CreateProductAsync(ProductDto productDto, Guid userId)
+        /*public async Task<ProductResponseDto> CreateProductAsync(ProductDto productDto, Guid userId)
         {
             var product = new Product
             {
@@ -86,10 +88,44 @@ namespace Services.Service
             var createdProduct = await _repository.AddAsync(product, productDto.Images);
 
             return await GetProductByIdAsync(createdProduct.ProductId);
+        }*/
+
+        public async Task<ProductResponseDto> CreateProductAsync(ProductDto model, Guid userId)
+        {
+            var product = new Product
+            {
+                ProductCode = model.ProductCode,
+                ProductName = model.ProductName,
+                Unit = model.Unit,
+                DefaultExpiration = model.DefaultExpiration,
+                CategoryId = model.CategoryId,
+                Description = model.Description,
+                TaxId = model.TaxId,
+                CreatedBy = userId,
+                CreatedDate = DateTime.Now
+            };
+
+            // ✅ Tạo product trước
+            var createdProduct = await _repository.AddAsync(product); // KHÔNG truyền imageUrls
+
+            // ✅ Nếu có ảnh, upload ảnh và lưu vào bảng Image
+            if (model.Images != null && model.Images.Count > 0)
+            {
+                var imageModel = new ImageModel
+                {
+                    Files = model.Images
+                };
+
+                await _imageService.UploadImagesAsync(imageModel, createdProduct.ProductId);
+            }
+
+            return await GetProductByIdAsync(createdProduct.ProductId);
         }
 
 
-        public async Task<ProductResponseDto> UpdateProductAsync(long id, ProductDto productDto, Guid userId)
+
+
+        public async Task<ProductResponseDto> UpdateProductAsync(long id, UpdateProductDTO productDto, Guid userId)
         {
             var product = await _repository.GetByIdAsync(id);
             if (product == null) return null;
@@ -103,7 +139,7 @@ namespace Services.Service
             product.UpdatedBy = userId;
             product.UpdatedDate = DateTime.Now;
 
-            var updatedProduct = await _repository.UpdateAsync(product, productDto.Images);
+            var updatedProduct = await _repository.UpdateAsync(product);
             return await GetProductByIdAsync(updatedProduct.ProductId);
         }
 

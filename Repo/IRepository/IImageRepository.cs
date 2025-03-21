@@ -11,6 +11,9 @@ namespace Repo.IRepository
     public interface IImageRepository
     {
         Task<Image> AddAsync(Image image);
+        Task<Product> GetByIdAsync(long productId);  // ✅ Trả về 1 Product duy nhất
+        Task<List<Image>> GetImagesByProductIdAsync(long productId); // ✅ Trả về danh sách ảnh
+        Task<Image> UpdateImageAsync(Image image);
         Task SaveChangesAsync();
     }
 }

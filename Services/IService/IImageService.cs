@@ -12,5 +12,6 @@ namespace Services.IService
     public interface IImageService
     {
         Task<List<Image>> UploadImagesAsync(ImageModel imageModel, long productId);
+        Task<List<Image>> UpdateImagesByProductIdAsync(long productId, ImageModel imageModel);
     }
 }

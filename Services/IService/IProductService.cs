@@ -13,7 +13,7 @@ namespace Services.IService
         Task<List<ProductResponseDto>> GetProductsAsync(int page, int pageSize);
         Task<ProductResponseDto> GetProductByIdAsync(long id);
         Task<ProductResponseDto> CreateProductAsync(ProductDto productDto, Guid userId);
-        Task<ProductResponseDto> UpdateProductAsync(long id, ProductDto productDto, Guid userId);
+        Task<ProductResponseDto> UpdateProductAsync(long id, UpdateProductDTO productDto, Guid userId);
         Task<bool> DeleteProductAsync(long id);
         Task<List<ProductSimpleResponseDto>> GetProductsByCategoryIdAsync(long categoryId);
 

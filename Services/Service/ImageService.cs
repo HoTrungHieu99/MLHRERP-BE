@@ -17,78 +17,6 @@ using System.Threading.Tasks;
 namespace Services.Service
 {
 
-    /*public class ImageService : IImageService
-    {
-        private readonly IImageRepository _repo;
-        private readonly Cloudinary _cloudinary;
-        private readonly long _maxFileSize; // Định nghĩa kích thước tối đa
-
-        public ImageService(IImageRepository repo, IConfiguration config)
-        {
-            _repo = repo;
-
-            var account = new Account(
-                config["Cloudinary:CloudName"],
-                config["Cloudinary:ApiKey"],
-                config["Cloudinary:ApiSecret"]
-            );
-
-            _cloudinary = new Cloudinary(account);
-
-            // Đặt kích thước tối đa (ví dụ: 10MB)
-            _maxFileSize = config.GetValue<long>("Cloudinary:MaxFileSize", 10 * 1024 * 1024);
-        }
-
-        public async Task<List<Image>> UploadImagesAsync(ImageModel imageModel, long productId)
-        {
-            if (imageModel.File == null || imageModel.File.Count == 0)
-                throw new Exception("No files uploaded.");
-
-            var uploadedImages = new List<Image>();
-
-            foreach (var file in imageModel.File)
-            {
-                // Kiểm tra kích thước file trước khi upload
-                if (file.Length > _maxFileSize)
-                    throw new Exception($"File '{file.FileName}' vượt quá giới hạn {_maxFileSize / (1024 * 1024)}MB.");
-
-                try
-                {
-                    using var stream = file.OpenReadStream();
-                    var uploadParams = new ImageUploadParams
-                    {
-                        File = new FileDescription(file.FileName, stream),
-                        PublicId = Guid.NewGuid().ToString(),
-                        Overwrite = true,
-                        Transformation = new Transformation().Quality(80) // Giảm chất lượng để giảm dung lượng
-                    };
-
-                    var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-
-                    if (uploadResult.StatusCode != HttpStatusCode.OK)
-                        throw new Exception($"Upload thất bại: {uploadResult.Error?.Message}");
-
-                    var image = new Image
-                    {
-                        ImageUrl = uploadResult.SecureUrl.ToString(),
-                        ProductId = productId
-                    };
-
-                    uploadedImages.Add(await _repo.AddAsync(image));
-                }
-                catch (Exception ex)
-                {
-                    // Log lỗi (nếu có hệ thống logging)
-                    Console.WriteLine($"Lỗi khi upload file {file.FileName}: {ex.Message}");
-                    throw new Exception($"Không thể upload file {file.FileName}. Chi tiết: {ex.Message}");
-                }
-            }
-
-            return uploadedImages;
-        }
-    }
-*/
-
     using CloudinaryDotNet;
     using CloudinaryDotNet.Actions;
     using Microsoft.Extensions.Configuration;
@@ -130,12 +58,12 @@ namespace Services.Service
 
         public async Task<List<Image>> UploadImagesAsync(ImageModel imageModel, long productId)
         {
-            if (imageModel.File == null || imageModel.File.Count == 0)
+            if (imageModel.Files == null || imageModel.Files.Count == 0)
                 throw new Exception("No files uploaded.");
 
             var uploadedImages = new List<Image>();
 
-            foreach (var file in imageModel.File)
+            foreach (var file in imageModel.Files)
             {
                 // Kiểm tra kích thước file trước khi xử lý
                 if (file.Length > _maxFileSize)
@@ -163,6 +91,7 @@ namespace Services.Service
                     var image = new Image
                     {
                         ImageUrl = uploadResult.SecureUrl.ToString(),
+                        PublicId = uploadResult.PublicId,
                         ProductId = productId
                     };
 
@@ -187,6 +116,7 @@ namespace Services.Service
                     var image = new Image
                     {
                         ImageUrl = uploadResult.SecureUrl.ToString(),
+                        PublicId = uploadResult.PublicId,
                         ProductId = productId
                     };
 
@@ -230,7 +160,59 @@ namespace Services.Service
             outputStream.Position = 0; // Reset stream về đầu để upload
             return outputStream;
         }
+    
+
+    public async Task<List<Image>> UpdateImagesByProductIdAsync(long productId, ImageModel imageModel)
+        {
+            // ✅ Lấy tất cả ảnh hiện có theo ProductId
+            var existingImages = await _repo.GetImagesByProductIdAsync(productId);
+            if (existingImages == null || existingImages.Count == 0)
+            {
+                throw new Exception($"Không tìm thấy hình ảnh nào cho ProductId = {productId}");
+            }
+
+            if (imageModel.Files == null || imageModel.Files.Count != existingImages.Count)
+            {
+                throw new Exception("Số lượng ảnh mới không khớp với ảnh hiện tại. Vui lòng upload đúng số lượng.");
+            }
+
+            var updatedImages = new List<Image>();
+
+            for (int i = 0; i < existingImages.Count; i++)
+            {
+                var oldImage = existingImages[i];
+                var newFile = imageModel.Files[i];
+
+                // ✅ Xóa ảnh cũ trên Cloudinary
+                if (!string.IsNullOrEmpty(oldImage.PublicId))
+                {
+                    await _cloudinary.DestroyAsync(new DeletionParams(oldImage.PublicId));
+                }
+
+                // ✅ Upload ảnh mới lên Cloudinary
+                using var stream = newFile.OpenReadStream();
+                var uploadParams = new ImageUploadParams
+                {
+                    File = new FileDescription(newFile.FileName, stream),
+                    PublicId = Guid.NewGuid().ToString(),
+                    Overwrite = true
+                };
+
+                var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                if (uploadResult.StatusCode != HttpStatusCode.OK)
+                {
+                    throw new Exception($"Upload thất bại cho ảnh {newFile.FileName}: {uploadResult.Error?.Message}");
+                }
+
+                // ✅ Cập nhật URL và PublicId của bản ghi cũ
+                oldImage.ImageUrl = uploadResult.SecureUrl.ToString();
+                oldImage.PublicId = uploadResult.PublicId;
+
+                // ✅ Update lại bản ghi trong DB
+                updatedImages.Add(await _repo.UpdateImageAsync(oldImage));
+            }
+
+            return updatedImages;
+        }
     }
-
-
 }

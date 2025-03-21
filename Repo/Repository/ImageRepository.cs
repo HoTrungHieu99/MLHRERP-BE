@@ -27,6 +27,23 @@ namespace Repo.Repository
             return image;
         }
 
+        public async Task<Image> UpdateImageAsync(Image image)
+        {
+            _context.Images.Update(image);
+            await _context.SaveChangesAsync();
+            return image;
+        }
+
+        public async Task<Product> GetByIdAsync(long productId)
+        {
+            return await _context.Products.FirstOrDefaultAsync(p => p.ProductId == productId);
+        }
+
+        public async Task<List<Image>> GetImagesByProductIdAsync(long productId)
+        {
+            return await _context.Images.Where(img => img.ProductId == productId).ToListAsync();
+        }
+
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

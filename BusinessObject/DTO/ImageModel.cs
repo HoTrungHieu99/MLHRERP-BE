@@ -10,6 +10,6 @@ namespace BusinessObject.DTO
 {
     public class ImageModel
     {
-        public List<IFormFile> File { get; set; }
+        public List<IFormFile> Files { get; set; }
     }
 }

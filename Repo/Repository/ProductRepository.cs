@@ -42,7 +42,7 @@ namespace Repo.Repository
                 .FirstOrDefaultAsync(p => p.ProductId == id);
         }
 
-        public async Task<Product> AddAsync(Product product, List<string> imageUrls)
+        /*public async Task<Product> AddAsync(Product product, List<string> imageUrls)
         {
             _context.Products.Add(product);
             await _context.SaveChangesAsync(); // 🔥 Lưu sản phẩm trước để lấy ProductId
@@ -63,9 +63,18 @@ namespace Repo.Repository
             }
 
             return product;
+        }*/
+
+        public async Task<Product> AddAsync(Product product)
+        {
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync(); // 🔥 Lưu để có ProductId
+
+            return product;
         }
 
-        public async Task<Product> UpdateAsync(Product product, List<string> imageUrls)
+
+        public async Task<Product> UpdateAsync(Product product)
         {
             _context.Products.Update(product);
             await _context.SaveChangesAsync();
@@ -75,7 +84,7 @@ namespace Repo.Repository
             _context.Images.RemoveRange(existingImages);
             await _context.SaveChangesAsync();
 
-            // ✅ Thêm hình ảnh mới
+            /*// ✅ Thêm hình ảnh mới
             foreach (var imageUrl in imageUrls)
             {
                 _context.Images.Add(new Image
@@ -83,7 +92,7 @@ namespace Repo.Repository
                     ProductId = product.ProductId,
                     ImageUrl = imageUrl
                 });
-            }
+            }*/
             await _context.SaveChangesAsync();
 
             return product;

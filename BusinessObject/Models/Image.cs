@@ -11,6 +11,8 @@ namespace BusinessObject.Models
         public int ImageId { get; set; }
         public string ImageUrl { get; set; }
 
+        public string PublicId { get; set; }
+
         // Khóa ngoại liên kết với Product
         public long ProductId { get; set; }
         public Product Product { get; set; }

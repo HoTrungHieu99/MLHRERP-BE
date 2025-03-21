@@ -44,7 +44,7 @@ namespace MLHR.Controllers
             return Ok(product);
         }
 
-        [HttpPost("product")]
+        /*[HttpPost("product")]
         [Authorize(Roles = "4")]
         public async Task<ActionResult<ProductResponseDto>> CreateProduct([FromBody] ProductDto productDto)
         {
@@ -57,12 +57,28 @@ namespace MLHR.Controllers
 
             var createdProduct = await _service.CreateProductAsync(productDto, userId);
             return CreatedAtAction(nameof(GetProduct), new { id = createdProduct.ProductId }, createdProduct);
+        }*/
+
+        [HttpPost("product")]
+        [Authorize(Roles = "4")]
+        [Consumes("multipart/form-data")] // ✅ Bắt buộc để hỗ trợ file upload
+        public async Task<ActionResult<ProductResponseDto>> CreateProduct([FromForm] ProductDto model)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+            {
+                return Unauthorized(new { message = "User ID is invalid." });
+            }
+
+            var createdProduct = await _service.CreateProductAsync(model, userId);
+            return CreatedAtAction(nameof(GetProduct), new { id = createdProduct.ProductId }, createdProduct);
         }
+
 
 
         [HttpPut("product/{id}")]
         [Authorize(Roles = "4")]
-        public async Task<IActionResult> UpdateProduct(long id, [FromBody] ProductDto productDto)
+        public async Task<IActionResult> UpdateProduct(long id, [FromBody] UpdateProductDTO productDto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -96,7 +112,7 @@ namespace MLHR.Controllers
             return Ok(products);
         }
 
-        [HttpPost("upload/{productId}")]
+        /*[HttpPost("upload/{productId}")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> Upload([FromForm] ImageModel imageModel, long productId)
         {
@@ -114,7 +130,27 @@ namespace MLHR.Controllers
             {
                 return BadRequest(new { error = ex.Message });
             }
-        }
+        }*/
 
+
+        [HttpPut("update/{productId}")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateImages([FromRoute] long productId, [FromForm] ImageModel imageModel)
+        {
+            try
+            {
+                var updatedImages = await _imageService.UpdateImagesByProductIdAsync(productId, imageModel);
+                return Ok(updatedImages.Select(image => new
+                {
+                    image.ImageId,
+                    image.ImageUrl,
+                    image.ProductId
+                }));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
     }
 }
