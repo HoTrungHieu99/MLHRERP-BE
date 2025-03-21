@@ -3,7 +3,7 @@ name: MLHR-runner
 on:
   push:
     branches:
-      - ServerDeploy2
+      - ServerAPI
 
 jobs:
   Deploy-MLHR-Container:
