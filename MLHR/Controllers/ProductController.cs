@@ -1,4 +1,5 @@
 ﻿using BusinessObject.DTO;
+using BusinessObject.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.IService;
@@ -92,6 +93,12 @@ namespace MLHR.Controllers
             var products = await _service.GetProductsByCategoryIdAsync(categoryId);
             return Ok(products);
         }
+
+       /* [HttpPost("UploadImage")]
+        public async Task<IActionResult> UploadImages(Image image)
+        {
+
+        }*/
 
     }
 }

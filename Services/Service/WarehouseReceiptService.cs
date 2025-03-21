@@ -120,12 +120,17 @@ namespace Services.Service
             }).ToList();
         }
 
-        public async Task<List<WarehouseReceiptDTO>> GetWarehouseReceiptDTOIdAsync(long Id)
+        public async Task<WarehouseReceiptDTO?> GetWarehouseReceiptDTOIdAsync(long Id)
         {
             var receipts = await _repository.GetAllAsync();
-            var filteredReceipts = receipts.Where(receipt => receipt.WarehouseReceiptId == Id).ToList();
+            var receipt = receipts.FirstOrDefault(r => r.WarehouseReceiptId == Id);
 
-            return filteredReceipts.Select(receipt => new WarehouseReceiptDTO
+            if (receipt == null)
+            {
+                return null; // Trả về null nếu không tìm thấy
+            }
+
+            return new WarehouseReceiptDTO
             {
                 WarehouseReceiptId = receipt.WarehouseReceiptId,
                 DocumentNumber = receipt.DocumentNumber,
@@ -137,10 +142,9 @@ namespace Services.Service
                 TotalQuantity = receipt.TotalQuantity,
                 TotalPrice = receipt.TotalPrice,
                 Batches = JsonConvert.DeserializeObject<List<BatchResponseDto>>(receipt.BatchesJson) ?? new List<BatchResponseDto>()
-            }).ToList();
-
-            /*return await _repository.GetWarehouseReceiptDTOIdAsync(Id);*/
+            };
         }
+
     }
 
 }

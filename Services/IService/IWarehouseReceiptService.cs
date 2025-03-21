@@ -14,7 +14,7 @@ namespace Services.IService
         Task<bool> ApproveReceiptAsync(long id, Guid currentUserId);
         Task<List<WarehouseReceiptDTO>> GetAllReceiptsByWarehouseIdAsync(long warehouseId);
 
-        Task<List<WarehouseReceiptDTO>> GetWarehouseReceiptDTOIdAsync(long Id);
+        Task<WarehouseReceiptDTO?> GetWarehouseReceiptDTOIdAsync(long Id);
     }
 
 }
