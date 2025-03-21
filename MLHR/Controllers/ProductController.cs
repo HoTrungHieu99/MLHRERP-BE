@@ -23,10 +23,10 @@ namespace MLHR.Controllers
 
 
         [HttpGet("product")]
-        public async Task<IActionResult> GetProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        public async Task<IActionResult> GetProducts()
         {
-            var products = await _service.GetProductsAsync(page, pageSize);
-            if (products == null || products.Count == 0)
+            var products = await _service.GetProductsAsync();
+            if (products == null)
             {
                 return NotFound(new { message = "Không có dữ liệu." });
             }

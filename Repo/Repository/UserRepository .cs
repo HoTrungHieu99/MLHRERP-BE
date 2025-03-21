@@ -26,12 +26,10 @@ namespace Repo.Repository
             return await _context.Users.CountAsync();
         }
 
-        public async Task<List<User>> GetUsersAsync(int skip, int take)
+        public async Task<List<User>> GetUsersAsync()
         {
             return await _context.Users
                     .Include(u => u.Employee) // Lấy thông tin Employee của User
-                    .Skip(skip)
-                    .Take(take)
                     .ToListAsync();
         }
 

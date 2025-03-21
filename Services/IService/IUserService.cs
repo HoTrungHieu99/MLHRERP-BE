@@ -25,7 +25,7 @@ namespace Services.IService
 
         Task<object> LoginAsync(LoginRequest request);
 
-        Task<PagedResult<User>> GetUsersAsync(int page, int pageSize);
+        Task<PagedResult<User>> GetUsersAsync();
         Task<List<RegisterAccount>> GetRegisterAccount();
 
         Task<long?> GetAgencyIdByUserId(Guid userId);

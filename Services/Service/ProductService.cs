@@ -22,9 +22,9 @@ namespace Services.Service
             _imageService = imageService;
         }
 
-        public async Task<List<ProductResponseDto>> GetProductsAsync(int page, int pageSize)
+        public async Task<List<ProductResponseDto>> GetProductsAsync()
         {
-            var products = await _repository.GetProductsAsync((page - 1) * pageSize, pageSize);
+            var products = await _repository.GetProductsAsync();
             return products.Select(p => new ProductResponseDto
             {
                 ProductId = p.ProductId,

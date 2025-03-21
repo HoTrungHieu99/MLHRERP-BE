@@ -30,7 +30,7 @@ namespace Repo.IRepository
         Task<User> GetUserByEmailAsync(string email);
 
         Task<int> GetTotalUsersAsync(); // ✅ Thêm phương thức này
-        Task<List<User>> GetUsersAsync(int skip, int take);
+        Task<List<User>> GetUsersAsync();
         Task<(Province, District, Ward)> GetLocationIdsAsync(string provinceName, string districtName, string wardName);
         Task<Employee> GetEmployeeByUserIdAsync(Guid userId);
         Task<AgencyAccount> GetAgencyAccountByUserIdAsync(Guid userId);

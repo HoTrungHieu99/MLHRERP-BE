@@ -10,7 +10,7 @@ namespace Services.IService
 {
     public interface IProductService
     {
-        Task<List<ProductResponseDto>> GetProductsAsync(int page, int pageSize);
+        Task<List<ProductResponseDto>> GetProductsAsync();
         Task<ProductResponseDto> GetProductByIdAsync(long id);
         Task<ProductResponseDto> CreateProductAsync(ProductDto productDto, Guid userId);
         Task<ProductResponseDto> UpdateProductAsync(long id, UpdateProductDTO productDto, Guid userId);

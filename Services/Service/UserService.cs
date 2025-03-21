@@ -32,10 +32,10 @@ namespace Services.Service
         }
 
 
-        public async Task<PagedResult<User>> GetUsersAsync(int page, int pageSize)
+        public async Task<PagedResult<User>> GetUsersAsync()
         {
             int totalItems = await _userRepository.GetTotalUsersAsync(); // Tổng số user
-            var allUsers = await _userRepository.GetUsersAsync(0, totalItems); // Lấy toàn bộ user
+            var allUsers = await _userRepository.GetUsersAsync(); // Lấy toàn bộ user
 
             // Loại bỏ admin trước khi phân trang
             var filteredUsers = allUsers
@@ -44,21 +44,17 @@ namespace Services.Service
 
             int totalFilteredItems = filteredUsers.Count; // Tổng số user sau khi lọc admin
 
-            // Tính tổng số trang thực tế
-            int totalPages = (int)Math.Ceiling(totalFilteredItems / (double)pageSize);
+            /*// Tính tổng số trang thực tế
+            int totalPages = (int)Math.Ceiling();*/
 
             // Xác định số user cần lấy cho trang hiện tại
             List<User> usersToReturn = filteredUsers
-                .Skip((page - 1) * pageSize) // ✅ Phân trang sau khi đã loại bỏ admin
-                .Take(pageSize)
                 .ToList();
 
             return new PagedResult<User>
             {
                 Items = usersToReturn,
                 TotalItems = totalFilteredItems, // ✅ Cập nhật lại số lượng sau khi lọc
-                TotalPages = totalPages,
-                CurrentPage = page
             };
         }
 

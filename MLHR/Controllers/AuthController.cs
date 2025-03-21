@@ -150,9 +150,9 @@ namespace MLHR.Controllers
         }
 
         [HttpGet("user")]
-        public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        public async Task<IActionResult> GetUsers()
         {
-            var pagedUsers = await _userService.GetUsersAsync(page, pageSize);
+            var pagedUsers = await _userService.GetUsersAsync();
 
             var result = new
             {

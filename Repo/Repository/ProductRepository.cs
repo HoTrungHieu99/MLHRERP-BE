@@ -24,12 +24,10 @@ namespace Repo.Repository
             return await _context.Products.CountAsync();
         }
 
-        public async Task<List<Product>> GetProductsAsync(int skip, int take)
+        public async Task<List<Product>> GetProductsAsync()
         {
             return await _context.Products
                 .Include(p => p.Images) // ✅ Bao gồm hình ảnh
-                .Skip(skip)
-                .Take(take)
                 .ToListAsync();
         }
 
