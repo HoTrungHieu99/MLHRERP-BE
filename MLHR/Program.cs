@@ -122,6 +122,9 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IWarehouseRequestExportRepository, WarehouseRequestExportRepository>();
 builder.Services.AddScoped<IWarehouseRequestExportService, WarehouseRequestExportService>();
 
+builder.Services.AddScoped<IImageRepository, ImageRepository>();
+builder.Services.AddScoped<IImageService, ImageService>();
+
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddHttpContextAccessor();
 

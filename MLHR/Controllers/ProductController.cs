@@ -13,10 +13,12 @@ namespace MLHR.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _service;
+        private readonly IImageService _imageService;
 
-        public ProductController(IProductService service)
+        public ProductController(IProductService service, IImageService imageService)
         {
             _service = service;
+            _imageService = imageService;
         }
 
 
@@ -94,11 +96,25 @@ namespace MLHR.Controllers
             return Ok(products);
         }
 
-       /* [HttpPost("UploadImage")]
-        public async Task<IActionResult> UploadImages(Image image)
+        [HttpPost("upload/{productId}")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Upload([FromForm] ImageModel imageModel, long productId)
         {
-
-        }*/
+            try
+            {
+                var images = await _imageService.UploadImagesAsync(imageModel, productId);
+                return Ok(images.Select(image => new
+                {
+                    image.ImageId,
+                    image.ImageUrl,
+                    image.ProductId
+                }));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
 
     }
 }
