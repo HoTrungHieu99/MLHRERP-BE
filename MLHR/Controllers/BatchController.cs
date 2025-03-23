@@ -10,7 +10,7 @@ namespace MLHR.Controllers
 {
     [Route("api/batch")]
     [ApiController]
-    [Authorize(Roles = "4")]
+    [Authorize(Roles = "3, 4")]
     public class BatchController : ControllerBase
     {
         private readonly IBatchService _batchService;
