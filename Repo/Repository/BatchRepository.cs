@@ -95,6 +95,13 @@ namespace Repo.Repository
                 warehouseReceipt.BatchesJson = JsonConvert.SerializeObject(batchList, Formatting.Indented);
             }
 
+            var product = await _context.Products.FindAsync(batch.ProductId);
+            if (product != null)
+            {
+                product.Price = batch.SellingPrice;
+                _context.Products.Update(product);
+            }
+
             // ✅ Lưu tất cả thay đổi
             await _context.SaveChangesAsync();
             return true;

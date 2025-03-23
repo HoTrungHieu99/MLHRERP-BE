@@ -28,6 +28,20 @@ namespace Services.Service
             return await _repository.CreateWarehouseRequestExportAsync(warehouseId, requestExportId);
         }
 
+        public async Task<List<WarehouseRequestExportDtoResponse>> GetByWarehouseIdAsync(long warehouseId)
+        {
+            var data = await _repository.GetByWarehouseIdAsync(warehouseId);
+
+            return data.Select(x => new WarehouseRequestExportDtoResponse
+            {
+                WarehouseRequestExportId = x.WarehouseRequestExportId,
+                RequestExportId = x.RequestExportId,
+                ProductId = x.ProductId,
+                QuantityRequested = x.QuantityRequested,
+                RemainingQuantity = x.RemainingQuantity
+            }).ToList();
+        }
+
         public async Task<bool> ApproveRequestAsync(int warehouseRequestExportId, int quantityApproved, Guid approvedBy)
         {
             var request = await _repository.GetByIdAsync(warehouseRequestExportId);

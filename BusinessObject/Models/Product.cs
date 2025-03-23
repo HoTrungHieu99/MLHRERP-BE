@@ -51,6 +51,9 @@ namespace BusinessObject.Models
 
         public int AvailableStock { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? Price { get; set; }
+
         public ICollection<ExportTransactionDetail> ExportTransactionDetail { get; set; }
         public ICollection<ExportWarehouseReceipt> ExportWarehouseReceipt { get; set; }
 

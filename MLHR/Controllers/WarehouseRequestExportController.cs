@@ -31,6 +31,19 @@ namespace MLHR.Controllers
             return Ok(result);
         }
 
+        [HttpGet("warehouse/{warehouseId}")]
+        public async Task<IActionResult> GetByWarehouseId(long warehouseId)
+        {
+            var results = await _service.GetByWarehouseIdAsync(warehouseId);
+            if (results == null || !results.Any())
+            {
+                return NotFound("No warehouse request exports found for the given warehouse ID.");
+            }
+
+            return Ok(results);
+        }
+
+
         [HttpPost("approve")]
         public async Task<IActionResult> ApproveRequest([FromBody] ApproveWarehouseRequestExportDto requestDto)
         {

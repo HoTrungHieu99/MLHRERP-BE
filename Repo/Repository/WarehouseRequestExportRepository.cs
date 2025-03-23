@@ -65,16 +65,25 @@ namespace Repo.Repository
         }
 
         public async Task<List<WarehouseRequestExport>> GetByWarehouseAndRequestExportAsync(int warehouseId, int requestExportId)
-    {
-        return await _context.WarehouseRequestExports
-            .Where(x => x.WarehouseId == warehouseId && x.RequestExportId == requestExportId)
-            .ToListAsync();
-    }
+        {
+            return await _context.WarehouseRequestExports
+                .Where(x => x.WarehouseId == warehouseId && x.RequestExportId == requestExportId)
+                .ToListAsync();
+        }
 
-    public async Task UpdateManyAsync(List<WarehouseRequestExport> requests)
-    {
-        _context.WarehouseRequestExports.UpdateRange(requests);
-        await _context.SaveChangesAsync();
-    }
+        public async Task UpdateManyAsync(List<WarehouseRequestExport> requests)
+        {
+            _context.WarehouseRequestExports.UpdateRange(requests);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<WarehouseRequestExport>> GetByWarehouseIdAsync(long warehouseId)
+        {
+            return await _context.WarehouseRequestExports
+                .Include(x => x.Product)
+                .Include(x => x.RequestExport)
+                .Where(x => x.WarehouseId == warehouseId)
+                .ToListAsync();
+        }
     }
 }
