@@ -207,15 +207,14 @@ namespace Services.Service
 
         public async Task<StatusPayment> ConfirmPayment(string queryString, QueryRequest requestquery)
         {
-            //var getUrl = $"https://api-merchant.payos.vn/v2/payment-requests/{requestquery.Paymentlink}";
-              var getUrl = $"https://api-merchant.payos.vn/v2/payment-requests/{requestquery.Paymentlink}";
-
+            var getUrl = $"https://api-merchant.payos.vn/v2/payment-requests/{requestquery.Paymentlink}";
 
             try
             {
                 Guid? userId = Guid.TryParse(requestquery.userId, out var accountGuid) ? accountGuid : (Guid?)null;
                 var agency = await _userRepository.GetAgencyAccountByUserIdAsync(userId);
 
+                // Gửi request đến PayOS
                 var request = new HttpRequestMessage(HttpMethod.Get, getUrl);
                 request.Headers.Add("x-client-id", _configuration["PayOS:ClientId"]);
                 request.Headers.Add("x-api-key", _configuration["PayOS:APIKey"]);
@@ -233,7 +232,7 @@ namespace Services.Service
 
                 decimal paidAmount = requestquery.price;
 
-                // 1. Lấy thông tin Order
+                // B1. Lấy thông tin đơn hàng
                 var order = await _orderRepository.SingleOrDefaultAsync(p => p.OrderId == requestquery.OrderId);
                 if (order == null)
                     throw new Exception("Không tìm thấy đơn hàng.");
@@ -241,11 +240,12 @@ namespace Services.Service
                 decimal totalOrderAmount = order.FinalPrice;
                 decimal newRemainingDebt = 0;
 
-                // 2. Kiểm tra lịch sử thanh toán
+                // B2. Kiểm tra đã có PaymentHistory cho đơn này chưa
                 var existingHistory = await _paymentRepository.GetPaymentHistoryByOrderIdAsync(order.OrderId);
 
                 if (existingHistory != null)
                 {
+                    // Cộng dồn tiền thanh toán
                     existingHistory.PaymentAmount += paidAmount;
 
                     if (existingHistory.PaymentAmount >= totalOrderAmount)
@@ -260,17 +260,16 @@ namespace Services.Service
                     }
 
                     existingHistory.UpdatedAt = DateTime.UtcNow;
-
                     await _paymentRepository.UpdatePaymentHistoryAsync(existingHistory);
                 }
                 else
                 {
+                    // Giao dịch đầu tiên
                     var statusFlag = paidAmount >= totalOrderAmount ? "PAID" : "PARTIALLY_PAID";
                     newRemainingDebt = paidAmount >= totalOrderAmount ? 0 : totalOrderAmount - paidAmount;
 
                     existingHistory = new PaymentHistory
                     {
-                        PaymentHistoryId = Guid.NewGuid(),
                         OrderId = order.OrderId,
                         PaymentMethod = "PayOS",
                         PaymentDate = DateTime.UtcNow,
@@ -279,17 +278,21 @@ namespace Services.Service
                         RemainingDebtAmount = newRemainingDebt,
                         PaymentAmount = paidAmount,
                         CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
+                        UpdatedAt = DateTime.UtcNow,
+                        SerieNumber = $"SER-{DateTime.UtcNow.Ticks}"
                     };
 
+                    // ❗ KHÔNG gán PaymentHistoryId ở đây
+
                     await _paymentRepository.InsertPaymentHistoryAsync(existingHistory);
+                    await _paymentRepository.SaveChangesAsync(); // 👈 Lúc này Id mới được sinh
+
                 }
 
-                // 3. Ghi giao dịch vào bảng PaymentTransaction
+                // ✅ newHistory.PaymentHistoryId đã được sinh tự động, dùng được ở đây:
                 var transaction = new PaymentTransaction
                 {
-                    TransactionId = Guid.NewGuid(),
-                    PaymentHistoryId = existingHistory.PaymentHistoryId,
+                    PaymentHistoryId = existingHistory.PaymentHistoryId, // ✅ lấy từ EF sau khi lưu
                     PaymentDate = DateTime.UtcNow,
                     Amount = paidAmount,
                     PaymentStatus = "PAID",
@@ -297,13 +300,11 @@ namespace Services.Service
                 };
 
                 await _paymentRepository.InsertPaymentTransactionAsync(transaction);
-
-                // 4. Lưu thay đổi
                 await _paymentRepository.SaveChangesAsync();
 
                 return new StatusPayment
                 {
-                    code = requestquery.Code!,
+                    code = "00",
                     Data = new data
                     {
                         status = "PAID",
@@ -316,6 +317,7 @@ namespace Services.Service
                 throw new Exception("Lỗi xác nhận thanh toán: " + ex.Message);
             }
         }
+
 
     }
 }

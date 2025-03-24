@@ -29,5 +29,9 @@ namespace Repo.IRepository
         Task<Order?> SingleOrDefaultAsync(Expression<Func<Order, bool>> predicate);
 
         Task<Order> GetOrderByOrderCodeAsync(long orderCode);
+
+        Task<Order?> GetOrderByRequestIdAsync(Guid requestId);
+        Task<OrderDetail?> GetOrderDetailAsync(Guid orderId, long productId);
+        Task UpdateOrderDetailAsync(OrderDetail detail);
     }
 }

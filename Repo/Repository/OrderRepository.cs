@@ -91,5 +91,23 @@ namespace Repo.Repository
         {
             return await _context.Orders.SingleOrDefaultAsync(o => o.OrderCode == orderCode);
         }
+
+        public async Task<Order?> GetOrderByRequestIdAsync(Guid requestId)
+        {
+            return await _context.Orders
+                .FirstOrDefaultAsync(o => o.RequestId == requestId);
+        }
+
+        public async Task<OrderDetail?> GetOrderDetailAsync(Guid orderId, long productId)
+        {
+            return await _context.OrderDetails
+                .FirstOrDefaultAsync(od => od.OrderId == orderId && od.ProductId == productId);
+        }
+
+        public async Task UpdateOrderDetailAsync(OrderDetail detail)
+        {
+            _context.OrderDetails.Update(detail);
+            await Task.CompletedTask;
+        }
     }
 }

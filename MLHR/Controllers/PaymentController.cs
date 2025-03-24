@@ -97,29 +97,31 @@ namespace MLHR.Controllers
 
             try
             {
-                // ✅ Lấy tham số từ query string
+                // 🔹 B1. Lấy dữ liệu từ query string
                 long orderCode = long.Parse(Request.Query["orderCode"]!);
                 decimal amount = decimal.Parse(Request.Query["amount"]!);
                 string accountId = Request.Query["accountId"]!;
 
-                // ✅ Truy đơn hàng bằng orderCode
+                // 🔹 B2. Lấy thông tin đơn hàng theo orderCode
                 var order = await _orderService.GetOrderByOrderCodeAsync(orderCode);
                 if (order == null)
                     throw new Exception("Không tìm thấy đơn hàng tương ứng với orderCode.");
 
-                // ✅ Chuẩn bị dữ liệu xác nhận thanh toán
+                // 🔹 B3. Tạo đối tượng QueryRequest đúng định dạng
                 var queryRequest = new QueryRequest
                 {
                     userId = accountId,
-                    OrderId = order.OrderId,                 // lấy từ DB
                     price = amount,
-                    Paymentlink = orderCode.ToString()       // dùng để truy PayOS
+                    Paymentlink = orderCode.ToString(), // PayOS cần orderCode
+                    orderCode = (int)orderCode,
+                    OrderId = order.OrderId,            // Phục vụ xử lý backend
+                    Url = Request.QueryString.Value     // Truyền lại toàn bộ query string nếu cần log
                 };
 
+                // 🔹 B4. Gọi xử lý từ service
                 var result = await _paymentService.ConfirmPayment(Request.QueryString.Value!, queryRequest);
                 string formattedAmount = $"{amount:N0} VND";
 
-                // ✅ Trả giao diện thành công/thất bại
                 if (result != null && result.code == "00")
                 {
                     return Content($@"
@@ -138,6 +140,7 @@ namespace MLHR.Controllers
                 return Redirect("https://minhlong.mlhr.org/api/Payment/payment-fail");
             }
         }
+
 
 
 

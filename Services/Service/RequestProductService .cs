@@ -164,7 +164,7 @@ namespace Services.Service
         }
 
 
-        public async Task ApproveRequestAsync(Guid requestId, long approvedBy)
+        /*public async Task ApproveRequestAsync(Guid requestId, long approvedBy)
         {
             try
             {
@@ -245,7 +245,122 @@ namespace Services.Service
             {
                 throw new Exception($"An error occurred: {ex.Message}", ex);
             }
+        }*/
+
+        public async Task ApproveRequestAsync(Guid requestId, long approvedBy)
+        {
+            try
+            {
+                var requestProduct = await _requestProductRepository.GetRequestByIdAsync(requestId);
+                if (requestProduct == null) throw new Exception("Request not found!");
+
+                long requestOrderCode = Math.Abs(requestProduct.RequestProductId.GetHashCode()) % 10000000;
+
+                if (requestProduct.RequestStatus == "Approved")
+                {
+                    throw new Exception("This request has already been approved and cannot be approved again.");
+                }
+
+                // Cập nhật trạng thái RequestProduct
+                requestProduct.ApprovedBy = approvedBy;
+                requestProduct.RequestStatus = "Approved";
+                requestProduct.UpdatedAt = DateTime.Now;
+
+                await _requestProductRepository.UpdateRequestAsync(requestProduct);
+                await _requestProductRepository.SaveChangesAsync();
+
+                var existingOrder = await _orderRepository.GetOrderByRequestIdAsync(requestId);
+
+                Order order;
+                bool isNewOrder = false;
+
+                if (existingOrder == null || existingOrder.Status != "WaitPaid")
+                {
+                    // ✅ Tạo mới
+                    order = new Order
+                    {
+                        OrderCode = requestOrderCode,
+                        OrderDate = DateTime.Now,
+                        SalesAgentId = approvedBy,
+                        Status = "WaitPaid",
+                        RequestId = requestId,
+                        Discount = 0,
+                        FinalPrice = 0
+                    };
+
+                    await _orderRepository.AddOrderAsync(order);
+                    await _orderRepository.SaveChangesAsync();
+                    isNewOrder = true;
+                }
+                else
+                {
+                    // ✅ Cập nhật đơn cũ
+                    order = existingOrder;
+                    order.OrderDate = DateTime.Now;
+                }
+
+                decimal finalPrice = 0;
+                var orderDetails = new List<OrderDetail>();
+
+                foreach (var detail in requestProduct.RequestProductDetails)
+                {
+                    var unitPrice = detail.Price;
+                    var totalAmount = detail.Quantity * unitPrice;
+
+                    var existingDetail = !isNewOrder
+                        ? await _orderRepository.GetOrderDetailAsync(order.OrderId, detail.ProductId)
+                        : null;
+
+                    if (existingDetail != null)
+                    {
+                        // ✅ Cập nhật nếu đã có
+                        existingDetail.Quantity = detail.Quantity;
+                        existingDetail.UnitPrice = unitPrice;
+                        existingDetail.TotalAmount = totalAmount;
+                        existingDetail.Unit = detail.Unit;
+                        existingDetail.CreatedAt = DateTime.Now;
+
+                        await _orderRepository.UpdateOrderDetailAsync(existingDetail);
+                    }
+                    else
+                    {
+                        // ✅ Thêm mới
+                        var newDetail = new OrderDetail
+                        {
+                            OrderId = order.OrderId,
+                            ProductId = detail.ProductId,
+                            Quantity = detail.Quantity,
+                            UnitPrice = unitPrice,
+                            TotalAmount = totalAmount,
+                            Unit = detail.Unit,
+                            CreatedAt = DateTime.Now
+                        };
+
+                        orderDetails.Add(newDetail);
+                    }
+
+                    finalPrice += totalAmount;
+                }
+
+                if (orderDetails.Any())
+                {
+                    await _orderRepository.AddOrderDetailAsync(orderDetails);
+                }
+
+                order.FinalPrice = finalPrice;
+                await _orderRepository.UpdateOrderAsync(order);
+                await _orderRepository.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new Exception($"Database update failed: {ex.InnerException?.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occurred: {ex.Message}", ex);
+            }
         }
+
 
         public async Task<bool> CancelRequestAsync(Guid requestId, long approvedBy)
         {
