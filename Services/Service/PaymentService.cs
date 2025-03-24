@@ -151,7 +151,7 @@ namespace Services.Service
                 var returnurlfail = _configuration["PayOS:ReturnUrlFail"];
 
                 // ✅ returnUrl chỉ cần OrderId
-                string returnUrl = $"https://minhlong.mlhr.org/api/Payment/Payment-confirm" +
+                string returnUrl = $"https://minhlong.mlhr.org/api/Payment/paymentconfirm" +
                    $"?orderCode={order.OrderCode}" +
                    $"&accountId={accountId}" +
                    $"&amount={request.Price}";

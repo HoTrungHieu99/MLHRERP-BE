@@ -89,7 +89,7 @@ namespace MLHR.Controllers
             }
         }*/
 
-        [HttpGet("Payment-confirm")]
+        [HttpGet("paymentconfirm")]
         public async Task<IActionResult> PaymentConfirm()
         {
             if (!Request.Query.ContainsKey("orderCode"))
@@ -142,7 +142,7 @@ namespace MLHR.Controllers
 
 
         // ✅ Trang báo thất bại
-        [HttpGet("payment/fail")]
+        [HttpGet("payment-fail")]
         public IActionResult PaymentFail()
         {
             return Content($@"
