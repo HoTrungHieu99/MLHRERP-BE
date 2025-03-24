@@ -8,7 +8,7 @@ using Services.Service;
 namespace MLHR.Controllers
 {
     [ApiController]
-    [Route("api")]
+    [Route("api/[controller]")]
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
@@ -31,7 +31,7 @@ namespace MLHR.Controllers
             return Ok(result);
         }
 
-        [Route("api/Payment-confirm")]
+        [Route("Payment-confirm")]
         [HttpGet]
         public async Task<IActionResult> PaymentConfirm()
         {

@@ -65,7 +65,7 @@ namespace Services.Service
 
                 Guid orderId = order.OrderId;
 
-                //string returnUrl = $"https://minhlong.mlhr.org/api/Payment-confirm?accountId={accountId}&amount={request.Price}&appointment={request.AgencyId}";
+                //string returnUrl = $"https://minhlong.mlhr.org/api/Payment/Payment-confirm?accountId={accountId}&amount={request.Price}&appointment={request.AgencyId}";
                 string returnUrl = $"https://minhlong.mlhr.org/api/Payment-confirm" +
                                     $"?status=PAID" +
                                     $"&code=00" +
