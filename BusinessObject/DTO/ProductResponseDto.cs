@@ -23,6 +23,7 @@ namespace BusinessObject.DTO
         // ✅ Danh sách URL hình ảnh lấy từ database
 
         public int AvailableStock { get; set; }
+        public decimal? Price { get; set; }
         public List<string> Images { get; set; } = new List<string>();
     }
 }
