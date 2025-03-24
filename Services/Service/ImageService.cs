@@ -20,6 +20,7 @@ namespace Services.Service
     using CloudinaryDotNet;
     using CloudinaryDotNet.Actions;
     using Microsoft.Extensions.Configuration;
+    using Repo.Repository;
     using SkiaSharp;
     using System;
     using System.Collections.Generic;
@@ -213,6 +214,15 @@ namespace Services.Service
             }
 
             return updatedImages;
+        }
+
+        public async Task DeleteImagesByProductIdAsync(long productId)
+        {
+            var images = await _repo.GetImagesByProductIdAsync(productId);
+            if (images.Any())
+            {
+                await _repo.DeleteRangeAsync(images);
+            }
         }
     }
 }

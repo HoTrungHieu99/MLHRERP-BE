@@ -20,15 +20,12 @@ namespace Repo.IRepository
 
         // ✅ Duyệt tài khoản và lưu vào bảng User + Employee hoặc Agency (thay LocationId bằng AddressId)
         Task<bool> ApproveUserAsync(int registerId);
-
         // ✅ Tìm User theo UserId
         Task<User> GetUserByIdAsync(Guid userId);
-
         //Login
         Task<User> LoginAsync(string userName, string password);
         //Logout
         Task<User> GetUserByEmailAsync(string email);
-
         Task<int> GetTotalUsersAsync(); // ✅ Thêm phương thức này
         Task<List<User>> GetUsersAsync();
         Task<(Province, District, Ward)> GetLocationIdsAsync(string provinceName, string districtName, string wardName);
@@ -42,17 +39,15 @@ namespace Repo.IRepository
         Task<UserRole> GetUserRoleByUserIdAsync(Guid userId);
         Task<bool> UpdateUserRoleAsync(UserRole userRole);
         Task<User> GetUserByUsernameAsync(string username);
-
         List<UserRole> GetUserRoles(Guid userId);
-
         Task<List<RegisterAccount>> GetRegisterAccount();
-
         Task<long?> GetAgencyIdByUserId(Guid userId);
-
         Task<long?> GetEmployeeIdByUserId(Guid userId);
-
         Task UpdateRegisterAsync(RegisterAccount registerAccount);
         Task SaveAsync();
+        Task<OTPEmail> AddOTPEmail(OTPEmail otpemail);
+        Task<OTPEmail> GetOTPEmailByEmail(string email);
+        Task<User> GetUserByUserName(string userName);
     }
 
 }

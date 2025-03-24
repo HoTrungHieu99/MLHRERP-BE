@@ -15,6 +15,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MailKit;
+using BusinessObject.DTO.Email;
 
 namespace Services.Service
 {
@@ -58,7 +59,11 @@ namespace Services.Service
             };
         }
 
-
+        public async Task<User> GetUserByIdAsync(Guid userId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            return user;
+        }
 
         // Hàm kiểm tra User có RoleId = 1 không
         private bool UserHasRole(Guid userId, int roleId)
@@ -117,6 +122,8 @@ namespace Services.Service
                 throw new ArgumentException("username cannot be admin!");
             }
 
+            
+
             // ✅ Nếu UserType là EMPLOYEE -> Bắt buộc nhập FullName, Position, Department
             if (request.UserType.ToUpper() == "EMPLOYEE")
             {
@@ -150,6 +157,7 @@ namespace Services.Service
             // ✅ Nếu UserType là AGENCY -> Bắt buộc nhập AgencyName, các trường khác có thể null
             if (request.UserType.ToUpper() == "AGENCY")
             {
+
                 if (string.IsNullOrWhiteSpace(request.AgencyName))
                 {
                     throw new ArgumentException("AgencyName is required for AGENCY.");
@@ -181,6 +189,8 @@ namespace Services.Service
             request.ProvinceName = request.ProvinceName?.Trim();
             request.AgencyName = request.AgencyName?.Trim();
             request.Password = request.Password?.Trim();
+
+
 
             // ✅ Tạo đối tượng RegisterAccount
             var registerAccount = new RegisterAccount
@@ -221,11 +231,16 @@ namespace Services.Service
             return await _userRepository.ApproveUserAsync(registerId);
         }
 
-        //Login
+        /*//Login
         public async Task<User> LoginAsync(string userName, string password)
         {
+            var user = await _userRepository.GetUserByUsernameAsync(userName);
+            if(user == null)
+            {
+                throw new Exception("Tai Khoan Chua Duoc Kich Hoat");
+            }
             return await _userRepository.LoginAsync(userName, password);
-        }
+        }*/
 
         //Logout
         public async Task<bool> LogoutAsync(string email)
@@ -537,6 +552,10 @@ namespace Services.Service
         public async Task<object> LoginAsync(LoginRequest request)
         {
             var user = await _userRepository.GetUserByUsernameAsync(request.userName);
+            if(user == null)
+            {
+                throw new ArgumentException("Your Account Need To Active");
+            }
             if (user == null || request.Password != user.Password)
             {
                 throw new ArgumentException("Invalid username or password.");

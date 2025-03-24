@@ -14,6 +14,7 @@ namespace Repo.IRepository
         Task<Product> GetByIdAsync(long productId);  // ✅ Trả về 1 Product duy nhất
         Task<List<Image>> GetImagesByProductIdAsync(long productId); // ✅ Trả về danh sách ảnh
         Task<Image> UpdateImageAsync(Image image);
+        Task DeleteRangeAsync(List<Image> images);
         Task SaveChangesAsync();
     }
 }

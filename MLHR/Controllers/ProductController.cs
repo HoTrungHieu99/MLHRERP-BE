@@ -78,7 +78,8 @@ namespace MLHR.Controllers
 
         [HttpPut("product/{id}")]
         [Authorize(Roles = "4")]
-        public async Task<IActionResult> UpdateProduct(long id, [FromBody] UpdateProductDTO productDto)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateProduct(long id, [FromForm] UpdateProductDTO productDto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 

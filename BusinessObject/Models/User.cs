@@ -31,6 +31,7 @@ namespace BusinessObject.Models
 
         public string Phone { get; set; }
         public bool Status { get; set; } = false;
+        public bool VerifyEmail { get; set; } = false;
 
         public ICollection<UserRole> UserRoles { get; set; }
         // Quan hệ 1-1 với Employee

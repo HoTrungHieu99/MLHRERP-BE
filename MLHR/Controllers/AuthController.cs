@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Services.IService;
 using Services.Service;
 using System.Security.Claims;
+using BusinessObject.DTO.Email;
 
 namespace MLHR.Controllers
 {
@@ -13,10 +14,12 @@ namespace MLHR.Controllers
     public class AuthController : Controller
     {
         private readonly IUserService _userService;
+        private readonly IEmailService _emailService;
 
-        public AuthController(IUserService userService)
+        public AuthController(IUserService userService, IEmailService emailService)
         {
             _userService = userService;
+            _emailService = emailService;
         }
 
         /// <summary>
@@ -175,6 +178,17 @@ namespace MLHR.Controllers
             return Ok(result);
         }
 
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<UserDto>> GetProduct(Guid userId)
+        {
+            var user = await _userService.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
+        }
+
         [HttpPut("{userId}/UnActive")]
         public async Task<IActionResult> UnActiveUser(Guid userId)
         {
@@ -188,22 +202,40 @@ namespace MLHR.Controllers
             return Ok(new {message = result.Message });
         }
 
-
-        /*[HttpPut("{userId}/Active")]
-        public async Task<IActionResult> ActiveUser(Guid userId)
+        [HttpPost("send-otp-email")]
+        public async Task<IActionResult> SendOTPToEmail([FromBody] SendOtpEmailRequest sendOtpEmailRequest)
         {
             try
             {
-                var result = await _userService.ActiveUser(userId);
-                if (!result)
-                    return BadRequest(new { message = "Failed to cancel RegisterAccount." });
-
-                return Ok(new { message = "User Active Successfully." });
+                bool isSendOtp = await _emailService.SendEmailAsync(sendOtpEmailRequest);
+                if (!isSendOtp)
+                {
+                    return BadRequest("Cannot send mail!");
+                }
+                return Ok("Send Otp successfully!");
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(ex.Message);
             }
-        }*/
+        }
+
+        [HttpPost("check-otp-email")]
+        public async Task<IActionResult> checkOtp([FromBody] CheckOtpRequest CheckOtpRequest)
+        {
+            try
+            {
+                bool isValidOtp = await _emailService.CheckOtpEmail(CheckOtpRequest);
+                if (!isValidOtp)
+                {
+                    return BadRequest(new { message = "Otp không đúng. Vui lòng nhập lại" });
+                }
+                return Ok("Otp is valid!");
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
     }
 }

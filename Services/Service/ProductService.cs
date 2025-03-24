@@ -127,7 +127,7 @@ namespace Services.Service
 
 
 
-        public async Task<ProductResponseDto> UpdateProductAsync(long id, UpdateProductDTO productDto, Guid userId)
+        /*public async Task<ProductResponseDto> UpdateProductAsync(long id, UpdateProductDTO productDto, Guid userId)
         {
             var product = await _repository.GetByIdAsync(id);
             if (product == null) return null;
@@ -143,7 +143,46 @@ namespace Services.Service
 
             var updatedProduct = await _repository.UpdateAsync(product);
             return await GetProductByIdAsync(updatedProduct.ProductId);
+        }*/
+
+        public async Task<ProductResponseDto> UpdateProductAsync(long id, UpdateProductDTO productDto, Guid userId)
+        {
+            var product = await _repository.GetByIdAsync(id);
+            if (product == null) return null;
+
+            // ✅ Cập nhật thông tin sản phẩm
+            product.ProductName = productDto.ProductName ?? product.ProductName;
+            product.Unit = productDto.Unit ?? product.Unit;
+            product.DefaultExpiration = productDto.DefaultExpiration ?? product.DefaultExpiration;
+            product.CategoryId = productDto.CategoryId;
+            product.Description = productDto.Description ?? product.Description;
+            product.TaxId = productDto.TaxId ?? product.TaxId;
+            product.UpdatedBy = userId;
+            product.UpdatedDate = DateTime.Now;
+
+            // ✅ Cập nhật sản phẩm trước
+            var updatedProduct = await _repository.UpdateAsync(product);
+
+            // ✅ Nếu có ảnh mới, thay thế ảnh cũ bằng ảnh mới trong bảng Images
+            if (productDto.Images != null && productDto.Images.Count > 0)
+            {
+                // Xóa ảnh cũ trong bảng Images
+                await _imageService.DeleteImagesByProductIdAsync(updatedProduct.ProductId);
+
+                // Tạo model ảnh để upload
+                var imageModel = new ImageModel
+                {
+                    Files = productDto.Images // List<IFormFile>
+                };
+
+                // Upload ảnh mới và lưu vào bảng Images
+                await _imageService.UploadImagesAsync(imageModel, updatedProduct.ProductId);
+            }
+
+            return await GetProductByIdAsync(updatedProduct.ProductId);
         }
+
+
 
         public async Task<bool> DeleteProductAsync(long id)
         {

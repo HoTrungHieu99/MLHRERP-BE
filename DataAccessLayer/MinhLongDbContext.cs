@@ -37,7 +37,7 @@ namespace DataAccessLayer
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile("appsettings.json")
                 .Build();
-            optionsBuilder.UseSqlServer(configuration.GetConnectionString("ServerConnection"));
+            optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         }
 
 
@@ -73,14 +73,14 @@ namespace DataAccessLayer
         public DbSet<ExportTransaction> ExportTransactions { get; set; }
         public DbSet<ExportTransactionDetail> ExportTransactionDetails { get; set; }
         public DbSet<WarehouseLedger> WarehouseLedgers { get; set; }
-
         public DbSet<PaymentHistory> PaymentHistories { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         public DbSet<RequestExport> RequestExports { get; set; }
         public DbSet<RequestExportDetail> RequestExportDetails { get; set; }
         public DbSet<WarehouseRequestExport> WarehouseRequestExports { get; set; }
-
         public DbSet<OrderDetail> OrderDetails { get; set; }
+        public DbSet<OTPEmail> OTPEmails { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // 🏷️ **Định danh bảng**
@@ -111,18 +111,17 @@ namespace DataAccessLayer
             modelBuilder.Entity<RequestProductDetail>().ToTable("RequestProductDetail");
             modelBuilder.Entity<Image>().ToTable("Image");
             modelBuilder.Entity<WarehouseReceipt>().ToTable("WarehouseReceipt");
-
             modelBuilder.Entity<ExportWarehouseReceipt>().ToTable("ExportWarehouseReceipt");
             modelBuilder.Entity<ExportTransaction>().ToTable("ExportTransaction");
             modelBuilder.Entity<ExportTransactionDetail>().ToTable("ExportTransactionDetail");
             modelBuilder.Entity<WarehouseLedger>().ToTable("WarehouseLedger");
-
             modelBuilder.Entity<PaymentHistory>().ToTable("PaymentHistory");
             modelBuilder.Entity<PaymentTransaction>().ToTable("PaymentTransaction");
             modelBuilder.Entity<RequestExport>().ToTable("RequestExport");
             modelBuilder.Entity<RequestExportDetail>().ToTable("RequestExportDetail");
             modelBuilder.Entity<WarehouseRequestExport>().ToTable("WarehouseRequestExport");
             modelBuilder.Entity<OrderDetail>().ToTable("OrderDetail");
+            modelBuilder.Entity<OTPEmail>().ToTable("OTPEmail");
 
 
             // 🔥 **Cấu hình quan hệ**
@@ -175,12 +174,11 @@ namespace DataAccessLayer
             modelBuilder.Entity<RequestProductDetail>().Property(rpd => rpd.RequestDetailId).ValueGeneratedOnAdd(); // Dành cho kiểu bigint tự động tăng
             modelBuilder.Entity<Image>().Property(i => i.ImageId).ValueGeneratedOnAdd();
             modelBuilder.Entity<WarehouseReceipt>().Property(wr => wr.WarehouseReceiptId).ValueGeneratedOnAdd();
-
             modelBuilder.Entity<WarehouseLedger>().Property(wr => wr.WarehouseLedgerId).ValueGeneratedOnAdd();
             modelBuilder.Entity<ExportTransaction>().Property(wr => wr.ExportTransactionId).ValueGeneratedOnAdd();
             modelBuilder.Entity<ExportTransactionDetail>().Property(wr => wr.ExportTransactionDetailId).ValueGeneratedOnAdd();
             modelBuilder.Entity<ExportWarehouseReceipt>().Property(wr => wr.ExportWarehouseReceiptId).ValueGeneratedOnAdd();
-
+            modelBuilder.Entity<OTPEmail>().Property(wr => wr.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<PaymentHistory>().Property(ph => ph.PaymentHistoryId).HasDefaultValueSql("NEWID()");
             modelBuilder.Entity<PaymentTransaction>().Property(pt => pt.TransactionId).HasDefaultValueSql("NEWID()");
 

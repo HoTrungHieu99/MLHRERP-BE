@@ -13,5 +13,6 @@ namespace Services.IService
     {
         Task<List<Image>> UploadImagesAsync(ImageModel imageModel, long productId);
         Task<List<Image>> UpdateImagesByProductIdAsync(long productId, ImageModel imageModel);
+        Task DeleteImagesByProductIdAsync(long productId);
     }
 }

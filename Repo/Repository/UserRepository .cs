@@ -342,6 +342,24 @@ namespace Repo.Repository
         {
             await _context.SaveChangesAsync();
         }
+
+        public async Task<OTPEmail> AddOTPEmail(OTPEmail otpemail)
+        {
+             _context.OTPEmails.Add(otpemail);
+            await _context.SaveChangesAsync();
+            return otpemail;
+        }
+        public async Task<OTPEmail> GetOTPEmailByEmail(string email)
+        {
+            var otpEmail =  await _context.OTPEmails.FirstOrDefaultAsync(a => a.Email == email);
+            return otpEmail;
+        }
+
+        public async Task<User> GetUserByUserName(string userName)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(a => a.Username == userName);
+            return user;
+        }
     }
 
 
