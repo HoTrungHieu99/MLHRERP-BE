@@ -5,6 +5,7 @@ using Repo.IRepository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -79,6 +80,11 @@ namespace Repo.Repository
                 .Include(o => o.RequestProduct)
                 .Where(o => o.RequestProduct.AgencyId == agencyId)
                 .ToListAsync();
+        }
+
+        public async Task<Order?> SingleOrDefaultAsync(Expression<Func<Order, bool>> predicate)
+        {
+            return await _context.Orders.SingleOrDefaultAsync(predicate);
         }
     }
 }

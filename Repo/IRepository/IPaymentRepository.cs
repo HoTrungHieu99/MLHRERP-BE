@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,5 +16,10 @@ namespace Repo.IRepository
         Task<string> GetPaymentDetailsAsync(long orderCode);
         Task<Order> GetOrderByIdAsync(Guid orderId);
         Task SaveChangesAsync();
+
+        Task<PaymentHistory?> GetPaymentHistoryByOrderIdAsync(Guid orderId);
+        Task InsertPaymentHistoryAsync(PaymentHistory history);
+        Task UpdatePaymentHistoryAsync(PaymentHistory history);
+        Task InsertPaymentTransactionAsync(PaymentTransaction transaction);
     }
 }

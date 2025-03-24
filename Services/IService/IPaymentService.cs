@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BusinessObject.DTO.PaymentDTO;
+using Net.payOS.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,8 +10,8 @@ namespace Services.IService
 {
     public interface IPaymentService
     {
-        Task<bool> ProcessPaymentAsync(Guid orderId, decimal paymentAmount);
+        Task<StatusPayment> ConfirmPayment(string queryString, QueryRequest requestquery);
 
-        Task<string> GetPaymentQRCodeAsync(Guid orderId);
+        Task<CreatePaymentResult> SendPaymentLink(Guid accountId, CreatePaymentRequest request);
     }
 }

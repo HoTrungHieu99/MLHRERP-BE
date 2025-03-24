@@ -33,7 +33,7 @@ namespace Repo.IRepository
         Task<List<User>> GetUsersAsync();
         Task<(Province, District, Ward)> GetLocationIdsAsync(string provinceName, string districtName, string wardName);
         Task<Employee> GetEmployeeByUserIdAsync(Guid userId);
-        Task<AgencyAccount> GetAgencyAccountByUserIdAsync(Guid userId);
+        Task<AgencyAccount> GetAgencyAccountByUserIdAsync(Guid? userId);
         Task<Address> GetAddressByIdAsync(int addressId);
         Task<bool> UpdateUserAsync(User user);
         Task<bool> UpdateEmployeeAsync(Employee employee);

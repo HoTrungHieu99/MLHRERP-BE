@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,5 +25,7 @@ namespace Repo.IRepository
         Task<int> GetTotalQuantityByOrderIdAsync(Guid orderId);
 
         Task<List<Order>> GetOrdersByAgencyIdAsync(long agencyId);
+
+        Task<Order?> SingleOrDefaultAsync(Expression<Func<Order, bool>> predicate);
     }
 }

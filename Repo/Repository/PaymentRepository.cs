@@ -1,4 +1,4 @@
-﻿using BusinessObject.DTO;
+﻿using BusinessObject.DTO.PaymentDTO;
 using BusinessObject.Models;
 using DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +8,7 @@ using Repo.IRepository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -68,6 +69,31 @@ namespace Repo.Repository
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
+        }
+
+        // 1. Lấy PaymentHistory theo OrderId
+        public async Task<PaymentHistory?> GetPaymentHistoryByOrderIdAsync(Guid orderId)
+        {
+            return await _context.PaymentHistories
+                .FirstOrDefaultAsync(p => p.OrderId == orderId);
+        }
+
+        // 2. Thêm mới PaymentHistory
+        public async Task InsertPaymentHistoryAsync(PaymentHistory history)
+        {
+            await _context.PaymentHistories.AddAsync(history);
+        }
+
+        // 3. Cập nhật PaymentHistory
+        public async Task UpdatePaymentHistoryAsync(PaymentHistory history)
+        {
+            _context.PaymentHistories.Update(history);
+        }
+
+        // 4. Thêm giao dịch vào PaymentTransaction
+        public async Task InsertPaymentTransactionAsync(PaymentTransaction transaction)
+        {
+            await _context.PaymentTransactions.AddAsync(transaction);
         }
     }
 

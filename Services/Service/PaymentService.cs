@@ -1,16 +1,22 @@
-﻿using BusinessObject.DTO;
+﻿using BusinessObject.DTO.PaymentDTO;
 using BusinessObject.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Net.payOS;
 using Net.payOS.Types;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Repo.IRepository;
 using Services.IService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using static Org.BouncyCastle.Math.EC.ECCurve;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Services.Service
 {
@@ -20,11 +26,17 @@ namespace Services.Service
         private readonly PayOS _payOS;
         private readonly PayOSSettings _payOSSettings;
         private readonly IOrderRepository _orderRepository;
+        private readonly IConfiguration _configuration;
+        private readonly IUserRepository _userRepository;
+        private readonly HttpClient _client;
 
         // Constructor có đầy đủ các dependency
         public PaymentService(IOptions<PayOSSettings> payOSSettings,
                               IPaymentRepository paymentRepository,
-                              IOrderRepository orderRepository)
+                              IOrderRepository orderRepository,
+                              IConfiguration configuration,
+                              IUserRepository userRepository,
+                              HttpClient client)
         {
             // Kiểm tra nếu payOSSettings bị null
             _payOSSettings = payOSSettings?.Value ?? throw new ArgumentNullException(nameof(payOSSettings));
@@ -37,129 +49,190 @@ namespace Services.Service
                 throw new Exception("Cấu hình PayOS không hợp lệ. Vui lòng kiểm tra appsettings.json");
             }
 
-            // Khởi tạo PayOS SDK
-            _payOS = new PayOS(_payOSSettings.ClientId, _payOSSettings.ApiKey, _payOSSettings.ChecksumKey);
-
-            // Inject repository
             _paymentRepository = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
             _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _client = client;
+        }
+        public async Task<CreatePaymentResult> SendPaymentLink(Guid accountId, CreatePaymentRequest request)
+        {
+            try
+            {
+                string returnUrl = $"https://hairhub.gahonghac.net/api/v1/payment/PaymentConfirm?accountId={accountId}&amount={request.Price}&appointment={request.AgencyId}";
+
+
+                //var account = await _unitOfWork.GetRepository<Domain.Entitities.Account>().SingleOrDefaultAsync(predicate: p => p.Id == accountId);
+                var agency = await _userRepository.GetAgencyAccountByUserIdAsync(accountId);
+                if (agency == null) throw new Exception("account not null!!");
+
+
+                int amount = (int)request.Price;
+                string currentTimeString = DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString();
+                long orderCode = long.Parse(currentTimeString.Substring(currentTimeString.Length - 6));
+                var description = request.Description;
+                string? clientId = _configuration["PayOS:ClientId"];
+                var apikey = _configuration["PayOS:APIKey"];
+                var checksumkey = _configuration["PayOS:ChecksumKey"];
+                var returnurlfail = _configuration["PayOS:ReturnUrlFail"];
+
+                PayOS pos = new PayOS(clientId, apikey, checksumkey);
+
+                var signatureData = new Dictionary<string, object>
+                 {
+                     { "amount", amount },
+                     { "cancelUrl", returnurlfail},
+                     { "description", description },
+                     { "expiredAt", DateTimeOffset.Now.ToUnixTimeSeconds() },
+                     { "orderCode", orderCode },
+                     { "returnUrl", returnUrl}
+                 };
+                var sortedSignatureData = new SortedDictionary<string, object>(signatureData);
+                var dataForSignature = string.Join("&", sortedSignatureData.Select(p => $"{p.Key}={p.Value}"));
+                var signature = ComputeHmacSha256(dataForSignature, checksumkey);
+                DateTimeOffset expiredAt = DateTimeOffset.Now.AddMinutes(10);
+
+                var paymentData = new PaymentData(
+                    orderCode: orderCode,
+                    amount: amount,
+                    description: description,
+                    items: new List<ItemData>(), // Provide a list of items if needed
+                    cancelUrl: returnurlfail,
+                    returnUrl: returnUrl,
+                    signature: signature,
+                    buyerName: agency.AgencyName,
+                    expiredAt: (int)DateTimeOffset.Now.AddMinutes(10).ToUnixTimeSeconds()
+                );
+
+                paymentData.items.Add(new ItemData(agency.AgencyName, 1, amount));
+                var createPaymentResult = await pos.createPaymentLink(paymentData);
+                string url = createPaymentResult.checkoutUrl;
+                return createPaymentResult;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                throw;
+            }
         }
 
-        public async Task<bool> ProcessPaymentAsync(Guid orderId, decimal paymentAmount)
+        private string ComputeHmacSha256(string data, string checksumKey)
         {
-            // 1. Kiểm tra xem đơn hàng có tồn tại không
-            var order = await _orderRepository.GetOrderByIdAsync(orderId);
-            if (order == null)
+            using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(checksumKey)))
             {
-                throw new Exception($"Không tìm thấy đơn hàng với ID: {orderId}");
+                var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
+                return BitConverter.ToString(hash).Replace("-", "").ToLower();
             }
-
-            // 2. Kiểm tra nếu paymentAmount hợp lệ
-            if (paymentAmount <= 0 || paymentAmount > order.FinalPrice)
-            {
-                throw new Exception("Số tiền thanh toán không hợp lệ.");
-            }
-
-            // 3. Chuẩn bị dữ liệu thanh toán cho PayOS
-            var items = new List<ItemData>
-    {
-        new ItemData("Thanh toán đơn hàng", 1, Convert.ToInt32(paymentAmount))
-    };
-
-            long orderCode = Math.Abs(orderId.GetHashCode()) % 1000000000;
-
-            /*// 4. Kiểm tra trạng thái thanh toán trên PayOS
-            string paymentStatusPayOs = await CheckPaymentStatusAsync(orderCode);
-
-            if (paymentStatusPayOs == "PAID")
-            {
-                throw new Exception($"Đơn hàng đã được thanh toán trước đó.");
-            }*/
-
-            var paymentData = new PaymentData(orderCode, Convert.ToInt32(paymentAmount),
-                                              "Thanh toán đơn hàng", items,
-                                              "https://clone-ui-user.vercel.app/agency/orders",
-                                              "https://clone-ui-user.vercel.app/agency/orders");
-
-            // 4. Gọi PayOS để tạo link thanh toán
-            var createPaymentResult = await _payOS.createPaymentLink(paymentData);
-
-            // 5. Kiểm tra tổng số tiền đã thanh toán trước đó
-            var previousPayments = await _paymentRepository.GetPaymentsByOrderIdAsync(orderId);
-            decimal totalPaidBefore = previousPayments?.Sum(p => p.PaymentAmount) ?? 0;
-            decimal remainingDebt = order.FinalPrice - (totalPaidBefore + paymentAmount);
-
-            // 6. Xác định trạng thái thanh toán
-            string paymentStatus = remainingDebt == 0 ? "FULL_PAID" :
-                                   (paymentAmount > 0 ? "PARTIALLY_PAID" : "UNPAID");
-
-            // 7. Lưu thông tin thanh toán vào PaymentHistory
-            var paymentHistory = new PaymentHistory
-            {
-                OrderId = orderId,
-                PaymentMethod = "PayOS",
-                PaymentDate = DateTime.Now,
-                SerieNumber = null,
-                Status = paymentStatus,
-                DueDate =DateTime.Now,
-                PrePaymentId = null,
-                RemainingDebtAmount = remainingDebt,
-                PaymentAmount = paymentAmount,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
-                TotalAmountPayment = order.FinalPrice
-            };
-
-            await _paymentRepository.AddPaymentHistoryAsync(paymentHistory);
-
-            // 8. Lưu giao dịch vào PaymentTransaction
-            var paymentTransaction = new PaymentTransaction
-            {
-                PaymentHistoryId = paymentHistory.PaymentHistoryId,
-                PaymentDate = DateTime.Now,
-                Amount = paymentAmount,
-                PaymentStatus = paymentStatus,
-                TransactionReference = createPaymentResult.paymentLinkId
-            };
-
-            await _paymentRepository.AddPaymentTransactionAsync(paymentTransaction);
-            // 11. Luôn cập nhật trạng thái đơn hàng thành "PAID" sau khi có thanh toán
-            order.Status = "PAID";
-            await _orderRepository.UpdateOrderAsync(order);
-            await _paymentRepository.SaveChangesAsync();
-
-            return true;
         }
 
-        public async Task<string> GetPaymentQRCodeAsync(Guid orderId)
+        public async Task<StatusPayment> ConfirmPayment(string queryString, QueryRequest requestquery)
         {
-            var order = await _paymentRepository.GetOrderByIdAsync(orderId);
-            if (order == null)
+            var getUrl = $"https://api-merchant.payos.vn/v2/payment-requests/{requestquery.Paymentlink}";
+
+            try
             {
-                throw new Exception("Không tìm thấy đơn hàng");
+                Guid? userId = Guid.TryParse(requestquery.userId, out var accountGuid) ? accountGuid : (Guid?)null;
+                var agency = await _userRepository.GetAgencyAccountByUserIdAsync(userId);
+
+                var request = new HttpRequestMessage(HttpMethod.Get, getUrl);
+                request.Headers.Add("x-client-id", _configuration["PayOS:ClientId"]);
+                request.Headers.Add("x-api-key", _configuration["PayOS:APIKey"]);
+
+                var response = await _client.SendAsync(request);
+                if (!response.IsSuccessStatusCode)
+                    throw new Exception("Không gửi được yêu cầu tới PayOS.");
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var responseObject = JObject.Parse(responseContent);
+                var status = responseObject["data"]?["status"]?.ToString();
+
+                if (status != "PAID")
+                    return null!;
+
+                decimal paidAmount = requestquery.price;
+
+                // 1. Lấy thông tin Order
+                var order = await _orderRepository.SingleOrDefaultAsync(p => p.OrderId == requestquery.OrderId);
+                if (order == null)
+                    throw new Exception("Không tìm thấy đơn hàng.");
+
+                decimal totalOrderAmount = order.FinalPrice;
+                decimal newRemainingDebt = 0;
+
+                // 2. Kiểm tra lịch sử thanh toán
+                var existingHistory = await _paymentRepository.GetPaymentHistoryByOrderIdAsync(order.OrderId);
+
+                if (existingHistory != null)
+                {
+                    existingHistory.PaymentAmount += paidAmount;
+
+                    if (existingHistory.PaymentAmount >= totalOrderAmount)
+                    {
+                        existingHistory.RemainingDebtAmount = 0;
+                        existingHistory.Status = "PAID";
+                    }
+                    else
+                    {
+                        existingHistory.RemainingDebtAmount = totalOrderAmount - existingHistory.PaymentAmount;
+                        existingHistory.Status = "PARTIALLY_PAID";
+                    }
+
+                    existingHistory.UpdatedAt = DateTime.UtcNow;
+
+                    await _paymentRepository.UpdatePaymentHistoryAsync(existingHistory);
+                }
+                else
+                {
+                    var statusFlag = paidAmount >= totalOrderAmount ? "PAID" : "PARTIALLY_PAID";
+                    newRemainingDebt = paidAmount >= totalOrderAmount ? 0 : totalOrderAmount - paidAmount;
+
+                    existingHistory = new PaymentHistory
+                    {
+                        PaymentHistoryId = Guid.NewGuid(),
+                        OrderId = order.OrderId,
+                        PaymentMethod = "PayOS",
+                        PaymentDate = DateTime.UtcNow,
+                        Status = statusFlag,
+                        TotalAmountPayment = totalOrderAmount,
+                        RemainingDebtAmount = newRemainingDebt,
+                        PaymentAmount = paidAmount,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+
+                    await _paymentRepository.InsertPaymentHistoryAsync(existingHistory);
+                }
+
+                // 3. Ghi giao dịch vào bảng PaymentTransaction
+                var transaction = new PaymentTransaction
+                {
+                    TransactionId = Guid.NewGuid(),
+                    PaymentHistoryId = existingHistory.PaymentHistoryId,
+                    PaymentDate = DateTime.UtcNow,
+                    Amount = paidAmount,
+                    PaymentStatus = "PAID",
+                    TransactionReference = requestquery.Paymentlink
+                };
+
+                await _paymentRepository.InsertPaymentTransactionAsync(transaction);
+
+                // 4. Lưu thay đổi
+                await _paymentRepository.SaveChangesAsync();
+
+                return new StatusPayment
+                {
+                    code = requestquery.Code!,
+                    Data = new data
+                    {
+                        status = "PAID",
+                        amount = paidAmount
+                    }
+                };
             }
-
-            long orderCode = Math.Abs(orderId.GetHashCode()) % 1000000000;
-            return await _paymentRepository.GetPaymentDetailsAsync(orderCode);
-        }
-
-        public async Task<string> CheckPaymentStatusAsync(long orderCode)
-        {
-            var checkPaymentUrl = $"https://api.payos.vn/v1/payments/{orderCode}";
-
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_payOSSettings.ApiKey}");
-
-            var response = await httpClient.GetAsync(checkPaymentUrl);
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            if (response.IsSuccessStatusCode)
+            catch (Exception ex)
             {
-                var paymentInfo = JsonConvert.DeserializeObject<PayOSPaymentResponse>(responseContent);
-                return paymentInfo.Status; // Trả về trạng thái thanh toán ("PENDING", "PAID", "CANCELED")
+                throw new Exception("Lỗi xác nhận thanh toán: " + ex.Message);
             }
-
-            return "NOT_FOUND";
         }
 
     }

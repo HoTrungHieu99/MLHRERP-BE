@@ -224,7 +224,7 @@ namespace Repo.Repository
             return await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId);
         }
 
-        public async Task<AgencyAccount> GetAgencyAccountByUserIdAsync(Guid userId)
+        public async Task<AgencyAccount> GetAgencyAccountByUserIdAsync(Guid? userId)
         {
             return await _context.AgencyAccounts.FirstOrDefaultAsync(a => a.UserId == userId);
         }
