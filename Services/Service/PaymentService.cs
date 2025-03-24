@@ -306,7 +306,7 @@ namespace Services.Service
                 //order.Status = "Paid";
                 await _paymentRepository.SaveChangesAsync();
                 
-                await _orderService.ProcessPaymentAsync(order.OrderId);
+                
 
                 return new StatusPayment
                 {
@@ -316,6 +316,7 @@ namespace Services.Service
                         status = "PAID",
                         amount = paidAmount
                     }
+                    await _orderService.ProcessPaymentAsync(order.OrderId);
                 };
 
             }
