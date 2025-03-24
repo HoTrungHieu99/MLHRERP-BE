@@ -208,9 +208,14 @@ namespace Services.Service
         public async Task<bool> ApproveUserAsync(int registerId)
         {
             RegisterAccount registerUser = await _userRepository.GetRegisterAccountByIdAsync(registerId);
-
-            _mailService.SendEmailRegisterAccountAsync(registerUser.Email, "Active Account SuccessFully!", "Hello, New Guy");
-            /*registerUser.AccountRegisterStatus = "Approved";*/
+            if(registerUser.UserType == "AGENCY")
+            {
+                _mailService.SendEmailRegisterAccountAsync(registerUser.Email, "Active Account SuccessFully!", registerUser.AgencyName, registerUser.Username, registerUser.Password);
+            }
+            else
+            {
+                _mailService.SendEmailRegisterAccountAsync(registerUser.Email, "Active Account SuccessFully!", registerUser.FullName, registerUser.Username, registerUser.Password);
+            }
 
             // ✅ Gọi Repo để duyệt tài khoản
             return await _userRepository.ApproveUserAsync(registerId);

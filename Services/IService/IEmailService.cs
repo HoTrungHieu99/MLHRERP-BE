@@ -8,6 +8,6 @@ namespace Services.IService
 {
     public interface IEmailService
     {
-        Task<bool> SendEmailRegisterAccountAsync(string emailRequest, string subjectEmail, string fullName);
+        Task<bool> SendEmailRegisterAccountAsync(string emailRequest, string subjectEmail, string fullName, string userNameUser, string passwordUser);
     }
 }

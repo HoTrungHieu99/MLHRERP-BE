@@ -22,13 +22,15 @@ namespace Services.Service
             _configuration = configuration;
         }
 
-        public async Task<bool> SendEmailRegisterAccountAsync(string emailRequest, string subjectEmail, string fullName)
+        public async Task<bool> SendEmailRegisterAccountAsync(string emailRequest, string subjectEmail, string fullName, string userNameUser, string passwordUser)
         {
             try
             {
                 var emailBody = _configuration["EmailSetting:EmailRegisterAccount"];
                 emailBody = emailBody.Replace("{PROJECT_NAME}", _configuration["EmailSetting:PROJECT_NAME"]);
                 emailBody = emailBody.Replace("{FULL_NAME}", fullName);
+                emailBody = emailBody.Replace("{USER_NAME}", userNameUser);
+                emailBody = emailBody.Replace("{PASSWORD}", passwordUser);
                 emailBody = emailBody.Replace("{PHONE_NUMBER}", _configuration["EmailSetting:PHONE_NUMBER"]);
                 emailBody = emailBody.Replace("{EMAIL_ADDRESS}", _configuration["EmailSetting:EMAIL_ADDRESS"]);
 
