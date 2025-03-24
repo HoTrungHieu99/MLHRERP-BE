@@ -31,8 +31,7 @@ namespace MLHR.Controllers
             return Ok(result);
         }
 
-        [Route("Payment-confirm")]
-        [HttpGet]
+        [HttpGet("Payment-confirm")]
         public async Task<IActionResult> PaymentConfirm()
         {
             if (Request.Query.Count == 0)
