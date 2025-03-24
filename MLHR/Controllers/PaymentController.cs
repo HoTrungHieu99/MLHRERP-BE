@@ -83,15 +83,17 @@ namespace MLHR.Controllers
                 return Redirect("https://minhlong.mlhr.org/api/payment/fail");
             }
         }
+
+        // ✅ Trang báo thất bại
         [HttpGet("payment/fail")]
         public IActionResult PaymentFail()
         {
             return Content($@"
-    <html><head><meta charset='UTF-8'><title>Thất bại</title></head>
-    <body style='text-align:center;font-family:sans-serif'>
-    <h1 style='color:red'>THẤT BẠI RÙI NÈ</h1>
-    <p>Giao dịch không thành công hoặc dữ liệu phản hồi không hợp lệ.</p>
-    <p>Xin vui lòng thử lại hoặc liên hệ hỗ trợ.</p></body></html>", "text/html");
+            <html><head><meta charset='UTF-8'><title>Thất bại</title></head>
+            <body style='text-align:center;font-family:sans-serif'>
+            <h1 style='color:red'>THẤT BẠI RÙI NÈ</h1>
+            <p>Giao dịch không thành công hoặc dữ liệu phản hồi không hợp lệ.</p>
+            <p>Xin vui lòng thử lại hoặc liên hệ hỗ trợ.</p></body></html>", "text/html");
         }
 
 
