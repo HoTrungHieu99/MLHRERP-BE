@@ -154,7 +154,8 @@ namespace Services.Service
                 var returnurlfail = _configuration["PayOS:ReturnUrlFail"];
 
                 // ✅ returnUrl chỉ cần OrderId
-                string returnUrl = $"http://localhost:5214/api/Payment/paymentconfirm" +
+                //string returnUrl = $"http://localhost:5214/api/Payment/paymentconfirm" +
+                string returnUrl = $"https://minhlong.mlhr.org/api/Payment/paymentconfirm" +
                    $"?orderCode={order.OrderCode}" +
                    $"&accountId={accountId}" +
                    $"&amount={request.Price}";
@@ -210,10 +211,28 @@ namespace Services.Service
 
         public async Task<StatusPayment> ConfirmPayment(string queryString, QueryRequest requestquery)
         {
-            var getUrl = $"https://api-merchant.payos.vn/v2/payment-requests/{requestquery.Paymentlink}";
+            
 
             try
             {
+                // 🔍 1. Check nếu transaction đã tồn tại → không xử lý lại
+                var existedTransaction = await _paymentRepository.GetTransactionByReferenceAsync(requestquery.Paymentlink);
+                if (existedTransaction != null)
+                {
+                    return new StatusPayment
+                    {
+                        code = "00",
+                        Data = new data
+                        {
+                            status = "PAID",
+                            amount = existedTransaction.Amount
+                        }
+                    };
+                }
+
+                var getUrl = $"https://api-merchant.payos.vn/v2/payment-requests/{requestquery.Paymentlink}";
+
+
                 Guid? userId = Guid.TryParse(requestquery.userId, out var accountGuid) ? accountGuid : (Guid?)null;
                 var agency = await _userRepository.GetAgencyAccountByUserIdAsync(userId);
 
@@ -306,7 +325,7 @@ namespace Services.Service
                 //order.Status = "Paid";
                 await _paymentRepository.SaveChangesAsync();
                 
-                //await _orderService.ProcessPaymentAsync(order.OrderId);
+                await _orderService.ProcessPaymentAsync(order.OrderId);
 
                 return new StatusPayment
                 {

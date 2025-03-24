@@ -21,5 +21,8 @@ namespace Repo.IRepository
         Task InsertPaymentHistoryAsync(PaymentHistory history);
         Task UpdatePaymentHistoryAsync(PaymentHistory history);
         Task InsertPaymentTransactionAsync(PaymentTransaction transaction);
+
+        Task<PaymentTransaction?> GetTransactionByReferenceAsync(string reference);
+
     }
 }

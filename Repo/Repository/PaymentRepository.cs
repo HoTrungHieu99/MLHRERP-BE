@@ -95,6 +95,12 @@ namespace Repo.Repository
         {
             await _context.PaymentTransactions.AddAsync(transaction);
         }
+
+        public async Task<PaymentTransaction?> GetTransactionByReferenceAsync(string reference)
+        {
+            return await _context.PaymentTransactions
+                                 .FirstOrDefaultAsync(t => t.TransactionReference == reference);
+        }
     }
 
 }
