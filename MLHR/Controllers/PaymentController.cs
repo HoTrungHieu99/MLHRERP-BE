@@ -153,6 +153,11 @@ namespace MLHR.Controllers
             <p>Xin vui lòng thử lại hoặc liên hệ hỗ trợ.</p></body></html>", "text/html");
         }
 
+        [HttpGet("test-ping")]
+        public IActionResult Ping()
+        {
+            return Ok("✅ GET thành công từ server!");
+        }
 
     }
 }

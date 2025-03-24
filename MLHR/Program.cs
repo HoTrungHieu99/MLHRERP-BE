@@ -177,6 +177,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // ✅ Kích hoạt API Controllers
-app.MapControllers();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers(); // 🟢 Cần có dòng này!
+});
 
 app.Run();
