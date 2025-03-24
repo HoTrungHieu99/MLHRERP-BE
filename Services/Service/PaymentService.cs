@@ -154,7 +154,7 @@ namespace Services.Service
                 var returnurlfail = _configuration["PayOS:ReturnUrlFail"];
 
                 // ✅ returnUrl chỉ cần OrderId
-                string returnUrl = $"https://minhlong.mlhr.org/api/Payment/paymentconfirm" +
+                string returnUrl = $"http://localhost:5214/api/Payment/paymentconfirm" +
                    $"?orderCode={order.OrderCode}" +
                    $"&accountId={accountId}" +
                    $"&amount={request.Price}";
@@ -306,7 +306,7 @@ namespace Services.Service
                 //order.Status = "Paid";
                 await _paymentRepository.SaveChangesAsync();
                 
-                
+                //await _orderService.ProcessPaymentAsync(order.OrderId);
 
                 return new StatusPayment
                 {
@@ -316,7 +316,6 @@ namespace Services.Service
                         status = "PAID",
                         amount = paidAmount
                     }
-                    await _orderService.ProcessPaymentAsync(order.OrderId);
                 };
 
             }
