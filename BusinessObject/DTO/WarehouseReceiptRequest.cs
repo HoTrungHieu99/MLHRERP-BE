@@ -28,7 +28,6 @@ namespace BusinessObject.DTO
         [JsonIgnore]
         public DateTime DateImport { get; set; } // Ngày nhập
 
-        [Required]
         public string Note { get; set; } = "nothing";
 
         // Không nhập từ người dùng, sẽ tính toán tự động

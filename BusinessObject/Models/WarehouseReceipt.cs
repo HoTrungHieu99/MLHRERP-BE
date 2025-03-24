@@ -36,7 +36,6 @@ namespace BusinessObject.Models
         // Danh sách các lô hàng (1 WarehouseReceipt có nhiều Batch)
         public string BatchesJson { get; set; }
 
-        [Required]
         public string Note { get; set; } = "nothing";
 
         public bool IsApproved { get; set; } = false;  // Mặc định chưa duyệt
