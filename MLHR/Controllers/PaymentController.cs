@@ -31,25 +31,23 @@ namespace MLHR.Controllers
             return Ok(result);
         }
 
-        [HttpGet("Payment-confirm")]
+        [Route("api/Payment-confirm")]
+        [HttpGet]
         public async Task<IActionResult> PaymentConfirm()
         {
             if (Request.Query.Count == 0)
-                return Redirect("LINK_PHAN_HOI_KHONG_HOP_LE");
+                return Redirect("https://minhlong.mlhr.org/api/payment/fail");
 
             try
             {
-                string paymentlink = Request.Query["id"]!;
                 string status = Request.Query["status"]!;
                 string code = Request.Query["code"]!;
                 string des = Request.Query["desc"]!;
                 string accountid = Request.Query["accountId"]!;
                 string amountStr = Request.Query["amount"]!;
-                string orderCodeStr = Request.Query["ordercode"]!;
                 string orderIdStr = Request.Query["orderid"]!;
 
                 decimal price = decimal.TryParse(amountStr, out var parsedAmount) ? parsedAmount : 0;
-                int orderCode = int.TryParse(orderCodeStr, out var parsedOrderCode) ? parsedOrderCode : 0;
                 Guid orderId = Guid.TryParse(orderIdStr, out var parsedGuid) ? parsedGuid : Guid.Empty;
 
                 var request = new QueryRequest
@@ -57,76 +55,45 @@ namespace MLHR.Controllers
                     userId = accountid,
                     Code = code,
                     des = des,
-                    orderCode = orderCode,
                     OrderId = orderId,
-                    Paymentlink = paymentlink,
                     price = price,
                     Status = status
                 };
+
 
                 var result = await _paymentService.ConfirmPayment(Request.QueryString.Value!, request);
                 string formattedAmount = $"{price:N0} VND";
 
                 if (result != null && request.Code == "00")
                 {
-                    var successHtml = $@"
-            <!DOCTYPE html>
-            <html lang='en'>
-            <head>
-                <meta charset='UTF-8'>
-                <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-                <title>Payment Success</title>
-                <style>
-                    body {{ font-family: Arial, sans-serif; text-align: center; }}
-                    .container {{ margin-top: 50px; }}
-                    h1 {{ color: #4CAF50; font-size: 36px; font-weight: bold; }}
-                    p {{ font-size: 18px; }}
-                </style>
-            </head>
-            <body>
-                <div class='container'>
-                    <h1>THÀNH CÔNG RÙI NÈ</h1>
-                    <p>Mã giao dịch: {request.Code}</p>
-                    <p>Số tiền: {formattedAmount}</p>
-                    <p>Cảm ơn bạn đã thanh toán!</p>
-                </div>
-            </body>
-            </html>";
-                    return Content(successHtml, "text/html");
+                    return Content($@"
+            <html><head><meta charset='UTF-8'><title>Thành công</title></head>
+            <body style='text-align:center;font-family:sans-serif'>
+            <h1 style='color:green'>THÀNH CÔNG RÙI NÈ</h1>
+            <p>Mã giao dịch: {request.Code}</p>
+            <p>Số tiền: {formattedAmount}</p>
+            <p>Cảm ơn bạn đã thanh toán!</p></body></html>", "text/html");
                 }
-                else
-                {
-                    var failureHtml = $@"
-            <!DOCTYPE html>
-            <html lang='en'>
-            <head>
-                <meta charset='UTF-8'>
-                <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-                <title>Payment Failed</title>
-                <style>
-                    body {{ font-family: Arial, sans-serif; text-align: center; }}
-                    .container {{ margin-top: 50px; }}
-                    h1 {{ color: #FF0000; font-size: 36px; font-weight: bold; }}
-                    p {{ font-size: 18px; }}
-                </style>
-            </head>
-            <body>
-                <div class='container'>
-                    <h1>THẤT BẠI RÙI NÈ</h1>
-                    <p>Mã giao dịch: {request.Code}</p>
-                    <p>Số tiền: {formattedAmount}</p>
-                    <p>Xin vui lòng thử lại hoặc liên hệ hỗ trợ.</p>
-                </div>
-            </body>
-            </html>";
-                    return Content(failureHtml, "text/html");
-                }
+
+                return Redirect("https://minhlong.mlhr.org/api/payment/fail");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return Redirect("LINK_PHAN_HOI_KHONG_HOP_LE");
+                Console.WriteLine("ERR: " + ex.Message);
+                return Redirect("https://minhlong.mlhr.org/api/payment/fail");
             }
         }
+        [HttpGet("payment/fail")]
+        public IActionResult PaymentFail()
+        {
+            return Content($@"
+    <html><head><meta charset='UTF-8'><title>Thất bại</title></head>
+    <body style='text-align:center;font-family:sans-serif'>
+    <h1 style='color:red'>THẤT BẠI RÙI NÈ</h1>
+    <p>Giao dịch không thành công hoặc dữ liệu phản hồi không hợp lệ.</p>
+    <p>Xin vui lòng thử lại hoặc liên hệ hỗ trợ.</p></body></html>", "text/html");
+        }
+
 
     }
 }

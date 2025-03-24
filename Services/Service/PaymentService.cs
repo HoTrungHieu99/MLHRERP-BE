@@ -59,7 +59,20 @@ namespace Services.Service
         {
             try
             {
-                string returnUrl = $"http://localhost:5214/api/Payment-confirm?accountId={accountId}&amount={request.Price}&appointment={request.AgencyId}";
+                var order = await _orderRepository.SingleOrDefaultAsync(p => p.OrderId == request.OrderId);
+                if (order == null)
+                    throw new Exception("Không tìm thấy đơn hàng.");
+
+                Guid orderId = order.OrderId;
+
+                //string returnUrl = $"https://minhlong.mlhr.org/api/Payment-confirm?accountId={accountId}&amount={request.Price}&appointment={request.AgencyId}";
+                string returnUrl = $"https://minhlong.mlhr.org/api/Payment-confirm" +
+                                    $"?status=PAID" +
+                                    $"&code=00" +
+                                    $"&desc=Thanh+toan+thanh+cong" +
+                                    $"&accountId={accountId}" +
+                                    $"&amount={request.Price}" +
+                                    $"&orderid={request.OrderId}";
 
 
                 //var account = await _unitOfWork.GetRepository<Domain.Entitities.Account>().SingleOrDefaultAsync(predicate: p => p.Id == accountId);
