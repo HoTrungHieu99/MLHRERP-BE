@@ -28,6 +28,7 @@ namespace Services.Service
         private readonly IOrderRepository _orderRepository;
         private readonly IConfiguration _configuration;
         private readonly IUserRepository _userRepository;
+        private readonly IOrderService _orderService;
         private readonly HttpClient _client;
 
         // Constructor có đầy đủ các dependency
@@ -36,7 +37,8 @@ namespace Services.Service
                               IOrderRepository orderRepository,
                               IConfiguration configuration,
                               IUserRepository userRepository,
-                              HttpClient client)
+                              HttpClient client,
+                              IOrderService orderService)
         {
             // Kiểm tra nếu payOSSettings bị null
             _payOSSettings = payOSSettings?.Value ?? throw new ArgumentNullException(nameof(payOSSettings));
@@ -53,6 +55,7 @@ namespace Services.Service
             _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
             _client = client;
         }
         /*public async Task<CreatePaymentResult> SendPaymentLink(Guid accountId, CreatePaymentRequest request)
@@ -300,7 +303,10 @@ namespace Services.Service
                 };
 
                 await _paymentRepository.InsertPaymentTransactionAsync(transaction);
+                //order.Status = "Paid";
                 await _paymentRepository.SaveChangesAsync();
+                
+                await _orderService.ProcessPaymentAsync(order.OrderId);
 
                 return new StatusPayment
                 {
@@ -311,6 +317,7 @@ namespace Services.Service
                         amount = paidAmount
                     }
                 };
+
             }
             catch (Exception ex)
             {

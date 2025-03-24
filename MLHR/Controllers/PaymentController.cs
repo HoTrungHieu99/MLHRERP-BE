@@ -1,4 +1,5 @@
 ﻿using BusinessObject.DTO.PaymentDTO;
+using BusinessObject.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -125,11 +126,13 @@ namespace MLHR.Controllers
                 if (result != null && result.code == "00")
                 {
                     return Content($@"
-                <html><head><meta charset='UTF-8'><title>Thành công</title></head>
-                <body style='text-align:center;font-family:sans-serif'>
-                <h1 style='color:green'>THÀNH CÔNG RÙI NÈ</h1>
-                <p>Số tiền: {formattedAmount}</p>
-                <p>Cảm ơn bạn đã thanh toán!</p></body></html>", "text/html");
+                                    <html><head><meta charset='UTF-8'><title>Thành công</title></head>
+                                    <body style='text-align:center;font-family:sans-serif'>
+                                    <h1 style='color:green'>BẠN ĐÃ THANH TOÁN THÀNH CÔNG ĐƠN HÀNG #{order.OrderCode}</h1>
+                                    <p>Số tiền Thanh Toán: {formattedAmount}</p>
+                                    <p>Cảm ơn bạn đã thanh toán!</p>
+                                    </body></html>", "text/html");
+
                 }
 
                 return Redirect("https://minhlong.mlhr.org/api/Payment/payment-fail");
@@ -148,10 +151,11 @@ namespace MLHR.Controllers
         [HttpGet("payment-fail")]
         public IActionResult PaymentFail()
         {
+
             return Content($@"
             <html><head><meta charset='UTF-8'><title>Thất bại</title></head>
             <body style='text-align:center;font-family:sans-serif'>
-            <h1 style='color:red'>THẤT BẠI RÙI NÈ</h1>
+            <h1 style='color:red'>BẠN ĐÃ THANH TOÁN THẤT BẠI</h1>
             <p>Giao dịch không thành công hoặc dữ liệu phản hồi không hợp lệ.</p>
             <p>Xin vui lòng thử lại hoặc liên hệ hỗ trợ.</p></body></html>", "text/html");
         }
