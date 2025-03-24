@@ -19,5 +19,7 @@ namespace Services.IService
 
         Task<bool> ProcessPaymentAsync(Guid orderId);
 
+        Task<Order> GetOrderByOrderCodeAsync(long orderCode);
+
     }
 }

@@ -92,33 +92,34 @@ namespace MLHR.Controllers
         [HttpGet("Payment-confirm")]
         public async Task<IActionResult> PaymentConfirm()
         {
-            if (!Request.Query.ContainsKey("orderid"))
+            if (!Request.Query.ContainsKey("orderCode"))
                 return Redirect("https://minhlong.mlhr.org/api/Payment/payment-fail");
 
             try
             {
-                Guid orderId = Guid.Parse(Request.Query["orderid"]!);
+                // ✅ Lấy tham số từ query string
+                long orderCode = long.Parse(Request.Query["orderCode"]!);
                 decimal amount = decimal.Parse(Request.Query["amount"]!);
                 string accountId = Request.Query["accountId"]!;
 
-                var order = await _orderService.GetOrderByIdAsync(orderId);
+                // ✅ Truy đơn hàng bằng orderCode
+                var order = await _orderService.GetOrderByOrderCodeAsync(orderCode);
                 if (order == null)
-                    throw new Exception("Không tìm thấy đơn hàng.");
+                    throw new Exception("Không tìm thấy đơn hàng tương ứng với orderCode.");
 
-                // ✅ Truy ngược lại orderCode để xác nhận thanh toán
-                long orderCode = order.OrderCode;
-
+                // ✅ Chuẩn bị dữ liệu xác nhận thanh toán
                 var queryRequest = new QueryRequest
                 {
                     userId = accountId,
-                    OrderId = orderId,
+                    OrderId = order.OrderId,                 // lấy từ DB
                     price = amount,
-                    Paymentlink = orderCode.ToString()
+                    Paymentlink = orderCode.ToString()       // dùng để truy PayOS
                 };
 
                 var result = await _paymentService.ConfirmPayment(Request.QueryString.Value!, queryRequest);
                 string formattedAmount = $"{amount:N0} VND";
 
+                // ✅ Trả giao diện thành công/thất bại
                 if (result != null && result.code == "00")
                 {
                     return Content($@"
@@ -133,10 +134,11 @@ namespace MLHR.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Lỗi xác nhận callback: " + ex.Message);
+                Console.WriteLine("❌ Lỗi xác nhận thanh toán: " + ex.Message);
                 return Redirect("https://minhlong.mlhr.org/api/Payment/payment-fail");
             }
         }
+
 
 
         // ✅ Trang báo thất bại

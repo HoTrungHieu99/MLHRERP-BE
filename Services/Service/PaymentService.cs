@@ -152,9 +152,10 @@ namespace Services.Service
 
                 // ✅ returnUrl chỉ cần OrderId
                 string returnUrl = $"https://minhlong.mlhr.org/api/Payment/Payment-confirm" +
-                                   $"?orderid={order.OrderId}" +
-                                   $"&accountId={accountId}" +
-                                   $"&amount={amount}";
+                   $"?orderCode={order.OrderCode}" +
+                   $"&accountId={accountId}" +
+                   $"&amount={request.Price}";
+
 
                 var signatureData = new Dictionary<string, object>
                 {

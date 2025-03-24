@@ -86,5 +86,10 @@ namespace Repo.Repository
         {
             return await _context.Orders.SingleOrDefaultAsync(predicate);
         }
+
+        public async Task<Order> GetOrderByOrderCodeAsync(long orderCode)
+        {
+            return await _context.Orders.SingleOrDefaultAsync(o => o.OrderCode == orderCode);
+        }
     }
 }

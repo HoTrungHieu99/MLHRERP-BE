@@ -207,9 +207,13 @@ namespace Services.Service
             return await _orderRepository.GetOrdersByAgencyIdAsync(agencyId);
         }
 
+        public async Task<Order> GetOrderByOrderCodeAsync(long orderCode)
+        {
+            return await _orderRepository.GetOrderByOrderCodeAsync(orderCode);
+        }
 
 
-        
+
     }
 
 }

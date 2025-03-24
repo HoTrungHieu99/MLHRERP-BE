@@ -27,5 +27,7 @@ namespace Repo.IRepository
         Task<List<Order>> GetOrdersByAgencyIdAsync(long agencyId);
 
         Task<Order?> SingleOrDefaultAsync(Expression<Func<Order, bool>> predicate);
+
+        Task<Order> GetOrderByOrderCodeAsync(long orderCode);
     }
 }
