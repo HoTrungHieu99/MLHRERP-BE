@@ -280,7 +280,6 @@ namespace DataAccessLayer.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ExportTransactionId"));
 
                     b.Property<string>("AgencyName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DocumentDate")
@@ -301,7 +300,7 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("OrderCode")
+                    b.Property<long?>("OrderCode")
                         .HasColumnType("bigint");
 
                     b.Property<int>("RequestExportId")
@@ -370,7 +369,6 @@ namespace DataAccessLayer.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ExportWarehouseReceiptId"));
 
                     b.Property<string>("AgencyName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DocumentDate")
@@ -387,7 +385,7 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("OrderCode")
+                    b.Property<long?>("OrderCode")
                         .HasColumnType("bigint");
 
                     b.Property<long?>("ProductId")

@@ -28,6 +28,22 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OTPEmail",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OtpKey = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ExpireTime = table.Column<double>(type: "float", nullable: true),
+                    EndTime = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OTPEmail", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Permission",
                 columns: table => new
                 {
@@ -123,7 +139,8 @@ namespace DataAccessLayer.Migrations
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
+                    Status = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    VerifyEmail = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -801,8 +818,8 @@ namespace DataAccessLayer.Migrations
                     ExportDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RequestExportId = table.Column<int>(type: "int", nullable: false),
-                    AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OrderCode = table.Column<long>(type: "bigint", nullable: false)
+                    AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OrderCode = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -834,8 +851,8 @@ namespace DataAccessLayer.Migrations
                     TotalQuantity = table.Column<int>(type: "int", nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     RequestExportId = table.Column<int>(type: "int", nullable: false),
-                    AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    OrderCode = table.Column<long>(type: "bigint", nullable: false),
+                    AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OrderCode = table.Column<long>(type: "bigint", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     WarehouseId = table.Column<long>(type: "bigint", nullable: false),
                     ProductId = table.Column<long>(type: "bigint", nullable: true)
@@ -1432,6 +1449,9 @@ namespace DataAccessLayer.Migrations
 
             migrationBuilder.DropTable(
                 name: "OrderDetail");
+
+            migrationBuilder.DropTable(
+                name: "OTPEmail");
 
             migrationBuilder.DropTable(
                 name: "PaymentTransaction");

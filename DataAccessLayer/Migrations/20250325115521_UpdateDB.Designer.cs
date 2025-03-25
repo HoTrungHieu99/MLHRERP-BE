@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MinhLongDbContext))]
-    [Migration("20250324104030_UpdateDB")]
+    [Migration("20250325115521_UpdateDB")]
     partial class UpdateDB
     {
         /// <inheritdoc />
@@ -283,7 +283,6 @@ namespace DataAccessLayer.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ExportTransactionId"));
 
                     b.Property<string>("AgencyName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DocumentDate")
@@ -304,7 +303,7 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("OrderCode")
+                    b.Property<long?>("OrderCode")
                         .HasColumnType("bigint");
 
                     b.Property<int>("RequestExportId")
@@ -373,7 +372,6 @@ namespace DataAccessLayer.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ExportWarehouseReceiptId"));
 
                     b.Property<string>("AgencyName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DocumentDate")
@@ -390,7 +388,7 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<long>("OrderCode")
+                    b.Property<long?>("OrderCode")
                         .HasColumnType("bigint");
 
                     b.Property<long?>("ProductId")
@@ -565,6 +563,32 @@ namespace DataAccessLayer.Migrations
                     b.HasIndex("ImportTransactionId");
 
                     b.ToTable("ImportTransactionDetail", (string)null);
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.OTPEmail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double?>("ExpireTime")
+                        .HasColumnType("float");
+
+                    b.Property<string>("OtpKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OTPEmail", (string)null);
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Order", b =>
@@ -1207,6 +1231,9 @@ namespace DataAccessLayer.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("VerifyEmail")
+                        .HasColumnType("bit");
 
                     b.HasKey("UserId");
 
