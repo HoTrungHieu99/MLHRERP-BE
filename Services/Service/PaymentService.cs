@@ -141,7 +141,7 @@ namespace Services.Service
                     throw new Exception("Không tìm thấy đơn hàng.");
 
                 // ✅ Dùng OrderCode đã có
-                long orderCode = order.OrderCode;
+                long orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
                 var agency = await _userRepository.GetAgencyAccountByUserIdAsync(accountId);
                 if (agency == null) throw new Exception("Tài khoản không hợp lệ.");
@@ -154,11 +154,12 @@ namespace Services.Service
                 var returnurlfail = _configuration["PayOS:ReturnUrlFail"];
 
                 // ✅ returnUrl chỉ cần OrderId
-                //string returnUrl = $"http://localhost:5214/api/Payment/paymentconfirm" +
-                string returnUrl = $"https://minhlong.mlhr.org/api/Payment/paymentconfirm" +
-                   $"?orderCode={order.OrderCode}" +
+                //string returnUrl = $"https://minhlong.mlhr.org/api/Payment/paymentconfirm" +
+                string returnUrl = $"http://localhost:5214/api/Payment/paymentconfirm" +
+                   $"?orderCode={orderCode}" +
                    $"&accountId={accountId}" +
-                   $"&amount={request.Price}";
+                   $"&amount={request.Price}"+
+                   $"&orderId={request.OrderId}";
 
 
                 var signatureData = new Dictionary<string, object>
@@ -215,20 +216,20 @@ namespace Services.Service
 
             try
             {
-                // 🔍 1. Check nếu transaction đã tồn tại → không xử lý lại
-                var existedTransaction = await _paymentRepository.GetTransactionByReferenceAsync(requestquery.Paymentlink);
-                if (existedTransaction != null)
-                {
-                    return new StatusPayment
-                    {
-                        code = "00",
-                        Data = new data
-                        {
-                            status = "PAID",
-                            amount = existedTransaction.Amount
-                        }
-                    };
-                }
+                //// 🔍 1. Check nếu transaction đã tồn tại → không xử lý lại
+                //var existedTransaction = await _paymentRepository.GetTransactionByReferenceAsync(requestquery.Paymentlink);
+                //if (existedTransaction != null)
+                //{
+                //    return new StatusPayment
+                //    {
+                //        code = "00",
+                //        Data = new data
+                //        {
+                //            status = "PAID",
+                //            amount = existedTransaction.Amount
+                //        }
+                //    };
+                //}
 
                 var getUrl = $"https://api-merchant.payos.vn/v2/payment-requests/{requestquery.Paymentlink}";
 
@@ -308,6 +309,7 @@ namespace Services.Service
 
                     await _paymentRepository.InsertPaymentHistoryAsync(existingHistory);
                     await _paymentRepository.SaveChangesAsync(); // 👈 Lúc này Id mới được sinh
+                    await _orderService.ProcessPaymentAsync(order.OrderId);
 
                 }
 
@@ -323,9 +325,7 @@ namespace Services.Service
 
                 await _paymentRepository.InsertPaymentTransactionAsync(transaction);
                 //order.Status = "Paid";
-                await _paymentRepository.SaveChangesAsync();
-                
-                await _orderService.ProcessPaymentAsync(order.OrderId);
+                await _paymentRepository.SaveChangesAsync();               
 
                 return new StatusPayment
                 {

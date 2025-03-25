@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Repo.IRepository;
+using Repo.Repository;
 using Services.IService;
 using Services.Service;
 
@@ -15,11 +16,13 @@ namespace MLHR.Controllers
     {
         private readonly IPaymentService _paymentService;
         private readonly IOrderService _orderService;
+        private readonly IPaymentRepository _paymentRepository;
 
-        public PaymentController(IPaymentService paymentService, IOrderService orderService)
+        public PaymentController(IPaymentService paymentService, IOrderService orderService, IPaymentRepository paymentRepository)
         {
             _paymentService = paymentService;
             _orderService = orderService;
+            _paymentRepository = paymentRepository;
         }
 
 
@@ -98,41 +101,53 @@ namespace MLHR.Controllers
 
             try
             {
-                // 🔹 B1. Lấy dữ liệu từ query string
+                // 🔹 B1. Lấy tham số từ query
                 long orderCode = long.Parse(Request.Query["orderCode"]!);
                 decimal amount = decimal.Parse(Request.Query["amount"]!);
                 string accountId = Request.Query["accountId"]!;
+                Guid orderId = Guid.Parse(Request.Query["orderId"]!);
 
-                // 🔹 B2. Lấy thông tin đơn hàng theo orderCode
-                var order = await _orderService.GetOrderByOrderCodeAsync(orderCode);
+                // 🔹 B2. Kiểm tra nếu Transaction đã xử lý rồi
+                var existingTransaction = await _paymentRepository.GetTransactionByReferenceAsync(orderCode.ToString());
+                if (existingTransaction != null)
+                {
+                    // ✅ Đã xử lý rồi → Trả giao diện luôn
+                    string formattedAmount = $"{amount:N0} VND";
+                    return Content($@"
+                <html><head><meta charset='UTF-8'><title>Thành công</title></head>
+                <body style='text-align:center;font-family:sans-serif'>
+                <h1 style='color:green'>BẠN ĐÃ THANH TOÁN THÀNH CÔNG ĐƠN HÀNG #{orderCode}</h1>
+                <p>Số tiền Thanh Toán: {formattedAmount}</p>
+                <p>Cảm ơn bạn đã thanh toán!</p></body></html>", "text/html");
+                }
+
+                // 🔹 B3. Tìm đơn hàng liên kết với orderCode
+                var order = await _orderService.GetOrderByIdAsync(orderId); // nếu bạn lưu orderCode trong bảng Order
                 if (order == null)
                     throw new Exception("Không tìm thấy đơn hàng tương ứng với orderCode.");
 
-                // 🔹 B3. Tạo đối tượng QueryRequest đúng định dạng
+                // 🔹 B4. Chuẩn bị dữ liệu xác nhận
                 var queryRequest = new QueryRequest
                 {
                     userId = accountId,
                     price = amount,
-                    Paymentlink = orderCode.ToString(), // PayOS cần orderCode
+                    Paymentlink = orderCode.ToString(),
                     orderCode = (int)orderCode,
-                    OrderId = order.OrderId,            // Phục vụ xử lý backend
-                    Url = Request.QueryString.Value     // Truyền lại toàn bộ query string nếu cần log
+                    OrderId = order.OrderId,
+                    Url = Request.QueryString.Value!
                 };
 
-                // 🔹 B4. Gọi xử lý từ service
                 var result = await _paymentService.ConfirmPayment(Request.QueryString.Value!, queryRequest);
-                string formattedAmount = $"{amount:N0} VND";
+                string formattedAmount2 = $"{amount:N0} VND";
 
                 if (result != null && result.code == "00")
                 {
                     return Content($@"
-                                    <html><head><meta charset='UTF-8'><title>Thành công</title></head>
-                                    <body style='text-align:center;font-family:sans-serif'>
-                                    <h1 style='color:green'>BẠN ĐÃ THANH TOÁN THÀNH CÔNG ĐƠN HÀNG #{order.OrderCode}</h1>
-                                    <p>Số tiền Thanh Toán: {formattedAmount}</p>
-                                    <p>Cảm ơn bạn đã thanh toán!</p>
-                                    </body></html>", "text/html");
-
+                <html><head><meta charset='UTF-8'><title>Thành công</title></head>
+                <body style='text-align:center;font-family:sans-serif'>
+                <h1 style='color:green'>BẠN ĐÃ THANH TOÁN THÀNH CÔNG ĐƠN HÀNG #{order.OrderCode}</h1>
+                <p>Số tiền Thanh Toán: {formattedAmount2}</p>
+                <p>Cảm ơn bạn đã thanh toán!</p></body></html>", "text/html");
                 }
 
                 return Redirect("https://minhlong.mlhr.org/api/Payment/payment-fail");
@@ -143,8 +158,6 @@ namespace MLHR.Controllers
                 return Redirect("https://minhlong.mlhr.org/api/Payment/payment-fail");
             }
         }
-
-
 
 
         // ✅ Trang báo thất bại
