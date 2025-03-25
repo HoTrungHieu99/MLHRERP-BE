@@ -25,8 +25,8 @@ namespace BusinessObject.Models
         public int RequestExportId { get; set; }
         public RequestExport RequestExport { get; set; }
 
-        public string AgencyName { get; set; }
-        public long OrderCode { get; set; }
+        public string? AgencyName { get; set; }
+        public long? OrderCode { get; set; }
 
         [Required]
         public string Status { get; set; } = "Pending"; // Trạng thái của phiếu xuất kho (Pending, Approved, Rejected)

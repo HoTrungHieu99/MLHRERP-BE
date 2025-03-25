@@ -23,9 +23,9 @@ namespace BusinessObject.Models
         public int RequestExportId { get; set; }
         public RequestExport RequestExport { get; set; }
 
-        public string AgencyName { get; set; }
+        public string? AgencyName { get; set; }
 
-        public long OrderCode { get; set; }
+        public long? OrderCode { get; set; }
 
         [ForeignKey("WarehouseId")]
         public Warehouse Warehouse { get; set; }
