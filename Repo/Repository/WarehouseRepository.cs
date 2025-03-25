@@ -81,7 +81,8 @@ namespace Repo.Repository
                     BatchCode = wp.Batch.BatchCode,
                     ExpirationDate = wp.ExpirationDate,
                     Quantity = wp.Quantity,
-                    Status = wp.Status
+                    Status = wp.Status,
+                    Price = wp.Batch.SellingPrice
                 })
                 .ToListAsync();
         }
@@ -100,7 +101,8 @@ namespace Repo.Repository
                     BatchCode = wp.Batch.BatchCode,
                     ExpirationDate = wp.ExpirationDate,
                     Quantity = wp.Quantity,
-                    Status = wp.Status
+                    Status = wp.Status,
+                    Price = wp.Batch.SellingPrice
                 })
                 .FirstOrDefaultAsync();
         }
