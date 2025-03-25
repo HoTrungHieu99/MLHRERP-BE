@@ -40,8 +40,8 @@ namespace MLHR.Controllers
         }
 
 
-
-        /*[HttpPost("auth/logout")]
+        //logout 
+        [HttpPost("auth/logout")]
         public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
         {
             try
@@ -58,7 +58,7 @@ namespace MLHR.Controllers
             {
                 return BadRequest(new { error = ex.Message });
             }
-        }*/
+        }
 
         [Authorize]
         [HttpPut("user")]
