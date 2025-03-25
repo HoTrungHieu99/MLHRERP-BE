@@ -19,8 +19,8 @@ namespace BusinessObject.DTO
 
         public int RequestExportId { get; set; }
 
-        public Guid OrderCode { get; set; }
-        public string AgencyName { get; set; }
+        public Guid? OrderCode { get; set; }
+        public string? AgencyName { get; set; }
         public List<ExportWarehouseReceiptDetailDTO> Details { get; set; }
     }
 

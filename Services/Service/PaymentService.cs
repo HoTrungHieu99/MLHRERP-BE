@@ -301,7 +301,7 @@ namespace Services.Service
                         RemainingDebtAmount = newRemainingDebt,
                         PaymentAmount = paidAmount,
                         CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now,  
                         SerieNumber = $"SER-{DateTime.Now.Ticks}"
                     };
 
