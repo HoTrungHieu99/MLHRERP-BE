@@ -39,6 +39,8 @@ namespace BusinessObject.DTO
         // Danh sách chi tiết nhập hàng
         [Required]
         public List<BatchRequest> Batches { get; set; } = new List<BatchRequest>();
+
+        public bool IsApproved { get; set; }
     }
 
 }

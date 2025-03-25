@@ -18,5 +18,6 @@ namespace BusinessObject.DTO
         public int TotalQuantity { get; set; }
         public decimal TotalPrice { get; set; }
         public List<BatchResponseDto> Batches { get; set; } // ✅ Trả về danh sách BatchDTO thay vì chuỗi JSON
+        public bool IsApproved { get; set; }
     }
 }

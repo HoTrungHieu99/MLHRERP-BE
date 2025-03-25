@@ -23,5 +23,13 @@ namespace MLHR.Controllers
             var requestExports = await _requestExportService.GetAllRequestExportsAsync();
             return Ok(requestExports);
         }
+
+        [HttpGet("{requestExportId}")]
+        [Authorize(Roles = "3, 4")]
+        public async Task<IActionResult> GetRequestExportByID(int requestExportId)
+        {
+            var requestExports = await _requestExportService.GetRequestExportByIdAsync(requestExportId);
+            return Ok(requestExports);
+        }
     }
 }

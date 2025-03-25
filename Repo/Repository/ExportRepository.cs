@@ -41,6 +41,15 @@ namespace Repo.Repository
         {
             await _context.SaveChangesAsync();
         }
+
+        public async Task<RequestExport> GetRequestExportById(int requestId)
+        {
+            return await _context.RequestExports
+                .Include(re => re.RequestExportDetails)
+                .ThenInclude(red => red.Product)
+                .FirstOrDefaultAsync(r => r.RequestExportId == requestId);
+             
+        }
     }
 
 

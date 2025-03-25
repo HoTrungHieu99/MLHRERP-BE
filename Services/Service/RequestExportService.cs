@@ -1,4 +1,5 @@
 ﻿using BusinessObject.DTO;
+using BusinessObject.Models;
 using Repo.IRepository;
 using Services.IService;
 using System;
@@ -39,5 +40,36 @@ namespace Services.Service
                 }).ToList()
             }).ToList();
         }
+
+        public async Task<RequestExportDto> GetRequestExportByIdAsync(int requestId)
+        {
+            var requestExport = await _requestExportRepository.GetRequestExportById(requestId);
+
+            if (requestExport == null)
+            {
+                return null; // hoặc throw exception nếu cần
+            }
+
+            return new RequestExportDto
+            {
+                RequestExportId = requestExport.RequestExportId,
+                OrderId = requestExport.OrderId,
+                RequestedBy = requestExport.RequestedByAgencyId,
+                ApprovedBy = requestExport.ApprovedBy ?? 0,
+                Status = requestExport.Status,
+                ApprovedDate = requestExport.ApprovedDate,
+                Note = requestExport.Note,
+                RequestExportDetails = requestExport.RequestExportDetails != null
+                    ? requestExport.RequestExportDetails.Select(red => new RequestExportDetailDto
+                    {
+                        RequestExportDetailId = red.RequestItemId,
+                        ProductId = red.ProductId,
+                        RequestedQuantity = red.RequestedQuantity
+                    }).ToList()
+                    : new List<RequestExportDetailDto>() // Trả về list rỗng nếu null
+            };
+        }
+
+
     }
 }

@@ -86,7 +86,8 @@ namespace Services.Service
                 DateImport = DateTime.Now,
                 TotalQuantity = totalQuantity,
                 TotalPrice = totalPrice,
-                BatchesJson = batchesJson
+                BatchesJson = batchesJson,
+                //IsApproved = request.IsApproved,
             };
 
             return await _repository.AddAsync(warehouseReceipt);
@@ -116,7 +117,9 @@ namespace Services.Service
                 DateImport = receipt.DateImport,
                 TotalQuantity = receipt.TotalQuantity,
                 TotalPrice = receipt.TotalPrice,
+                IsApproved = receipt.IsApproved,
                 Batches = JsonConvert.DeserializeObject<List<BatchResponseDto>>(receipt.BatchesJson) ?? new List<BatchResponseDto>()
+                
             }).ToList();
         }
 
@@ -141,7 +144,9 @@ namespace Services.Service
                 DateImport = receipt.DateImport,
                 TotalQuantity = receipt.TotalQuantity,
                 TotalPrice = receipt.TotalPrice,
+                IsApproved = receipt.IsApproved,
                 Batches = JsonConvert.DeserializeObject<List<BatchResponseDto>>(receipt.BatchesJson) ?? new List<BatchResponseDto>()
+                
             };
         }
 
