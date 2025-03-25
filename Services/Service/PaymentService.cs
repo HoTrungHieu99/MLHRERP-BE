@@ -282,7 +282,7 @@ namespace Services.Service
                         existingHistory.Status = "PARTIALLY_PAID";
                     }
 
-                    existingHistory.UpdatedAt = DateTime.UtcNow;
+                    existingHistory.UpdatedAt = DateTime.Now;
                     await _paymentRepository.UpdatePaymentHistoryAsync(existingHistory);
                 }
                 else
@@ -295,14 +295,14 @@ namespace Services.Service
                     {
                         OrderId = order.OrderId,
                         PaymentMethod = "PayOS",
-                        PaymentDate = DateTime.UtcNow,
+                        PaymentDate = DateTime.Now,
                         Status = statusFlag,
                         TotalAmountPayment = totalOrderAmount,
                         RemainingDebtAmount = newRemainingDebt,
                         PaymentAmount = paidAmount,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow,
-                        SerieNumber = $"SER-{DateTime.UtcNow.Ticks}"
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now,
+                        SerieNumber = $"SER-{DateTime.Now.Ticks}"
                     };
 
                     // ❗ KHÔNG gán PaymentHistoryId ở đây
