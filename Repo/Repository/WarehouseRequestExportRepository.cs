@@ -36,7 +36,7 @@ namespace Repo.Repository
                 return null;
             }
 
-            // ✅ Chặn tạo lại nếu đã REQUESTED
+            /*// ✅ Chặn tạo lại nếu đã REQUESTED
             if (requestExport.Status == "REQUESTED" || requestExport.Status == "APPROVED")
             {
                 throw new InvalidOperationException("This request has already been assigned to a warehouse.");
@@ -56,6 +56,32 @@ namespace Repo.Repository
 
             // ✅ Cập nhật trạng thái sang REQUESTED
             requestExport.Status = "REQUESTED";
+            _context.RequestExports.Update(requestExport);
+
+            await _context.SaveChangesAsync();
+
+            return warehouseRequests.FirstOrDefault();*/
+
+            // ✅ Chặn tạo lại nếu đã REQUESTED
+            if (requestExport.Status == "Requested" || requestExport.Status == "Approved")
+            {
+                throw new InvalidOperationException("This request has already been assigned to a warehouse.");
+            }
+
+            var warehouseRequests = requestExport.RequestExportDetails.Select(detail => new WarehouseRequestExport
+            {
+                WarehouseId = warehouseId,
+                RequestExportId = requestExportId,
+                ProductId = detail.ProductId,
+                QuantityRequested = detail.RequestedQuantity,
+                RemainingQuantity = detail.RequestedQuantity,
+                Status = "PENDING"
+            }).ToList();
+
+            await _context.WarehouseRequestExports.AddRangeAsync(warehouseRequests);
+
+            // ✅ Cập nhật trạng thái sang REQUESTED
+            requestExport.Status = "Requested";
             _context.RequestExports.Update(requestExport);
 
             await _context.SaveChangesAsync();
