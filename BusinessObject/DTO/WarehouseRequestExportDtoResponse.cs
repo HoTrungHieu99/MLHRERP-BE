@@ -13,5 +13,11 @@ namespace BusinessObject.DTO
         public long ProductId { get; set; }
         public int QuantityRequested { get; set; }
         public int RemainingQuantity { get; set; }
+        public string ProductName { get; set; }
+
+        public long OrderCode { get; set; }
+        public string AgencyName { get; set; }
+
+        public string Status { get; set; }
     }
 }

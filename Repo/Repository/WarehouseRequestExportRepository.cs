@@ -82,7 +82,17 @@ namespace Repo.Repository
             return await _context.WarehouseRequestExports
                 .Include(x => x.Product)
                 .Include(x => x.RequestExport)
+                .ThenInclude(re => re.Order)
+                .ThenInclude(o => o.RequestProduct)
+                .ThenInclude(o => o.AgencyAccount)
                 .Where(x => x.WarehouseId == warehouseId)
+                .ToListAsync();
+        }
+
+        public async Task<List<WarehouseRequestExport>> GetByRequestExportIdAsync(int requestExportId)
+        {
+            return await _context.WarehouseRequestExports
+                .Where(x => x.RequestExportId == requestExportId)
                 .ToListAsync();
         }
     }
