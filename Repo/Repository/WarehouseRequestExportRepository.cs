@@ -28,10 +28,18 @@ namespace Repo.Repository
 
         public async Task<WarehouseRequestExport> CreateWarehouseRequestExportAsync(long warehouseId, int requestExportId)
         {
+            // Dùng phương thức có sẵn trong repository
             var requestExport = await GetRequestExportByIdAsync(requestExportId);
+
             if (requestExport == null || requestExport.RequestExportDetails == null || !requestExport.RequestExportDetails.Any())
             {
                 return null;
+            }
+
+            // ✅ Chặn tạo lại nếu đã REQUESTED
+            if (requestExport.Status == "REQUESTED" || requestExport.Status == "APPROVED")
+            {
+                throw new InvalidOperationException("This request has already been assigned to a warehouse.");
             }
 
             var warehouseRequests = requestExport.RequestExportDetails.Select(detail => new WarehouseRequestExport
@@ -45,6 +53,11 @@ namespace Repo.Repository
             }).ToList();
 
             await _context.WarehouseRequestExports.AddRangeAsync(warehouseRequests);
+
+            // ✅ Cập nhật trạng thái sang REQUESTED
+            requestExport.Status = "REQUESTED";
+            _context.RequestExports.Update(requestExport);
+
             await _context.SaveChangesAsync();
 
             return warehouseRequests.FirstOrDefault();
