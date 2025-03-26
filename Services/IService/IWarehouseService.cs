@@ -10,7 +10,7 @@ namespace Services.IService
 {
     public interface IWarehouseService
     {
-        List<Warehouse> GetAllWarehouses();
+        IEnumerable<WarehouseInfoDto> GetAllWarehouseInfo();
         Warehouse GetWarehouseByUserId(Guid userId);
         void CreateWarehouse(Guid userId, string warehousName, string street, string province, string district, string ward, string note);
         void UpdateWarehouse(Guid userId, int warehouseId, string warehousName, string street, string province, string district, string ward, string note);

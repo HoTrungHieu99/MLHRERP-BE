@@ -61,6 +61,26 @@ namespace Services.Service
             request.RemainingQuantity = request.QuantityRequested - quantityApproved;
 
             await _repository.UpdateAsync(request);
+
+            var relatedRequests = await _context.WarehouseRequestExports
+        .Where(x => x.RequestExportId == request.RequestExportId)
+        .ToListAsync();
+
+            bool allCompleted = relatedRequests.All(x => x.RemainingQuantity == 0);
+
+            if (allCompleted)
+            {
+                var requestExport = await _context.RequestExports
+                    .FirstOrDefaultAsync(x => x.RequestExportId == request.RequestExportId);
+
+                if (requestExport != null)
+                {
+                    requestExport.Status = "APPROVED";
+                    _context.RequestExports.Update(requestExport);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
             return true;
         }
 

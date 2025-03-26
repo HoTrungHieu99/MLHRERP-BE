@@ -22,7 +22,17 @@ namespace Services.Service
             _locationRepository = locationRepository;
         }
 
-        public List<Warehouse> GetAllWarehouses() => _warehouseRepo.GetAllWarehouses();
+        public IEnumerable<WarehouseInfoDto> GetAllWarehouseInfo()
+        {
+            var warehouses = _warehouseRepo.GetAllWarehouses();
+
+            return warehouses.Select(w => new WarehouseInfoDto
+            {
+                WarehouseId = w.WarehouseId,
+                WarehouseName = w.WarehouseName,
+                FullAddress = $"{w.Address.Street}, {w.Address.Ward.WardName}, {w.Address.District.DistrictName}, {w.Address.Province.ProvinceName}"
+            }).ToList();
+        }
 
         public Warehouse GetWarehouseByUserId(Guid userId) => _warehouseRepo.GetWarehouseByUserId(userId);
 

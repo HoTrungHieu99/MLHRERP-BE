@@ -108,5 +108,12 @@ namespace MLHR.Controllers
             }
             return Ok(product);
         }
+
+        [HttpGet("warehouse")]
+        public ActionResult<IEnumerable<WarehouseInfoDto>> GetAllWarehouseInfo()
+        {
+            var result = _warehouseService.GetAllWarehouseInfo();
+            return Ok(result);
+        }
     }
 }

@@ -20,7 +20,13 @@ namespace Repo.Repository
             _context = context;
         }
 
-        public List<Warehouse> GetAllWarehouses() => _context.Warehouses.Include(w => w.Address).ToList();
+        public List<Warehouse> GetAllWarehouses() =>
+    _context.Warehouses
+        .Include(w => w.Address)
+            .ThenInclude(a => a.Province)
+        .Include(w => w.Address.District)
+        .Include(w => w.Address.Ward)
+        .ToList();
 
         public Warehouse GetWarehouseByUserId(Guid userId)
                 => _context.Warehouses
