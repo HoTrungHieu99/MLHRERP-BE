@@ -106,6 +106,11 @@ namespace Repo.Repository
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<Product?> GetProductByIdAsync(long productId)
+        {
+            return await _context.Products.FindAsync(productId);
+        }
     }
 
 }

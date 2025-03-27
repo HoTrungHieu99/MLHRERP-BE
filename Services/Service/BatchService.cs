@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BusinessObject.DTO;
 using BusinessObject.Models;
 using Repo.IRepository;
 using Services.IService;
@@ -69,6 +70,20 @@ namespace Services.Service
                 SellingPrice = batch.SellingPrice,
                 Status = batch.Status
             });
+        }
+
+        public async Task<ProductInfoByBatchDto?> GetProductInfoByBatchIdAsync(long batchId)
+        {
+            var batch = await _batchRepository.GetByIdAsync(batchId);
+
+            if (batch == null) return null;
+
+            return new ProductInfoByBatchDto
+            {
+                ProductName = batch.Product?.ProductName ??
+                              (await _batchRepository.GetProductByIdAsync(batch.ProductId))?.ProductName,
+                UnitCost = batch.UnitCost
+            };
         }
     }
 }

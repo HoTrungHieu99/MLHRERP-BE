@@ -41,5 +41,15 @@ namespace MLHR.Controllers
 
             return Ok(batches);
         }
+
+        [HttpGet("by-batch/{batchId}")]
+        public async Task<IActionResult> GetProductInfoByBatchId(long batchId)
+        {
+            var result = await _batchService.GetProductInfoByBatchIdAsync(batchId);
+            if (result == null)
+                return NotFound("Batch not found");
+
+            return Ok(result);
+        }
     }
 }
