@@ -16,6 +16,7 @@ namespace Repo.IRepository
         Task<IEnumerable<Batch>> GetBatchesByProductIdAsync(long productId);
         Task<int> CountBatchesByDateAsync(DateTime date);
         Task<bool> UpdateBatchAndRelatedDataAsync(Batch batch);
+        Task<Product?> GetProductByIdAsync(long productId);
     }
 
 }

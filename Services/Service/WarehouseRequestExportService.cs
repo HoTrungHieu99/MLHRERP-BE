@@ -75,7 +75,7 @@ namespace Services.Service
 
                 if (requestExport != null)
                 {
-                    requestExport.Status = "APPROVED";
+                    requestExport.Status = "Approved";
                     _context.RequestExports.Update(requestExport);
                     await _context.SaveChangesAsync();
                 }
