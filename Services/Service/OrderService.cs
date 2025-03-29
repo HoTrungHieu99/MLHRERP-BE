@@ -1,4 +1,5 @@
-﻿using BusinessObject.Models;
+﻿using BusinessObject.DTO.Order;
+using BusinessObject.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Repo.IRepository;
@@ -34,83 +35,86 @@ namespace Services.Service
             _userRepository = agencyRepository;
             _hub = hub; 
         }
-        public async Task<IEnumerable<Order>> GetAllOrdersAsync()
+        public async Task<List<OrderDto>> GetAllOrdersAsync()
         {
-            return await _orderRepository.GetAllOrdersAsync();
+            var orders = await _orderRepository.GetAllOrdersAsync();
+
+            return orders.Select(o => new OrderDto
+            {
+                OrderId = o.OrderId,
+                OrderCode = o.OrderCode,
+                OrderDate = o.OrderDate,
+                Discount = o.Discount,
+                FinalPrice = o.FinalPrice,
+                Status = o.Status,
+
+                // ✅ Tên nhân viên bán hàng (sales)
+                SalesName = o.RequestProduct?.ApprovedByEmployee?.FullName ?? "Chưa duyệt",
+
+                // ✅ Thông tin request
+                RequestCode = o.RequestProduct?.RequestCode ?? "N/A",
+                AgencyName = o.RequestProduct?.AgencyAccount?.AgencyName ?? "Unknown",
+
+                // ✅ Chi tiết đơn hàng
+                OrderDetails = o.OrderDetails.Select(od => new OrderDetailDto
+                {
+                    OrderDetailId = od.OrderDetailId,
+                    OrderId = od.OrderId,
+                    ProductId = od.ProductId,
+                    ProductName = od.Product?.ProductName ?? "N/A",
+                    Quantity = od.Quantity,
+                    UnitPrice = od.UnitPrice,
+                    TotalAmount = od.TotalAmount,
+                    Unit = od.Unit,
+                    CreatedAt = od.CreatedAt
+                }).ToList()
+
+            }).ToList();
         }
-        public async Task<Order> GetOrderByIdAsync(Guid orderId)
+
+        /*public async Task<Order> GetOrderByIdAsync(Guid orderId)
         {
             return await _orderRepository.GetOrderByIdAsync(orderId);
-        }
+        }*/
 
-        /*public async Task<bool> ProcessPaymentAsync(Guid orderId)
+        public async Task<OrderDto> GetOrderByIdAsync(Guid orderId)
         {
-            // 🔹 Lấy Order từ OrderId
             var order = await _orderRepository.GetOrderByIdAsync(orderId);
-            if (order == null || order.Status != "Procesing")
-                throw new Exception("Order not found or is not in a valid state.");
 
-            // 🔹 Lấy RequestProduct từ RequestId của Order
-            var requestProduct = await _requestProductRepository.GetRequestProductByRequestIdAsync(order.RequestId);
-            if (requestProduct == null)
-                throw new Exception("RequestProduct not found.");
-
-            // ✅ Tính tổng số lượng từ OrderDetail có cùng OrderId
-            int totalQuantity = await _orderRepository.GetTotalQuantityByOrderIdAsync(order.OrderId);
-
-
-            // 🔹 Tạo RequestExport từ Order
-            var requestExport = new RequestExport
+            if (order == null)
             {
-                RequestedBy = requestProduct.AgencyId,  // Gán AgencyId từ RequestProduct
-                RequestDate = requestProduct.CreatedAt,
-                Status = "Processing",
-                ApprovedBy = requestProduct.ApprovedBy, // Lấy ApprovedBy từ RequestProduct
-                ApprovedDate = requestProduct.UpdatedAt,
-                Note = "Order approved and exported",
-                OrderId = order.OrderId
-            };
+                throw new KeyNotFoundException($"Order with ID {orderId} not found.");
+            }
 
-            // ✅ Lưu RequestExport vào database
-            await _exportRepository.AddExportAsync(requestExport);
-            await _exportRepository.SaveChangesAsync(); // 🔥 Lưu để lấy RequestExportId
-
-            // 🔹 Lưu danh sách OrderDetail vào RequestExportDetail
-            *//*var requestExportDetails = new List<RequestExportDetail>();
-
-            foreach (var orderDetail in order.OrderDetails)
+            return new OrderDto
             {
-                var requestExportDetail = new RequestExportDetail
+                OrderId = order.OrderId,
+                OrderCode = order.OrderCode,
+                OrderDate = order.OrderDate,
+                Discount = order.Discount,
+                FinalPrice = order.FinalPrice,
+                Status = order.Status,
+
+                SalesName = order.RequestProduct?.ApprovedByEmployee?.FullName ?? "Chưa duyệt",
+                AgencyName = order.RequestProduct?.AgencyAccount?.AgencyName ?? "Unknown",
+                RequestCode = order.RequestProduct?.RequestCode ?? "N/A",
+
+                OrderDetails = order.OrderDetails.Select(od => new OrderDetailDto
                 {
-                    RequestExportId = requestExport.RequestExportId, // Liên kết với RequestExport
-                    ProductId = orderDetail.ProductId,
-                    RequestedQuantity = order.OrderDetails.Sum(od => od.Quantity)
-                };
-
-                requestExportDetails.Add(requestExportDetail);
-            }*//*
-
-            var requestExportDetails = order.OrderDetails
-                .Where(od => od.OrderId == order.OrderId) // ✅ Chỉ lấy OrderDetail có cùng OrderId
-                .Select(od => new RequestExportDetail
-                 {
-                        RequestExportId = requestExport.RequestExportId,
-                        ProductId = od.ProductId,
-                        RequestedQuantity = od.Quantity
-                }).ToList();
-
-            // ✅ Lưu danh sách RequestExportDetail vào database
-            await _exportRepository.AddExportDetailsAsync(requestExportDetails);
-            await _exportRepository.SaveChangesAsync();
-
-            // 🔹 Cập nhật trạng thái đơn hàng
-            order.Status = "Paid";
-            await _orderRepository.UpdateOrderAsync(order);
-            await _orderRepository.SaveChangesAsync();
-
-            return true;
+                    OrderDetailId = od.OrderDetailId,
+                    OrderId = od.OrderId,
+                    ProductId = od.ProductId,
+                    ProductName = od.Product?.ProductName ?? "N/A",
+                    Quantity = od.Quantity,
+                    UnitPrice = od.UnitPrice,
+                    TotalAmount = od.TotalAmount,
+                    Unit = od.Unit,
+                    CreatedAt = od.CreatedAt
+                }).ToList()
+            };
         }
-*/
+
+
 
         public async Task<bool> ProcessPaymentAsync(Guid orderId)
         {
@@ -209,10 +213,44 @@ namespace Services.Service
             return true;
         }
 
-        public async Task<List<Order>> GetOrdersByAgencyIdAsync(long agencyId)
+        /*public async Task<List<Order>> GetOrdersByAgencyIdAsync(long agencyId)
         {
             return await _orderRepository.GetOrdersByAgencyIdAsync(agencyId);
+        }*/
+
+        public async Task<List<OrderDto>> GetOrdersByAgencyIdAsync(long agencyId)
+        {
+            var orders = await _orderRepository.GetOrdersByAgencyIdAsync(agencyId);
+
+            return orders.Select(o => new OrderDto
+            {
+                OrderId = o.OrderId,
+                OrderCode = o.OrderCode,
+                OrderDate = o.OrderDate,
+                Discount = o.Discount,
+                FinalPrice = o.FinalPrice,
+                Status = o.Status,
+
+                SalesName = o.RequestProduct?.ApprovedByEmployee?.FullName ?? "Chưa duyệt",
+                AgencyName = o.RequestProduct?.AgencyAccount?.AgencyName ?? "Unknown",
+                RequestCode = o.RequestProduct?.RequestCode ?? "N/A",
+
+                OrderDetails = o.OrderDetails.Select(od => new OrderDetailDto
+                {
+                    OrderDetailId = od.OrderDetailId,
+                    OrderId = od.OrderId,
+                    ProductId = od.ProductId,
+                    ProductName = od.Product?.ProductName ?? "N/A",
+                    Quantity = od.Quantity,
+                    UnitPrice = od.UnitPrice,
+                    TotalAmount = od.TotalAmount,
+                    Unit = od.Unit,
+                    CreatedAt = od.CreatedAt
+                }).ToList()
+
+            }).ToList();
         }
+
 
         public async Task<Order> GetOrderByOrderCodeAsync(string orderCode)
         {

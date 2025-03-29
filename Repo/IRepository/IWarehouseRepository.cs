@@ -1,4 +1,4 @@
-﻿using BusinessObject.DTO;
+﻿using BusinessObject.DTO.Warehouse;
 using BusinessObject.Models;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿using BusinessObject.DTO;
+﻿using BusinessObject.DTO.Product;
 using BusinessObject.Models;
 using Microsoft.AspNetCore.Http;
 using System;

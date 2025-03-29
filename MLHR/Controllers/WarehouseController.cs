@@ -1,4 +1,4 @@
-﻿using BusinessObject.DTO;
+﻿using BusinessObject.DTO.Warehouse;
 using BusinessObject.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -1,5 +1,4 @@
-﻿using BusinessObject.DTO;
-using BusinessObject.Models;
+﻿using BusinessObject.Models;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Hosting;
@@ -16,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Services.Service
 {
-
+    using BusinessObject.DTO.Product;
     using CloudinaryDotNet;
     using CloudinaryDotNet.Actions;
     using Microsoft.Extensions.Configuration;

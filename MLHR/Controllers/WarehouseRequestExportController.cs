@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using BusinessObject.DTO;
+using BusinessObject.DTO.Warehouse;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.IService;

@@ -17,6 +17,8 @@ using MailKit.Search;
 using Microsoft.AspNetCore.SignalR;
 using SkiaSharp;
 using System.Diagnostics;
+using BusinessObject.DTO.RequestExport;
+using BusinessObject.DTO.Product;
 
 namespace Services.Service
 {
@@ -46,12 +48,38 @@ namespace Services.Service
             _hub = hub;
         }
 
-        public async Task<IEnumerable<RequestProduct>> GetAllRequestsAsync()
+        /*public async Task<IEnumerable<RequestProduct>> GetAllRequestsAsync()
         {
             return await _requestProductRepository.GetAllRequestsAsync();
+        }*/
+
+        public async Task<List<RequestProductDto>> GetAllRequestsAsync()
+        {
+            var requests = await _requestProductRepository.GetAllRequestsAsync();
+
+            return requests.Select(rp => new RequestProductDto
+            {
+                RequestProductId = rp.RequestProductId,
+                RequestCode = rp.RequestCode,
+                AgencyName = rp.AgencyAccount?.AgencyName ?? "Unknown",
+                AgencyId = rp.AgencyId,
+                ApprovedName = rp.ApprovedByEmployee?.FullName ?? "Chưa duyệt",
+                ApprovedBy = rp.ApprovedBy,
+                RequestStatus = rp.RequestStatus,
+                CreatedAt = rp.CreatedAt,
+                RequestProductDetails = rp.RequestProductDetails.Select(d => new RequestProductDetailDto
+                {
+                    ProductId = d.ProductId,
+                    ProductName = d.Product?.ProductName ?? "N/A",
+                    Quantity = d.Quantity,
+                    Unit = d.Unit,
+                    UnitPrice = d.Price
+                }).ToList()
+            }).ToList();
         }
 
-        public async Task<RequestProduct> GetRequestByIdAsync(Guid id)
+
+        /*public async Task<RequestProduct> GetRequestByIdAsync(Guid id)
         {
             var requestProduct = await _requestProductRepository.GetRequestProductByRequestIdAsync(id);
             if (requestProduct == null)
@@ -59,17 +87,74 @@ namespace Services.Service
                 throw new KeyNotFoundException($"RequestProduct with ID {id} not found.");
             }
             return requestProduct;
+        }*/
+
+        public async Task<RequestProductDto> GetRequestByIdAsync(Guid id)
+        {
+            var request = await _requestProductRepository.GetRequestProductByRequestIdAsync(id);
+
+            if (request == null)
+            {
+                throw new KeyNotFoundException($"RequestProduct with ID {id} not found.");
+            }
+
+            return new RequestProductDto
+            {
+                RequestProductId = request.RequestProductId,
+                RequestCode = request.RequestCode,
+                AgencyName = request.AgencyAccount?.AgencyName ?? "Unknown",
+                AgencyId = request.AgencyId,
+                ApprovedName = request.ApprovedByEmployee?.FullName ?? "Chưa duyệt",
+                ApprovedBy = request.ApprovedBy,
+                RequestStatus = request.RequestStatus,
+                CreatedAt = request.CreatedAt,
+                RequestProductDetails = request.RequestProductDetails.Select(d => new RequestProductDetailDto
+                {
+                    //RequestProductDetailId = d.RequestProductDetailId,
+                    ProductId = d.ProductId,
+                    ProductName = d.Product?.ProductName ?? "N/A",
+                    Quantity = d.Quantity,
+                    Unit = d.Unit,
+                    UnitPrice = d.Price
+                }).ToList()
+            };
+        }
+        public async Task<List<RequestProductDto>> GetRequestProductsByAgencyIdAsync(long agencyId)
+        {
+            var requests = await _requestProductRepository.GetRequestProductAgencyIdAsync(agencyId);
+
+            return requests.Select(rp => new RequestProductDto
+            {
+                RequestProductId = rp.RequestProductId,
+                RequestCode = rp.RequestCode,
+                AgencyName = rp.AgencyAccount?.AgencyName ?? "Unknown",
+                AgencyId = rp.AgencyId,
+                ApprovedName = rp.ApprovedByEmployee?.FullName ?? "Chưa duyệt",
+                ApprovedBy = rp.ApprovedBy,
+                RequestStatus = rp.RequestStatus,
+                CreatedAt = rp.CreatedAt,
+                RequestProductDetails = rp.RequestProductDetails.Select(d => new RequestProductDetailDto
+                {
+                    //RequestProductDetailId = d.RequestProductDetailId,
+                    ProductId = d.ProductId,
+                    ProductName = d.Product?.ProductName ?? "N/A",
+                    Quantity = d.Quantity,
+                    Unit = d.Unit,
+                    UnitPrice = d.Price
+                }).ToList()
+            }).ToList();
         }
 
-        public async Task<List<RequestProduct>> GetRequestProductsByAgencyIdAsync(long agencyId)
+
+        /*public async Task<List<RequestProduct>> GetRequestProductsByAgencyIdAsync(long agencyId)
         {
             return await _requestProductRepository.GetRequestProductAgencyIdAsync(agencyId);
-        }
+        }*/
 
-        public async Task<List<RequestProduct>> GetRequestProductsByIdAsync(Guid requestId)
+        /*public async Task<List<RequestProduct>> GetRequestProductsByIdAsync(Guid requestId)
         {
             return await _requestProductRepository.GetRequestProductByIdAsync(requestId);
-        }
+        }*/
 
 
 

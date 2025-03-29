@@ -23,9 +23,13 @@ namespace Repo.Repository
         {
             return await _context.RequestExports
                 .Include(re => re.RequestExportDetails)
-                .ThenInclude(red => red.Product) // Nếu cần thông tin sản phẩm
+                    .ThenInclude(red => red.Product)
+                .Include(re => re.RequestedByAgency)             // Lấy tên Agency
+                .Include(re => re.ApprovedByEmployee)            // 👈 Lấy Employee để truy cập FullName
                 .ToListAsync();
         }
+
+
 
         public async Task AddExportAsync(RequestExport export)
         {

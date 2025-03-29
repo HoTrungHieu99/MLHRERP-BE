@@ -33,6 +33,9 @@ namespace BusinessObject.Models
         public Guid OrderId { get; set; }
         public virtual Order Order { get; set; } // ✅ Đảm bảo đây là `virtual`
 
+        // ✅ Thêm dòng này:
+        public AgencyAccount RequestedByAgency { get; set; }
+
         public ICollection<RequestExportDetail> RequestExportDetails { get; set; }
         public ICollection<WarehouseRequestExport> WarehouseRequestExports { get; set; }
     }

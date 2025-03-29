@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO;
+﻿using BusinessObject.DTO.Product;
+using BusinessObject.DTO.Warehouse;
 using BusinessObject.Models;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;

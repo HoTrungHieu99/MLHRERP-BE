@@ -37,6 +37,10 @@ namespace BusinessObject.Models
         public Guid UserId { get; set; }
         public User User { get; set; }
 
+        // Nếu cần liên kết Accountant thực hiện
+        public long? AccountantId { get; set; }
+        public Accountant Accountant { get; set; }
+
         public ICollection<PaymentTransaction> PaymentTransactions { get; set; }
     }
 }

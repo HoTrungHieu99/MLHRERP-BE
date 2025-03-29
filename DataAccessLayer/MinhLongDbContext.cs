@@ -645,16 +645,24 @@ namespace DataAccessLayer
             // ✅ Quan hệ 1-1 giữa Order và RequestExport
             modelBuilder.Entity<RequestExport>()
                 .HasOne(re => re.Order)
-                .WithOne(o => o.RequestExport) // ✅ Một Order chỉ có một RequestExport
+                .WithOne(o => o.RequestExport)
                 .HasForeignKey<RequestExport>(re => re.OrderId)
-                .OnDelete(DeleteBehavior.NoAction); // 🔥 Xóa Order thì RequestExport cũng bị xóa
+                .OnDelete(DeleteBehavior.NoAction);
 
-            // ✅ Quan hệ N-1 giữa Employee và RequestExport (một Employee có thể duyệt nhiều RequestExport)
+            // ✅ Quan hệ N-1 giữa Employee và RequestExport
             modelBuilder.Entity<RequestExport>()
                 .HasOne(re => re.ApprovedByEmployee)
                 .WithMany()
                 .HasForeignKey(re => re.ApprovedBy)
-                .OnDelete(DeleteBehavior.SetNull); // Nếu Employee bị xóa, ApprovedBy = NULL
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // ✅ Quan hệ N-1 giữa AgencyAccount và RequestExport
+            modelBuilder.Entity<RequestExport>()
+                .HasOne(re => re.RequestedByAgency)
+                .WithMany()
+                .HasForeignKey(re => re.RequestedByAgencyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
 
             // Đảm bảo mỗi User chỉ có 1 Warehouse
             modelBuilder.Entity<Warehouse>()
@@ -676,6 +684,27 @@ namespace DataAccessLayer
                 .HasForeignKey(p => p.PrePaymentId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+
+            // ✅ Quan hệ 1–1 với User
+            modelBuilder.Entity<Accountant>()
+                .HasOne(a => a.User)
+                .WithOne() // hoặc .WithOne(u => u.Accountant)
+                .HasForeignKey<Accountant>(a => a.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ✅ Quan hệ n–1 với Address
+            modelBuilder.Entity<Accountant>()
+                .HasOne(a => a.Address)
+                .WithMany()
+                .HasForeignKey(a => a.AddressId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // ✅ Quan hệ 1–n với PaymentHistory
+            modelBuilder.Entity<PaymentHistory>()
+                .HasOne(p => p.Accountant)
+                .WithMany(a => a.PaymentHistories)
+                .HasForeignKey(p => p.AccountantId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 

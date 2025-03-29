@@ -30,7 +30,6 @@ namespace BusinessObject.Models
         public ICollection<PaymentHistory> PaymentHistories { get; set; }
         /*public ICollection<RequestExport> RequestExports { get; set; }*/
         // ✅ Quan hệ 1-1: Một Order chỉ có một RequestExport
-        // ✅ Quan hệ 1-1: Một Order chỉ có một RequestExport
         public virtual RequestExport RequestExport { get; set; }
     }
 }

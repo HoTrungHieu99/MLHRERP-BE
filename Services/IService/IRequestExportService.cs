@@ -1,4 +1,4 @@
-﻿using BusinessObject.DTO;
+﻿using BusinessObject.DTO.RequestExport;
 using BusinessObject.Models;
 using System;
 using System.Collections.Generic;

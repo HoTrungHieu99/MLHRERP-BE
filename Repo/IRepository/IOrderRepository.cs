@@ -12,7 +12,9 @@ namespace Repo.IRepository
     public interface IOrderRepository
     {
 
-        Task<IEnumerable<Order>> GetAllOrdersAsync();
+        //Task<IEnumerable<Order>> GetAllOrdersAsync();
+
+        Task<List<Order>> GetAllOrdersAsync();
         Task AddOrderAsync(Order order);
         Task UpdateOrderAsync(Order order);
         Task SaveChangesAsync();

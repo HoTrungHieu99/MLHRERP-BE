@@ -25,7 +25,7 @@ namespace MLHR.Controllers
         public async Task<IActionResult> GetAllOrders()
         {
             var orders = await _orderService.GetAllOrdersAsync();
-            return Ok(orders.Select(o => new
+            /*return Ok(orders.Select(o => new
             {
                 OrderId = o.OrderId,
                 orderCode = o.OrderCode,
@@ -39,7 +39,9 @@ namespace MLHR.Controllers
                     Price = od.UnitPrice,
                     SubTotal = od.Quantity * od.UnitPrice
                 })
-            }));
+            }));*/
+
+            return Ok(orders);
         }
 
         // API để lấy chi tiết một Order
@@ -48,7 +50,7 @@ namespace MLHR.Controllers
         {
             var order = await _orderService.GetOrderByIdAsync(orderId);
             if (order == null) return NotFound("Không tìm thấy đơn hàng!");
-            return Ok(new
+            /*return Ok(new
             {
                 OrderId = order.OrderId,
                 OrderDate = order.OrderDate,
@@ -61,7 +63,9 @@ namespace MLHR.Controllers
                     Price = od.UnitPrice,
                     SubTotal = od.Quantity * od.UnitPrice
                 })
-            });
+            });*/
+
+            return Ok(order);
         }
 
         // API lấy danh sách Order dựa trên AgencyId của user đang đăng nhập

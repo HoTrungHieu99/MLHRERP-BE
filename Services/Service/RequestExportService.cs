@@ -1,4 +1,4 @@
-﻿using BusinessObject.DTO;
+﻿using BusinessObject.DTO.RequestExport;
 using BusinessObject.Models;
 using Repo.IRepository;
 using Services.IService;
@@ -27,8 +27,8 @@ namespace Services.Service
             {
                 RequestExportId = re.RequestExportId,
                 OrderId = re.OrderId,
-                RequestedBy = re.RequestedByAgencyId,
-                ApprovedBy = re.ApprovedBy ?? 0,
+                AgencyName = re.RequestedByAgency?.AgencyName ?? "Unknown", // 👈 Gán tên đại lý
+                ApprovedByName = re.ApprovedByEmployee?.FullName ?? "Chưa duyệt",
                 Status = re.Status,
                 ApprovedDate = re.ApprovedDate,
                 Note = re.Note,
@@ -37,8 +37,12 @@ namespace Services.Service
                 {
                     RequestExportDetailId = red.RequestItemId,
                     ProductId = red.ProductId,
+                    ProductName = red.Product?.ProductName ?? "N/A",
+                    Unit = red.Product?.Unit ?? "N/A",
+                    Price = red.Product?.Price ?? 0, // hoặc giá khác nếu có
                     RequestedQuantity = red.RequestedQuantity
                 }).ToList()
+
             }).ToList();
         }
 
@@ -55,8 +59,8 @@ namespace Services.Service
             {
                 RequestExportId = requestExport.RequestExportId,
                 OrderId = requestExport.OrderId,
-                RequestedBy = requestExport.RequestedByAgencyId,
-                ApprovedBy = requestExport.ApprovedBy ?? 0,
+                AgencyName = requestExport.RequestedByAgency?.AgencyName ?? "Unknown", // 👈 Gán tên đại lý
+                ApprovedByName = requestExport.ApprovedByEmployee?.FullName ?? "Chưa duyệt",
                 Status = requestExport.Status,
                 ApprovedDate = requestExport.ApprovedDate,
                 Note = requestExport.Note,
@@ -66,6 +70,9 @@ namespace Services.Service
                     {
                         RequestExportDetailId = red.RequestItemId,
                         ProductId = red.ProductId,
+                        ProductName = red.Product?.ProductName ?? "N/A",
+                        Unit = red.Product?.Unit ?? "N/A",
+                        Price = red.Product?.Price ?? 0, // hoặc giá khác nếu có
                         RequestedQuantity = red.RequestedQuantity
                     }).ToList()
                     : new List<RequestExportDetailDto>() // Trả về list rỗng nếu null

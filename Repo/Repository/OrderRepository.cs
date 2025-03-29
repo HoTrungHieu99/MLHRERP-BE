@@ -20,12 +20,25 @@ namespace Repo.Repository
             _context = context;
         }
 
-        public async Task<IEnumerable<Order>> GetAllOrdersAsync()
+        /*public async Task<IEnumerable<Order>> GetAllOrdersAsync()
         {
             return await _context.Orders.
-                /*Include(o => o.OrderDetails).*/
+                Include(o => o.OrderDetails).
                 ToListAsync();
+        }*/
+
+        public async Task<List<Order>> GetAllOrdersAsync()
+        {
+            return await _context.Orders
+                .Include(o => o.OrderDetails)
+                .Include(o => o.RequestProduct)
+                    .ThenInclude(rp => rp.AgencyAccount)
+                .Include(o => o.RequestProduct)
+                    .ThenInclude(rp => rp.ApprovedByEmployee) // ✅ để lấy SalesName
+                .ToListAsync();
         }
+
+
 
         public async Task AddOrderAsync(Order order)
         {
@@ -47,12 +60,25 @@ namespace Repo.Repository
             await _context.OrderDetails.AddRangeAsync(orderDetails); // 🔹 Thêm danh sách `OrderDetail` cùng lúc
         }
 
-        public async Task<Order> GetOrderByIdAsync(Guid orderId)
+        /*public async Task<Order> GetOrderByIdAsync(Guid orderId)
         {
             return await _context.Orders
                 .Include(o => o.OrderDetails)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
+        }*/
+
+        public async Task<Order> GetOrderByIdAsync(Guid orderId)
+        {
+            return await _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .Include(o => o.RequestProduct)
+                    .ThenInclude(rp => rp.AgencyAccount)
+                .Include(o => o.RequestProduct)
+                    .ThenInclude(rp => rp.ApprovedByEmployee)
+                .FirstOrDefaultAsync(o => o.OrderId == orderId);
         }
+
 
         public async Task<RequestProduct> GetRequestProductByOrderAsync(Guid orderId)
         {
@@ -74,13 +100,27 @@ namespace Repo.Repository
                                  .SumAsync(od => od.Quantity);
         }
 
-        public async Task<List<Order>> GetOrdersByAgencyIdAsync(long agencyId)
+        /*public async Task<List<Order>> GetOrdersByAgencyIdAsync(long agencyId)
         {
             return await _context.Orders
                 .Include(o => o.RequestProduct)
                 .Where(o => o.RequestProduct.AgencyId == agencyId)
                 .ToListAsync();
+        }*/
+
+        public async Task<List<Order>> GetOrdersByAgencyIdAsync(long agencyId)
+        {
+            return await _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .Include(o => o.RequestProduct)
+                    .ThenInclude(rp => rp.AgencyAccount)
+                .Include(o => o.RequestProduct)
+                    .ThenInclude(rp => rp.ApprovedByEmployee)
+                .Where(o => o.RequestProduct.AgencyId == agencyId)
+                .ToListAsync();
         }
+
 
         public async Task<Order?> SingleOrDefaultAsync(Expression<Func<Order, bool>> predicate)
         {

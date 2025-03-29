@@ -25,7 +25,8 @@ namespace Repo.Repository
             return await _context.RequestProducts
                         .Include(r => r.RequestProductDetails)
                         .ThenInclude(d => d.Product)
-                        .Include(r => r.AgencyAccount) // 👈 Thêm dòng này
+                        .Include(re => re.AgencyAccount) // 👈 Thêm dòng này
+                        .Include(re => re.ApprovedByEmployee)
                         .ToListAsync();
         }
 
@@ -78,20 +79,25 @@ namespace Repo.Repository
             return await _context.RequestProducts
              .Where(rq => rq.RequestProductId == requestId)
             .Include(rp => rp.RequestProductDetails) // ✅ Bao gồm các sản phẩm trong Request
+            .ThenInclude(d => d.Product)
+            .Include(re => re.AgencyAccount) // 👈 Thêm dòng này
+            .Include(re => re.ApprovedByEmployee)
             .FirstOrDefaultAsync(rp => rp.RequestProductId == requestId);
         }
 
         public async Task<List<RequestProduct>> GetRequestProductAgencyIdAsync(long agencyId)
         {
             return await _context.RequestProducts
-                .Where(rp => rp.AgencyId == agencyId) // ✅ Lọc theo AgencyId
-                .Include(rp => rp.RequestProductDetails) // ✅ Bao gồm danh sách sản phẩm
-                .ThenInclude(d => d.Product) // ✅ Bao gồm thông tin sản phẩm
-                .ToListAsync();
+                    .Include(rp => rp.RequestProductDetails)
+                    .ThenInclude(d => d.Product)
+                    .Include(rp => rp.AgencyAccount)
+                    .Include(rp => rp.ApprovedByEmployee)
+                    .Where(rp => rp.AgencyId == agencyId)
+                    .ToListAsync();
         }
 
 
-        public async Task<List<RequestProduct>> GetRequestProductByIdAsync(Guid requestId)
+       /* public async Task<List<RequestProduct>> GetRequestProductByIdAsync(Guid requestId)
         {
             return await _context.RequestProducts
                         .Where(rp => rp.RequestProductId == requestId)
@@ -99,7 +105,7 @@ namespace Repo.Repository
                         .ThenInclude(d => d.Product)
                         .Include(rp => rp.AgencyAccount) // ✅ Thêm để lấy AgencyName
                         .ToListAsync();
-        }
+        }*/
 
         public async Task<string> GenerateRequestCodeAsync()
         {
