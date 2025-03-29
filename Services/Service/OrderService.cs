@@ -1,4 +1,5 @@
 ﻿using BusinessObject.Models;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Repo.IRepository;
 using Repo.Repository;
@@ -18,17 +19,20 @@ namespace Services.Service
         private readonly IExportRepository _exportRepository;
         private readonly IRequestProductRepository _requestProductRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IHubContext<NotificationHub> _hub;
 
         public OrderService(
             IOrderRepository orderRepository,
             IExportRepository exportRepository,
             IRequestProductRepository requestProductRepository,
-            IUserRepository agencyRepository)
+            IUserRepository agencyRepository,
+            IHubContext<NotificationHub> hub)
         {
             _orderRepository = orderRepository;
             _exportRepository = exportRepository;
             _requestProductRepository = requestProductRepository;
             _userRepository = agencyRepository;
+            _hub = hub; 
         }
         public async Task<IEnumerable<Order>> GetAllOrdersAsync()
         {
@@ -114,7 +118,7 @@ namespace Services.Service
             {
                 // ✅ Lấy Order từ OrderId
                 var order = await _orderRepository.GetOrderByIdAsync(orderId);
-                long requestExportCode = Math.Abs(order.OrderId.GetHashCode()) % 10000000;
+                string requestExportCode = await _orderRepository.GenerateRequestExportCodeAsync();
                 if (order == null || order.Status != "WaitPaid")
                     throw new Exception("Order not found or is not in a valid state.");
 
@@ -173,6 +177,9 @@ namespace Services.Service
                 await _orderRepository.UpdateOrderAsync(order);
                 await _orderRepository.SaveChangesAsync();
 
+                // Gửi cho KHO
+                await _hub.Clients.Group("3")
+                    .SendAsync("ReceiveNotification", $"🚚 Có Đơn Hàng Mới Được Đặt!");
                 return true;
             }
             catch (DbUpdateException ex) // ✅ Bắt lỗi từ Entity Framework
@@ -207,7 +214,7 @@ namespace Services.Service
             return await _orderRepository.GetOrdersByAgencyIdAsync(agencyId);
         }
 
-        public async Task<Order> GetOrderByOrderCodeAsync(long orderCode)
+        public async Task<Order> GetOrderByOrderCodeAsync(string orderCode)
         {
             return await _orderRepository.GetOrderByOrderCodeAsync(orderCode);
         }

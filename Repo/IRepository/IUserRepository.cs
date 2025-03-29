@@ -48,6 +48,9 @@ namespace Repo.IRepository
         Task<OTPEmail> AddOTPEmail(OTPEmail otpemail);
         Task<OTPEmail> GetOTPEmailByEmail(string email);
         Task<User> GetUserByUserName(string userName);
+        Task<string> GetAgencyNameByUserIdAsync(Guid userId);
+
+        
     }
 
 }

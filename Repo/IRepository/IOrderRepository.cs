@@ -1,4 +1,5 @@
 ﻿using BusinessObject.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,10 +29,12 @@ namespace Repo.IRepository
 
         Task<Order?> SingleOrDefaultAsync(Expression<Func<Order, bool>> predicate);
 
-        Task<Order> GetOrderByOrderCodeAsync(long orderCode);
+        Task<Order> GetOrderByOrderCodeAsync(string orderCode);
 
         Task<Order?> GetOrderByRequestIdAsync(Guid requestId);
         Task<OrderDetail?> GetOrderDetailAsync(Guid orderId, long productId);
         Task UpdateOrderDetailAsync(OrderDetail detail);
+        Task<string> GenerateRequestExportCodeAsync();
+        
     }
 }

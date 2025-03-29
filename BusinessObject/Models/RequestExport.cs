@@ -13,7 +13,7 @@ namespace BusinessObject.Models
         [Key]
         public int RequestExportId { get; set; }
 
-        public long RequestExportCode { get; set; }
+        public string RequestExportCode { get; set; }
 
         public long RequestedByAgencyId { get; set; }
 

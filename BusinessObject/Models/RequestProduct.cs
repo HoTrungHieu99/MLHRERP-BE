@@ -12,7 +12,7 @@ namespace BusinessObject.Models
     {
         [Key]
         public Guid RequestProductId { get; set; } // Khóa chính
-        public long RequestCode { get; set; }
+        public string RequestCode { get; set; }
         public long AgencyId { get; set; }
         public long? ApprovedBy { get; set; }
         public DateTime CreatedAt { get; set; }

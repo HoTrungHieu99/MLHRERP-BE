@@ -13,7 +13,7 @@ namespace BusinessObject.Models
     {
         [Key]
         public Guid OrderId { get; set; }
-        public long OrderCode { get; set; }
+        public string OrderCode { get; set; }
         public DateTime OrderDate { get; set; }
         public long SalesAgentId { get; set; }
         public decimal Discount { get; set; }

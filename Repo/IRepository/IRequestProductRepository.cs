@@ -21,5 +21,9 @@ namespace Repo.IRepository
 
         Task<List<RequestProduct>> GetRequestProductAgencyIdAsync(long agencyId);
 
+        Task<string> GenerateRequestCodeAsync();
+
+        Task<string> GenerateOrderCodeAsync();
+
     }
 }

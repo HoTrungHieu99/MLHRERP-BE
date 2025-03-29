@@ -23,9 +23,10 @@ namespace Repo.Repository
         public async Task<IEnumerable<RequestProduct>> GetAllRequestsAsync()
         {
             return await _context.RequestProducts
-                /*.Include(r => r.RequestProductDetails)
-                .ThenInclude(d => d.Product)*/
-                .ToListAsync();
+                        .Include(r => r.RequestProductDetails)
+                        .ThenInclude(d => d.Product)
+                        .Include(r => r.AgencyAccount) // 👈 Thêm dòng này
+                        .ToListAsync();
         }
 
         // 🔹 Lấy đơn hàng Pending của Agency
@@ -93,11 +94,39 @@ namespace Repo.Repository
         public async Task<List<RequestProduct>> GetRequestProductByIdAsync(Guid requestId)
         {
             return await _context.RequestProducts
-                .Where(rp => rp.RequestProductId == requestId) // ✅ Lọc theo AgencyId
-                .Include(rp => rp.RequestProductDetails) // ✅ Bao gồm danh sách sản phẩm
-                .ThenInclude(d => d.Product) // ✅ Bao gồm thông tin sản phẩm
-                .ToListAsync();
+                        .Where(rp => rp.RequestProductId == requestId)
+                        .Include(rp => rp.RequestProductDetails)
+                        .ThenInclude(d => d.Product)
+                        .Include(rp => rp.AgencyAccount) // ✅ Thêm để lấy AgencyName
+                        .ToListAsync();
         }
+
+        public async Task<string> GenerateRequestCodeAsync()
+        {
+            var today = DateTime.Now.Date;
+            int countToday = await _context.RequestProducts
+                .Where(r => r.CreatedAt.Date == today)
+                .CountAsync();
+
+            string datePart = today.ToString("yyyyMMdd");
+            string requestCode = $"RQ{datePart}-{(countToday + 1):D3}";
+
+            return requestCode;
+        }
+
+        public async Task<string> GenerateOrderCodeAsync()
+        {
+            var today = DateTime.Now.Date;
+            int countToday = await _context.RequestProducts
+                .Where(r => r.CreatedAt.Date == today)
+                .CountAsync();
+
+            string datePart = today.ToString("yyyyMMdd");
+            string requestCode = $"ORD{datePart}-{(countToday + 1):D3}";
+
+            return requestCode;
+        }
+
 
     }
 

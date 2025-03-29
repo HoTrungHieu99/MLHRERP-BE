@@ -364,6 +364,18 @@ namespace Repo.Repository
             var user = await _context.Users.FirstOrDefaultAsync(a => a.Username == userName);
             return user;
         }
+
+        public async Task<string> GetAgencyNameByUserIdAsync(Guid userId)
+        {
+            var agencyName = await _context.Users
+                .Where(u => u.UserId == userId)
+                .Include(u => u.AgencyAccount)
+                .Select(u => u.AgencyAccount.AgencyName)
+                .FirstOrDefaultAsync();
+
+            return agencyName ?? "Không xác định";
+        }
+
     }
 
 

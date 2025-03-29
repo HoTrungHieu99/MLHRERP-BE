@@ -66,6 +66,24 @@ builder.Services.AddAuthentication(options =>
         RoleClaimType = ClaimTypes.Role, // ✅ Đảm bảo Role đọc đúng
         ClockSkew = TimeSpan.Zero // ✅ Không cho phép thời gian trễ
     };
+
+    // ✅ Cho phép dùng access_token trong SignalR
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+
+            if (!string.IsNullOrEmpty(accessToken) &&
+                path.StartsWithSegments("/hubs/notifications"))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        }
+    };
 });
 
 builder.Services.AddAuthorization();
@@ -157,6 +175,8 @@ builder.Services.AddCors(options =>
         builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
+builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 // ✅ Cấu hình Middleware cho Swagger (chỉ trong môi trường Development)
@@ -183,6 +203,7 @@ app.UseAuthorization();
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers(); // 🟢 Cần có dòng này!
+    endpoints.MapHub<NotificationHub>("/hubs/notifications"); // Định tuyến cho hub
 });
 
 app.Run();

@@ -87,7 +87,7 @@ namespace Repo.Repository
             return await _context.Orders.SingleOrDefaultAsync(predicate);
         }
 
-        public async Task<Order> GetOrderByOrderCodeAsync(long orderCode)
+        public async Task<Order> GetOrderByOrderCodeAsync(string orderCode)
         {
             return await _context.Orders.SingleOrDefaultAsync(o => o.OrderCode == orderCode);
         }
@@ -108,6 +108,19 @@ namespace Repo.Repository
         {
             _context.OrderDetails.Update(detail);
             await Task.CompletedTask;
+        }
+
+        public async Task<string> GenerateRequestExportCodeAsync()
+        {
+            var today = DateTime.Now.Date;
+            int countToday = await _context.RequestProducts
+                .Where(r => r.CreatedAt.Date == today)
+                .CountAsync();
+
+            string datePart = today.ToString("yyyyMMdd");
+            string requestCode = $"RQE{datePart}-{(countToday + 1):D3}";
+
+            return requestCode;
         }
     }
 }

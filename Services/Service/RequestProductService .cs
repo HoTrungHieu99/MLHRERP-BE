@@ -14,6 +14,9 @@ using Repo.Repository;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Services.Exceptions;
 using MailKit.Search;
+using Microsoft.AspNetCore.SignalR;
+using SkiaSharp;
+using System.Diagnostics;
 
 namespace Services.Service
 {
@@ -25,19 +28,22 @@ namespace Services.Service
         private readonly IBatchRepository _batchRepository;
         private readonly IProductRepository _productRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IHubContext<NotificationHub> _hub;
 
         public RequestProductService(
             IRequestProductRepository requestProductRepository,
             IOrderRepository orderRepository,
             IBatchRepository batchRepository,
             IProductRepository productRepository,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            IHubContext<NotificationHub> hub)
         {
             _requestProductRepository = requestProductRepository;
             _orderRepository = orderRepository;
             _batchRepository = batchRepository;
             _productRepository = productRepository;
             _userRepository = userRepository;
+            _hub = hub;
         }
 
         public async Task<IEnumerable<RequestProduct>> GetAllRequestsAsync()
@@ -65,12 +71,15 @@ namespace Services.Service
             return await _requestProductRepository.GetRequestProductByIdAsync(requestId);
         }
 
+
+
         public async Task CreateRequestAsync(RequestProduct requestProduct, List<RequestProductDetail> requestDetails, Guid userId)
         {
             /*long requestCodeID = Math.Abs(userId.GetHashCode()) % 1000000000;*/
 
             Random random = new Random();
-            long requestCodeID = random.Next(1000000, 9999999); // Tạo số trong khoảng 100000 - 999999
+            string requestCode = await _requestProductRepository.GenerateRequestCodeAsync();
+
 
             // ✅ Lấy AgencyId từ UserId (GUID)
             var agencyId = await _userRepository.GetAgencyIdByUserId(userId);
@@ -149,7 +158,7 @@ namespace Services.Service
 
             if (existingRequest != null)
             {
-                existingRequest.RequestCode = requestCodeID; // Gán requestCode cho đơn hàng đã tồn tại
+                existingRequest.RequestCode = requestCode; // Gán requestCode cho đơn hàng đã tồn tại
                 await _requestProductRepository.UpdateRequestAsync(existingRequest);
             }
             else
@@ -159,8 +168,15 @@ namespace Services.Service
                 requestProduct.RequestStatus = "Pending";
                 await _requestProductRepository.AddRequestAsync(requestProduct);
             }
-            requestProduct.RequestCode = requestCodeID;
+            requestProduct.RequestCode = requestCode;
             await _requestProductRepository.SaveChangesAsync();
+
+            var agencyName = await _userRepository.GetAgencyNameByUserIdAsync(userId);
+            Debug.WriteLine(_hub == null ? "hub is NULL" : "hub is OK");
+
+            await _hub.Clients.Group("4")
+                .SendAsync("ReceiveNotification", $"📦 Đơn hàng mới từ {agencyName}");
+
         }
 
 
@@ -254,7 +270,7 @@ namespace Services.Service
                 var requestProduct = await _requestProductRepository.GetRequestByIdAsync(requestId);
                 if (requestProduct == null) throw new Exception("Request not found!");
 
-                long requestOrderCode = Math.Abs(requestProduct.RequestProductId.GetHashCode()) % 10000000;
+                string requestOrderCode = await _requestProductRepository.GenerateOrderCodeAsync(); 
 
                 if (requestProduct.RequestStatus == "Approved")
                 {
@@ -350,6 +366,10 @@ namespace Services.Service
                 order.FinalPrice = finalPrice;
                 await _orderRepository.UpdateOrderAsync(order);
                 await _orderRepository.SaveChangesAsync();
+
+                // Gửi cho AGENCY
+                await _hub.Clients.Group("2")
+                    .SendAsync("ReceiveNotification", $"✅ Đơn hàng {requestId} đã được duyệt!");
             }
             catch (DbUpdateException ex)
             {

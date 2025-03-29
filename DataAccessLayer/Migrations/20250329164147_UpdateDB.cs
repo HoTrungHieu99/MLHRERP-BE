@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateDb : Migration
+    public partial class UpdateDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -499,7 +499,7 @@ namespace DataAccessLayer.Migrations
                 columns: table => new
                 {
                     RequestProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RequestCode = table.Column<long>(type: "bigint", nullable: false),
+                    RequestCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AgencyId = table.Column<long>(type: "bigint", nullable: false),
                     ApprovedBy = table.Column<long>(type: "bigint", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -581,7 +581,7 @@ namespace DataAccessLayer.Migrations
                 columns: table => new
                 {
                     OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
-                    OrderCode = table.Column<long>(type: "bigint", nullable: false),
+                    OrderCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     SalesAgentId = table.Column<long>(type: "bigint", nullable: false),
                     Discount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
@@ -727,7 +727,7 @@ namespace DataAccessLayer.Migrations
                 {
                     RequestExportId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RequestExportCode = table.Column<long>(type: "bigint", nullable: false),
+                    RequestExportCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RequestedByAgencyId = table.Column<long>(type: "bigint", nullable: false),
                     RequestDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -824,7 +824,7 @@ namespace DataAccessLayer.Migrations
                     Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RequestExportId = table.Column<int>(type: "int", nullable: false),
                     AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OrderCode = table.Column<long>(type: "bigint", nullable: true)
+                    OrderCode = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -857,7 +857,7 @@ namespace DataAccessLayer.Migrations
                     TotalAmount = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     RequestExportId = table.Column<int>(type: "int", nullable: false),
                     AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OrderCode = table.Column<long>(type: "bigint", nullable: true),
+                    OrderCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     WarehouseId = table.Column<long>(type: "bigint", nullable: false),
                     ProductId = table.Column<long>(type: "bigint", nullable: true)
