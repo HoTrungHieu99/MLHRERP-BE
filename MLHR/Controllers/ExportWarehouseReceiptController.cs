@@ -43,5 +43,45 @@ namespace MLHR.Controllers
             }
             return Ok(receipts);
         }
+
+        [HttpPost("create-from-request")]
+        public async Task<IActionResult> CreateFromRequest([FromQuery] int requestExportId, [FromQuery] long warehouseId)
+        {
+            try
+            {
+                var receipt = await _service.CreateFromRequestAsync(requestExportId, warehouseId);
+                return Ok(receipt);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPut("update-full")]
+        public async Task<IActionResult> UpdateFull([FromBody] UpdateExportWarehouseReceiptFullDto dto)
+        {
+            try
+            {
+                var success = await _service.UpdateExportReceiptAsync(dto);
+                return success ? Ok("Update successful") : BadRequest("Update failed");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
     }
 }

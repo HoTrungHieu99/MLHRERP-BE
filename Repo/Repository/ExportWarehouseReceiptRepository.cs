@@ -1,4 +1,5 @@
-﻿using BusinessObject.Models;
+﻿using BusinessObject.DTO;
+using BusinessObject.Models;
 using DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using Repo.IRepository;
@@ -81,6 +82,161 @@ namespace Repo.Repository
 
             _context.ExportTransactions.Add(exportTransaction);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<ExportWarehouseReceipt> CreateFromRequestAsync(int requestExportId, long warehouseId)
+        {
+            var requestExport = await _context.RequestExports
+                .Include(x => x.RequestExportDetails)
+                .Include(x => x.Order)
+                 .ThenInclude(o => o.RequestProduct)
+                        .ThenInclude(x => x.AgencyAccount)
+                .FirstOrDefaultAsync(x => x.RequestExportId == requestExportId);
+
+            if (requestExport == null)
+                throw new KeyNotFoundException("RequestExport not found");
+
+            if (requestExport.RequestExportDetails == null || !requestExport.RequestExportDetails.Any())
+                throw new InvalidOperationException("RequestExport has no details");
+
+            var receipt = new ExportWarehouseReceipt
+            {
+                DocumentNumber = $"EXP-{DateTime.Now:yyyyMMddHHmmss}",
+                DocumentDate = DateTime.Now,
+                ExportDate = DateTime.Now,
+                ExportType = "Xuất Bán",
+                TotalQuantity = requestExport.RequestExportDetails.Sum(d => d.RequestedQuantity),
+                TotalAmount = 0,
+                RequestExportId = requestExportId,
+                AgencyName = requestExport.Order?.RequestProduct?.AgencyAccount?.AgencyName,
+                OrderCode = requestExport.Order?.OrderCode,
+                WarehouseId = warehouseId,
+                Status = "Pending",
+                ExportWarehouseReceiptDetails = new List<ExportWarehouseReceiptDetail>()
+            };
+
+            decimal totalAmount = 0;
+
+            foreach (var detail in requestExport.RequestExportDetails)
+            {
+                var warehouseProduct = await _context.WarehouseProduct
+                    .Include(wp => wp.Product)
+                    .Include(wp => wp.Batch)
+                    .FirstOrDefaultAsync(wp => wp.ProductId == detail.ProductId && wp.WarehouseId == warehouseId);
+
+                if (warehouseProduct == null)
+                    throw new InvalidOperationException($"WarehouseProduct not found for ProductId = {detail.ProductId} in WarehouseId = {warehouseId}");
+
+                var unitPrice = warehouseProduct.Batch.SellingPrice ?? 0;
+                var amount = unitPrice * detail.RequestedQuantity;
+                totalAmount += amount;
+
+                receipt.ExportWarehouseReceiptDetails.Add(new ExportWarehouseReceiptDetail
+                {
+                    WarehouseProductId = warehouseProduct.WarehouseProductId,
+                    ProductId = detail.ProductId,
+                    ProductName = warehouseProduct.Product.ProductName,
+                    BatchNumber = warehouseProduct.Batch.BatchCode,
+                    Quantity = detail.RequestedQuantity,
+                    UnitPrice = unitPrice,
+                    TotalProductAmount = amount,
+                    ExpiryDate = warehouseProduct.Batch.ExpiryDate
+                });
+            }
+
+            receipt.TotalAmount = totalAmount;
+
+            await _context.ExportWarehouseReceipts.AddAsync(receipt);
+            await _context.SaveChangesAsync();
+
+            return receipt;
+        }
+
+        public async Task<bool> UpdateFullAsync(UpdateExportWarehouseReceiptFullDto dto)
+        {
+            var receipt = await _context.ExportWarehouseReceipts
+                .Include(r => r.ExportWarehouseReceiptDetails)
+                .FirstOrDefaultAsync(r => r.ExportWarehouseReceiptId == dto.ExportWarehouseReceiptId);
+
+            if (receipt == null)
+                throw new KeyNotFoundException("ExportWarehouseReceipt not found.");
+
+            if (receipt.Status.Equals("Approved", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Cannot update a receipt that has already been approved.");
+
+            // Cập nhật thông tin chung
+            receipt.ExportDate = dto.ExportDate;
+            receipt.ExportType = dto.ExportType;
+
+            // Xoá chi tiết
+            if (dto.DeleteDetailIds != null && dto.DeleteDetailIds.Any())
+            {
+                var detailsToRemove = receipt.ExportWarehouseReceiptDetails
+                    .Where(d => dto.DeleteDetailIds.Contains(d.ExportWarehouseReceiptDetailId))
+                    .ToList();
+
+                _context.ExportWarehouseReceiptDetail.RemoveRange(detailsToRemove);
+            }
+
+            // Cập nhật chi tiết (chỉ quantity, các trường khác lấy lại từ WarehouseProduct)
+            foreach (var upd in dto.UpdateDetails)
+            {
+                var detail = receipt.ExportWarehouseReceiptDetails
+                    .FirstOrDefault(d => d.ExportWarehouseReceiptDetailId == upd.ExportWarehouseReceiptDetailId);
+
+                if (detail != null)
+                {
+                    var wp = await _context.WarehouseProduct
+                        .Include(p => p.Product)
+                        .Include(p => p.Batch)
+                        .FirstOrDefaultAsync(p => p.WarehouseProductId == detail.WarehouseProductId);
+
+                    if (wp == null)
+                        throw new InvalidOperationException($"WarehouseProduct not found: {detail.WarehouseProductId}");
+
+                    detail.Quantity = upd.Quantity;
+                    detail.UnitPrice = wp.Batch.SellingPrice ?? 0;
+                    detail.TotalProductAmount = detail.Quantity * detail.UnitPrice;
+                    detail.ProductName = wp.Product.ProductName;
+                    detail.BatchNumber = wp.Batch.BatchCode;
+                    detail.ExpiryDate = wp.Batch.ExpiryDate;
+                }
+            }
+
+            // Thêm mới chi tiết (tương tự như khi tạo)
+            foreach (var add in dto.AddDetails)
+            {
+                var wp = await _context.WarehouseProduct
+                    .Include(p => p.Product)
+                    .Include(p => p.Batch)
+                    .FirstOrDefaultAsync(p => p.WarehouseProductId == add.WarehouseProductId);
+
+                if (wp == null)
+                    throw new InvalidOperationException($"WarehouseProduct not found: {add.WarehouseProductId}");
+
+                var unitPrice = wp.Batch.SellingPrice ?? 0;
+                var total = unitPrice * add.Quantity;
+
+                receipt.ExportWarehouseReceiptDetails.Add(new ExportWarehouseReceiptDetail
+                {
+                    WarehouseProductId = add.WarehouseProductId,
+                    ProductId = add.ProductId,
+                    ProductName = wp.Product.ProductName,
+                    BatchNumber = wp.Batch.BatchCode,
+                    Quantity = add.Quantity,
+                    UnitPrice = unitPrice,
+                    TotalProductAmount = total,
+                    ExpiryDate = wp.Batch.ExpiryDate
+                });
+            }
+
+            // Cập nhật tổng
+            receipt.TotalQuantity = receipt.ExportWarehouseReceiptDetails.Sum(x => x.Quantity);
+            receipt.TotalAmount = receipt.ExportWarehouseReceiptDetails.Sum(x => x.TotalProductAmount);
+
+            _context.ExportWarehouseReceipts.Update(receipt);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 

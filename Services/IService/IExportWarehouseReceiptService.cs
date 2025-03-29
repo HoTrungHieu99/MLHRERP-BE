@@ -13,6 +13,8 @@ namespace Services.IService
         Task<ExportWarehouseReceipt> CreateReceiptAsync(ExportWarehouseReceiptDTO dto);
         Task ApproveReceiptAsync(long id);
         Task<List<ExportWarehouseReceipt>> GetAllReceiptsByWarehouseIdAsync(long warehouseId);
+        Task<ExportWarehouseReceipt> CreateFromRequestAsync(int requestExportId, long warehouseId);
+        Task<bool> UpdateExportReceiptAsync(UpdateExportWarehouseReceiptFullDto dto);
     }
 
 }

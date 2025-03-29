@@ -145,9 +145,9 @@ namespace Services.Service
                     throw new ArgumentException("Position must be 'STAFF' or 'MANAGER' for EMPLOYEE.");
                 }
                 if (string.IsNullOrWhiteSpace(request.Department) ||
-                    (request.Department.ToUpper() != "WAREHOUSE MANAGER" && request.Department.ToUpper() != "SALES MANAGER"))
+                    (request.Department.ToUpper() != "WAREHOUSE MANAGER" && request.Department.ToUpper() != "SALES MANAGER" && request.Department.ToUpper() != "ACCOUNTANT MANAGER"))
                 {
-                    throw new ArgumentException("Department must be 'WAREHOUSE MANAGER' or 'SALES MANAGER' for EMPLOYEE.");
+                    throw new ArgumentException("Department must be 'WAREHOUSE MANAGER' or 'SALES MANAGER' or 'ACCOUNTANT MANAGER' for EMPLOYEE.");
                 }
 
                 // ✅ Nếu là Employee thì AgencyName có thể null
@@ -514,39 +514,46 @@ namespace Services.Service
         }
 
         //Edit Role
-        public async Task<bool> ChangeEmployeeRoleAsync(Guid userId)
+        public async Task<bool> ChangeEmployeeRoleAsync(Guid userId, int newRoleId)
         {
-            // ✅ 1. Lấy Employee từ repository
+            // ✅ Kiểm tra roleId hợp lệ
+            var validRoles = new List<int> { 3, 4, 5 };
+            if (!validRoles.Contains(newRoleId))
+                throw new ArgumentException("RoleId must be 3 (Warehouse), 4 (Sales), or 5 (Accountant)");
+
             var employee = await _userRepository.GetEmployeeByUserIdAsync(userId);
             if (employee == null)
                 throw new ArgumentException("Employee not found.");
 
-            // ✅ 2. Lấy UserRole từ UserId
             var userRole = await _userRepository.GetUserRoleByUserIdAsync(userId);
             if (userRole == null)
                 throw new ArgumentException("UserRole not found.");
 
-            // ✅ 3. Kiểm tra Role hiện tại và đổi sang Role mới
-            if (userRole.RoleId == 3) // WAREHOUSE MANAGER
+            // ✅ Không được đổi sang cùng role hiện tại
+            if (userRole.RoleId == newRoleId)
+                throw new ArgumentException("New role is the same as the current role.");
+
+            // ✅ Đổi Role
+            userRole.RoleId = newRoleId;
+
+            // ✅ Cập nhật Department tương ứng
+            switch (newRoleId)
             {
-                userRole.RoleId = 4; // Đổi thành SALES MANAGER
-                employee.Department = "SALES MANAGER";
-            }
-            else if (userRole.RoleId == 4) // SALES MANAGER
-            {
-                userRole.RoleId = 3; // Đổi thành WAREHOUSE MANAGER
-                employee.Department = "WAREHOUSE MANAGER";
-            }
-            else
-            {
-                throw new ArgumentException("Invalid current role for employee.");
+                case 3:
+                    employee.Department = "WAREHOUSE MANAGER";
+                    break;
+                case 4:
+                    employee.Department = "SALES MANAGER";
+                    break;
+                case 5:
+                    employee.Department = "ACCOUNTANT MANAGER";
+                    break;
             }
 
-            // ✅ 4. Gọi Repo để cập nhật thông tin Role và Employee
-            bool userRoleUpdated = await _userRepository.UpdateUserRoleAsync(userRole);
-            bool employeeUpdated = await _userRepository.UpdateEmployeeAsync(employee);
+            bool roleUpdated = await _userRepository.UpdateUserRoleAsync(userRole);
+            bool empUpdated = await _userRepository.UpdateEmployeeAsync(employee);
 
-            return userRoleUpdated && employeeUpdated;
+            return roleUpdated && empUpdated;
         }
 
         public async Task<object> LoginAsync(LoginRequest request)

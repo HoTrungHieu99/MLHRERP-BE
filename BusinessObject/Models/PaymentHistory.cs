@@ -33,6 +33,10 @@ namespace BusinessObject.Models
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
+        [ForeignKey("User")]
+        public Guid UserId { get; set; }
+        public User User { get; set; }
+
         public ICollection<PaymentTransaction> PaymentTransactions { get; set; }
     }
 }

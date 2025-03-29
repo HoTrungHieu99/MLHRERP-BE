@@ -162,6 +162,16 @@ namespace Services.Service
                 .Include(r => r.ExportWarehouseReceiptDetails) // Nếu cần lấy chi tiết sản phẩm
                 .ToListAsync();
         }
+
+        public async Task<ExportWarehouseReceipt> CreateFromRequestAsync(int requestExportId, long warehouseId)
+        {
+            return await _repository.CreateFromRequestAsync(requestExportId, warehouseId);
+        }
+
+        public async Task<bool> UpdateExportReceiptAsync(UpdateExportWarehouseReceiptFullDto dto)
+        {
+            return await _repository.UpdateFullAsync(dto);
+        }
     }
 
     }

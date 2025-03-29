@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MinhLongDbContext))]
-    [Migration("20250325115521_UpdateDB")]
-    partial class UpdateDB
+    [Migration("20250328101031_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -716,11 +716,16 @@ namespace DataAccessLayer.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("PaymentHistoryId");
 
                     b.HasIndex("OrderId");
 
                     b.HasIndex("PrePaymentId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("PaymentHistory", (string)null);
                 });
@@ -1793,11 +1798,19 @@ namespace DataAccessLayer.Migrations
                     b.HasOne("BusinessObject.Models.PaymentHistory", "PrePayment")
                         .WithMany()
                         .HasForeignKey("PrePaymentId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("BusinessObject.Models.User", "User")
+                        .WithMany("PaymentHistories")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("Order");
 
                     b.Navigation("PrePayment");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.PaymentTransaction", b =>
@@ -2216,6 +2229,8 @@ namespace DataAccessLayer.Migrations
 
                     b.Navigation("Employee")
                         .IsRequired();
+
+                    b.Navigation("PaymentHistories");
 
                     b.Navigation("UserRoles");
                 });

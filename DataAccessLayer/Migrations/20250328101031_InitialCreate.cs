@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateDB : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -697,7 +697,8 @@ namespace DataAccessLayer.Migrations
                     RemainingDebtAmount = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
                     PaymentAmount = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -712,8 +713,12 @@ namespace DataAccessLayer.Migrations
                         name: "FK_PaymentHistory_PaymentHistory_PrePaymentId",
                         column: x => x.PrePaymentId,
                         principalTable: "PaymentHistory",
-                        principalColumn: "PaymentHistoryId",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumn: "PaymentHistoryId");
+                    table.ForeignKey(
+                        name: "FK_PaymentHistory_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
@@ -1256,6 +1261,11 @@ namespace DataAccessLayer.Migrations
                 name: "IX_PaymentHistory_PrePaymentId",
                 table: "PaymentHistory",
                 column: "PrePaymentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentHistory_UserId",
+                table: "PaymentHistory",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PaymentTransaction_PaymentHistoryId",
