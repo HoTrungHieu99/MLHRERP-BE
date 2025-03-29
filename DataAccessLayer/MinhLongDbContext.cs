@@ -37,7 +37,7 @@ namespace DataAccessLayer
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile("appsettings.json")
                 .Build();
-            optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            optionsBuilder.UseSqlServer(configuration.GetConnectionString("ServerConnection"));
         }
 
 
@@ -70,6 +70,7 @@ namespace DataAccessLayer
         public DbSet<Image> Images { get; set; }
         public DbSet<WarehouseReceipt> WarehouseReceipts { get; set; }
         public DbSet<ExportWarehouseReceipt> ExportWarehouseReceipts { get; set; }
+        public DbSet<ExportWarehouseReceiptDetail> ExportWarehouseReceiptDetail { get; set; }
         public DbSet<ExportTransaction> ExportTransactions { get; set; }
         public DbSet<ExportTransactionDetail> ExportTransactionDetails { get; set; }
         public DbSet<WarehouseLedger> WarehouseLedgers { get; set; }
@@ -659,6 +660,21 @@ namespace DataAccessLayer
             modelBuilder.Entity<Warehouse>()
                 .HasIndex(w => w.UserId)
                 .IsUnique();
+
+
+            // Tắt cascade delete cho User
+            modelBuilder.Entity<PaymentHistory>()
+                .HasOne(p => p.User)
+                .WithMany(u => u.PaymentHistories)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Tắt cascade delete cho PrePayment (self reference)
+            modelBuilder.Entity<PaymentHistory>()
+                .HasOne(p => p.PrePayment)
+                .WithMany()
+                .HasForeignKey(p => p.PrePaymentId)
+                .OnDelete(DeleteBehavior.NoAction);
 
         }
     }

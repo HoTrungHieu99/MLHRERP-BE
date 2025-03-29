@@ -17,5 +17,7 @@ namespace Services.IService
         Task<bool> ApproveAllRequestsByWarehouseAsync(int warehouseId, int requestExportId, Dictionary<int, int> quantitiesApproved, Guid approvedBy);
 
         Task<List<WarehouseRequestExportDtoResponse>> GetByWarehouseIdAsync(long warehouseId);
+
+        
     }
 }

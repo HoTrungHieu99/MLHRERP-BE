@@ -21,7 +21,7 @@ namespace Services.IService
         Task<bool> ForgotPasswordAsync(ForgotPasswordRequest request);
 
         Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest request);
-        Task<bool> ChangeEmployeeRoleAsync(Guid userId);
+        Task<bool> ChangeEmployeeRoleAsync(Guid userId, int newRoleId);
         Task<object> LoginAsync(LoginRequest request);
         Task<PagedResult<User>> GetUsersAsync();
         Task<List<RegisterAccount>> GetRegisterAccount();

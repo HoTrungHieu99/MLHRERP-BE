@@ -134,13 +134,13 @@ namespace MLHR.Controllers
             }
         }
 
-        [Authorize(Roles = "1")]
-        [HttpPut("change-employee-role/{userId}")]
-        public async Task<IActionResult> ChangeEmployeeRole(Guid userId)
+        [Authorize(Roles = "1")] // Chỉ Admin
+        [HttpPut("change-employee-role/{userId}/{newRoleId}")]
+        public async Task<IActionResult> ChangeEmployeeRole(Guid userId, int newRoleId)
         {
             try
             {
-                bool isSuccessful = await _userService.ChangeEmployeeRoleAsync(userId);
+                bool isSuccessful = await _userService.ChangeEmployeeRoleAsync(userId, newRoleId);
                 if (!isSuccessful)
                     return BadRequest(new { message = "Failed to change role!" });
 

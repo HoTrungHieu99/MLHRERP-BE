@@ -37,5 +37,8 @@ namespace BusinessObject.Models
         // Quan hệ 1-1 với Employee
         public virtual Employee Employee { get; set; }
         public AgencyAccount AgencyAccount { get; set; }
+
+        public ICollection<PaymentHistory> PaymentHistories { get; set; }
+
     }
 }
