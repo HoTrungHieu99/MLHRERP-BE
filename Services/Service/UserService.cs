@@ -112,17 +112,40 @@ namespace Services.Service
 
             // ✅ Kiểm tra UserType hợp lệ
             if (string.IsNullOrWhiteSpace(request.UserType) ||
-                (request.UserType.ToUpper() != "EMPLOYEE" && request.UserType.ToUpper() != "AGENCY"))
+                    (request.UserType.ToUpper() != "EMPLOYEE" &&
+                    request.UserType.ToUpper() != "AGENCY" &&
+                    request.UserType.ToUpper() != "ACCOUNTANT"))
             {
-                throw new ArgumentException("UserType must be either 'EMPLOYEE' or 'AGENCY'!");
+                throw new ArgumentException("UserType must be 'EMPLOYEE', 'AGENCY', or 'ACCOUNTANT'!");
             }
+
 
             if (request.Username.Equals("admin"))
             {
                 throw new ArgumentException("username cannot be admin!");
             }
 
-            
+            // ✅ Nếu UserType là ACCOUNTANT
+            if (request.UserType.ToUpper() == "ACCOUNTANT")
+            {
+                if (string.IsNullOrWhiteSpace(request.FullName))
+                {
+                    throw new ArgumentException("FullName is required for ACCOUNTANT.");
+                }
+
+                // Kiểm tra định dạng tên
+                string namePattern = @"^[\p{Lu}][\p{L}\s]*$";
+                if (!Regex.IsMatch(request.FullName, namePattern))
+                {
+                    throw new ArgumentException("FullName must start with an uppercase letter and contain only letters and spaces.");
+                }
+
+                // ✅ Gán mặc định cho các trường không bắt buộc
+                request.Position = "unknown";
+                request.Department = "unknown";
+                request.AgencyName = "unknown";
+            }
+
 
             // ✅ Nếu UserType là EMPLOYEE -> Bắt buộc nhập FullName, Position, Department
             if (request.UserType.ToUpper() == "EMPLOYEE")

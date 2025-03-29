@@ -10,6 +10,7 @@ namespace BusinessObject.DTO
     {
         public int RequestExportId { get; set; }
         public Guid OrderId { get; set; }
+        public string RequestExportCode { get; set; }
         public long RequestedBy { get; set; }
         public long ApprovedBy { get; set; }
         public string Status { get; set; }

@@ -32,6 +32,7 @@ namespace Services.Service
                 Status = re.Status,
                 ApprovedDate = re.ApprovedDate,
                 Note = re.Note,
+                RequestExportCode = re.RequestExportCode,
                 RequestExportDetails = re.RequestExportDetails.Select(red => new RequestExportDetailDto
                 {
                     RequestExportDetailId = red.RequestItemId,
@@ -59,6 +60,7 @@ namespace Services.Service
                 Status = requestExport.Status,
                 ApprovedDate = requestExport.ApprovedDate,
                 Note = requestExport.Note,
+                RequestExportCode = requestExport.RequestExportCode,
                 RequestExportDetails = requestExport.RequestExportDetails != null
                     ? requestExport.RequestExportDetails.Select(red => new RequestExportDetailDto
                     {
