@@ -69,6 +69,7 @@ namespace Services.Service
                 CreatedAt = rp.CreatedAt,
                 RequestProductDetails = rp.RequestProductDetails.Select(d => new RequestProductDetailDto
                 {
+                    requestProductDetailId = d.RequestDetailId,
                     ProductId = d.ProductId,
                     ProductName = d.Product?.ProductName ?? "N/A",
                     Quantity = d.Quantity,
@@ -110,7 +111,7 @@ namespace Services.Service
                 CreatedAt = request.CreatedAt,
                 RequestProductDetails = request.RequestProductDetails.Select(d => new RequestProductDetailDto
                 {
-                    //RequestProductDetailId = d.RequestProductDetailId,
+                    requestProductDetailId = d.RequestDetailId,
                     ProductId = d.ProductId,
                     ProductName = d.Product?.ProductName ?? "N/A",
                     Quantity = d.Quantity,
@@ -135,7 +136,7 @@ namespace Services.Service
                 CreatedAt = rp.CreatedAt,
                 RequestProductDetails = rp.RequestProductDetails.Select(d => new RequestProductDetailDto
                 {
-                    //RequestProductDetailId = d.RequestProductDetailId,
+                    requestProductDetailId = d.RequestDetailId,
                     ProductId = d.ProductId,
                     ProductName = d.Product?.ProductName ?? "N/A",
                     Quantity = d.Quantity,

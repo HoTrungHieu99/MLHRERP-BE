@@ -8,6 +8,7 @@ namespace BusinessObject.DTO.Product
 {
     public class RequestProductDetailDto
     {
+        public long requestProductDetailId { get; set; }
         public long ProductId { get; set; } // ID sản phẩm
         public string ProductName { get;set; }
         public string Unit { get; set; } // Đơn vị tính
