@@ -37,7 +37,7 @@ namespace DataAccessLayer
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile("appsettings.json")
                 .Build();
-            optionsBuilder.UseSqlServer(configuration.GetConnectionString("ServerConnection"));
+            optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         }
 
 
@@ -684,27 +684,6 @@ namespace DataAccessLayer
                 .HasForeignKey(p => p.PrePaymentId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-
-            // ✅ Quan hệ 1–1 với User
-            modelBuilder.Entity<Accountant>()
-                .HasOne(a => a.User)
-                .WithOne() // hoặc .WithOne(u => u.Accountant)
-                .HasForeignKey<Accountant>(a => a.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // ✅ Quan hệ n–1 với Address
-            modelBuilder.Entity<Accountant>()
-                .HasOne(a => a.Address)
-                .WithMany()
-                .HasForeignKey(a => a.AddressId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // ✅ Quan hệ 1–n với PaymentHistory
-            modelBuilder.Entity<PaymentHistory>()
-                .HasOne(p => p.Accountant)
-                .WithMany(a => a.PaymentHistories)
-                .HasForeignKey(p => p.AccountantId)
-                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 

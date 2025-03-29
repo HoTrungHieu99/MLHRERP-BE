@@ -72,7 +72,6 @@ namespace Services.Service
         }
 
 
-        // ✅ Lưu yêu cầu đăng ký vào RegisterAccount
         public async Task<RegisterAccount> RegisterUserRequestAsync(RegisterRequest request)
         {
             // ✅ Kiểm tra Email hợp lệ (chỉ khi có dữ liệu)
@@ -112,39 +111,16 @@ namespace Services.Service
 
             // ✅ Kiểm tra UserType hợp lệ
             if (string.IsNullOrWhiteSpace(request.UserType) ||
-                    (request.UserType.ToUpper() != "EMPLOYEE" &&
-                    request.UserType.ToUpper() != "AGENCY" &&
-                    request.UserType.ToUpper() != "ACCOUNTANT"))
+                (request.UserType.ToUpper() != "EMPLOYEE" && request.UserType.ToUpper() != "AGENCY"))
             {
-                throw new ArgumentException("UserType must be 'EMPLOYEE', 'AGENCY', or 'ACCOUNTANT'!");
+                throw new ArgumentException("UserType must be either 'EMPLOYEE' or 'AGENCY'!");
             }
-
 
             if (request.Username.Equals("admin"))
             {
                 throw new ArgumentException("username cannot be admin!");
             }
 
-            // ✅ Nếu UserType là ACCOUNTANT
-            if (request.UserType.ToUpper() == "ACCOUNTANT")
-            {
-                if (string.IsNullOrWhiteSpace(request.FullName))
-                {
-                    throw new ArgumentException("FullName is required for ACCOUNTANT.");
-                }
-
-                // Kiểm tra định dạng tên
-                string namePattern = @"^[\p{Lu}][\p{L}\s]*$";
-                if (!Regex.IsMatch(request.FullName, namePattern))
-                {
-                    throw new ArgumentException("FullName must start with an uppercase letter and contain only letters and spaces.");
-                }
-
-                // ✅ Gán mặc định cho các trường không bắt buộc
-                request.Position = "unknown";
-                request.Department = "unknown";
-                request.AgencyName = "unknown";
-            }
 
 
             // ✅ Nếu UserType là EMPLOYEE -> Bắt buộc nhập FullName, Position, Department
@@ -237,7 +213,7 @@ namespace Services.Service
             return await _userRepository.RegisterUserRequestAsync(registerAccount);
         }
 
-        // ✅ Duyệt tài khoản và chuyển dữ liệu từ RegisterAccount vào User
+        /*// ✅ Duyệt tài khoản và chuyển dữ liệu từ RegisterAccount vào User
         public async Task<bool> ApproveUserAsync(int registerId)
         {
             RegisterAccount registerUser = await _userRepository.GetRegisterAccountByIdAsync(registerId);
@@ -252,18 +228,45 @@ namespace Services.Service
 
             // ✅ Gọi Repo để duyệt tài khoản
             return await _userRepository.ApproveUserAsync(registerId);
+        }*/
+
+        public async Task<bool> ApproveUserAsync(int registerId)
+        {
+            var registerUser = await _userRepository.GetRegisterAccountByIdAsync(registerId);
+
+            if (registerUser == null)
+                throw new KeyNotFoundException($"RegisterAccount with ID {registerId} not found.");
+
+            // ✅ Gửi email theo loại tài khoản
+            switch (registerUser.UserType?.ToUpper())
+            {
+                case "AGENCY":
+                    await _mailService.SendEmailRegisterAccountAsync(
+                        registerUser.Email,
+                        "Active Account Successfully!",
+                        registerUser.AgencyName,
+                        registerUser.Username,
+                        registerUser.Password);
+                    break;
+
+                case "EMPLOYEE":
+                case "ACCOUNTANT":
+                    await _mailService.SendEmailRegisterAccountAsync(
+                        registerUser.Email,
+                        "Active Account Successfully!",
+                        registerUser.FullName,
+                        registerUser.Username,
+                        registerUser.Password);
+                    break;
+
+                default:
+                    throw new InvalidOperationException($"Unsupported UserType: {registerUser.UserType}");
+            }
+
+            // ✅ Duyệt tài khoản trong DB
+            return await _userRepository.ApproveUserAsync(registerId);
         }
 
-        /*//Login
-        public async Task<User> LoginAsync(string userName, string password)
-        {
-            var user = await _userRepository.GetUserByUsernameAsync(userName);
-            if(user == null)
-            {
-                throw new Exception("Tai Khoan Chua Duoc Kich Hoat");
-            }
-            return await _userRepository.LoginAsync(userName, password);
-        }*/
 
         //Logout
         public async Task<bool> LogoutAsync(string email)

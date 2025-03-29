@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateDb : Migration
+    public partial class UpdateDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -379,33 +379,6 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Accountant",
-                columns: table => new
-                {
-                    AccountantId = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AddressId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Accountant", x => x.AccountantId);
-                    table.ForeignKey(
-                        name: "FK_Accountant_Address_AddressId",
-                        column: x => x.AddressId,
-                        principalTable: "Address",
-                        principalColumn: "AddressId",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_Accountant_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "User",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AgencyAccount",
                 columns: table => new
                 {
@@ -725,18 +698,11 @@ namespace DataAccessLayer.Migrations
                     PaymentAmount = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AccountantId = table.Column<long>(type: "bigint", nullable: true)
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PaymentHistory", x => x.PaymentHistoryId);
-                    table.ForeignKey(
-                        name: "FK_PaymentHistory_Accountant_AccountantId",
-                        column: x => x.AccountantId,
-                        principalTable: "Accountant",
-                        principalColumn: "AccountantId",
-                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_PaymentHistory_Order_OrderId",
                         column: x => x.OrderId,
@@ -1145,17 +1111,6 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Accountant_AddressId",
-                table: "Accountant",
-                column: "AddressId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Accountant_UserId",
-                table: "Accountant",
-                column: "UserId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Address_DistrictId",
                 table: "Address",
                 column: "DistrictId");
@@ -1302,11 +1257,6 @@ namespace DataAccessLayer.Migrations
                 name: "IX_OrderDetail_ProductId",
                 table: "OrderDetail",
                 column: "ProductId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PaymentHistory_AccountantId",
-                table: "PaymentHistory",
-                column: "AccountantId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PaymentHistory_OrderId",
@@ -1574,9 +1524,6 @@ namespace DataAccessLayer.Migrations
 
             migrationBuilder.DropTable(
                 name: "Batch");
-
-            migrationBuilder.DropTable(
-                name: "Accountant");
 
             migrationBuilder.DropTable(
                 name: "RequestExport");

@@ -22,35 +22,6 @@ namespace DataAccessLayer.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("BusinessObject.Models.Accountant", b =>
-                {
-                    b.Property<long>("AccountantId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("AccountantId"));
-
-                    b.Property<int?>("AddressId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("AccountantId");
-
-                    b.HasIndex("AddressId");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("Accountant");
-                });
-
             modelBuilder.Entity("BusinessObject.Models.Address", b =>
                 {
                     b.Property<int>("AddressId")
@@ -704,9 +675,6 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWID()");
 
-                    b.Property<long?>("AccountantId")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -750,8 +718,6 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("PaymentHistoryId");
-
-                    b.HasIndex("AccountantId");
 
                     b.HasIndex("OrderId");
 
@@ -1550,24 +1516,6 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("WarehouseRequestExport", (string)null);
                 });
 
-            modelBuilder.Entity("BusinessObject.Models.Accountant", b =>
-                {
-                    b.HasOne("BusinessObject.Models.Address", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("BusinessObject.Models.User", "User")
-                        .WithOne()
-                        .HasForeignKey("BusinessObject.Models.Accountant", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Address");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("BusinessObject.Models.Address", b =>
                 {
                     b.HasOne("BusinessObject.Models.District", "District")
@@ -1843,11 +1791,6 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("BusinessObject.Models.PaymentHistory", b =>
                 {
-                    b.HasOne("BusinessObject.Models.Accountant", "Accountant")
-                        .WithMany("PaymentHistories")
-                        .HasForeignKey("AccountantId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("BusinessObject.Models.Order", "Order")
                         .WithMany("PaymentHistories")
                         .HasForeignKey("OrderId")
@@ -1864,8 +1807,6 @@ namespace DataAccessLayer.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-
-                    b.Navigation("Accountant");
 
                     b.Navigation("Order");
 
@@ -2187,11 +2128,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("User");
 
                     b.Navigation("Warehouse");
-                });
-
-            modelBuilder.Entity("BusinessObject.Models.Accountant", b =>
-                {
-                    b.Navigation("PaymentHistories");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Address", b =>
