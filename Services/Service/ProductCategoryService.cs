@@ -19,7 +19,7 @@ namespace Services.Service
             _repository = repository;
         }
 
-        public async Task<IEnumerable<ProductCategoryResponseDto>> GetAllCategoriesAsync()
+        /*public async Task<IEnumerable<ProductCategoryResponseDto>> GetAllCategoriesAsync()
         {
             var categories = await _repository.GetAllAsync();
             return categories.Select(c => new ProductCategoryResponseDto
@@ -35,9 +35,31 @@ namespace Services.Service
                 UpdatedBy = c.UpdatedBy,
                 UpdatedDate = c.UpdatedDate
             }).ToList();
+        }*/
+
+        public async Task<IEnumerable<ProductCategoryResponseDto>> GetAllCategoriesAsync()
+        {
+            var categories = await _repository.GetAllAsync();
+
+            return categories.Select(c => new ProductCategoryResponseDto
+            {
+                CategoryId = c.CategoryId,
+                CategoryName = c.CategoryName,
+                ParentCategoryId = c.ParentCategoryId,
+                SortOrder = c.SortOrder,
+                Notes = c.Notes,
+                IsActive = c.IsActive,
+                CreatedBy = c.CreatedBy,
+                CreatedByName = c.Creator?.Employee?.FullName ?? c.Creator?.Username ?? "Unknown",
+                CreatedDate = c.CreatedDate,
+                UpdatedBy = c.UpdatedBy,
+                UpdatedByName = c.Updater?.Employee?.FullName ?? c.Updater?.Username ?? "Chưa cập nhật",
+                UpdatedDate = c.UpdatedDate
+            }).ToList();
         }
 
-        public async Task<ProductCategoryResponseDto> GetCategoryByIdAsync(long id)
+
+        /*public async Task<ProductCategoryResponseDto> GetCategoryByIdAsync(long id)
         {
             var category = await _repository.GetByIdAsync(id);
             if (category == null) return null;
@@ -55,7 +77,30 @@ namespace Services.Service
                 UpdatedBy = category.UpdatedBy,
                 UpdatedDate = category.UpdatedDate
             };
+        }*/
+
+        public async Task<ProductCategoryResponseDto> GetCategoryByIdAsync(long id)
+        {
+            var category = await _repository.GetByIdAsync(id);
+            if (category == null) return null;
+
+            return new ProductCategoryResponseDto
+            {
+                CategoryId = category.CategoryId,
+                CategoryName = category.CategoryName,
+                ParentCategoryId = category.ParentCategoryId,
+                SortOrder = category.SortOrder,
+                Notes = category.Notes,
+                IsActive = category.IsActive,
+                CreatedBy = category.CreatedBy,
+                CreatedByName = category.Creator?.Employee?.FullName ?? category.Creator?.Username ?? "Unknown",
+                CreatedDate = category.CreatedDate,
+                UpdatedBy = category.UpdatedBy,
+                UpdatedByName = category.Updater?.Employee?.FullName ?? category.Updater?.Username ?? "Chưa cập nhật",
+                UpdatedDate = category.UpdatedDate
+            };
         }
+
 
         public async Task<ProductCategoryResponseDto> CreateCategoryAsync(ProductCategoryDto categoryDto, Guid userId)
         {

@@ -24,44 +24,46 @@ namespace Repo.Repository
             return await _context.Products.CountAsync();
         }
 
-        public async Task<List<Product>> GetProductsAsync()
+        /*public async Task<List<Product>> GetProductsAsync()
         {
             return await _context.Products
                 .Include(p => p.Images) // ✅ Bao gồm hình ảnh
                 .ToListAsync();
+        }*/
+
+        public async Task<List<Product>> GetProductsAsync()
+        {
+            return await _context.Products
+                .Include(p => p.Images)
+                .Include(p => p.Creator)
+                    .ThenInclude(u => u.Employee) // 👈 Include nhân viên tạo
+                .Include(p => p.Updater)
+                    .ThenInclude(u => u.Employee) // 👈 Include nhân viên cập nhật
+                .ToListAsync();
         }
 
+
         public async Task<Product> GetByIdAsync(long id)
+        {
+            return await _context.Products
+                .Include(p => p.Images)
+                .Include(p => p.Creator)
+                    .ThenInclude(u => u.Employee)
+                .Include(p => p.Updater)
+                    .ThenInclude(u => u.Employee)
+                .FirstOrDefaultAsync(p => p.ProductId == id);
+        }
+
+
+        /*public async Task<Product> GetByIdAsync(long id)
         {
             return await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.TaxConfig)
                 .Include(p => p.Images) // ✅ Bao gồm hình ảnh
                 .FirstOrDefaultAsync(p => p.ProductId == id);
-        }
-
-        /*public async Task<Product> AddAsync(Product product, List<string> imageUrls)
-        {
-            _context.Products.Add(product);
-            await _context.SaveChangesAsync(); // 🔥 Lưu sản phẩm trước để lấy ProductId
-
-            // ✅ Lưu hình ảnh vào bảng Image
-            if (imageUrls != null && imageUrls.Count > 0)
-            {
-                foreach (var imageUrl in imageUrls)
-                {
-                    var image = new Image
-                    {
-                        ProductId = product.ProductId,
-                        ImageUrl = imageUrl
-                    };
-                    _context.Images.Add(image);
-                }
-                await _context.SaveChangesAsync(); // 🔥 Lưu hình ảnh
-            }
-
-            return product;
         }*/
+
 
         public async Task<Product> AddAsync(Product product)
         {

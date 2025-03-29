@@ -18,5 +18,9 @@ namespace BusinessObject.DTO.Product
         public DateTime CreatedDate { get; set; }
         public Guid? UpdatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
+
+        public string CreatedByName { get; set; }
+        public string UpdatedByName { get; set; }
+
     }
 }

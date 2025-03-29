@@ -25,7 +25,7 @@ namespace Services.Service
         public async Task<List<ProductResponseDto>> GetProductsAsync()
         {
             var products = await _repository.GetProductsAsync();
-            return products.Select(p => new ProductResponseDto
+            /*return products.Select(p => new ProductResponseDto
             {
                 ProductId = p.ProductId,
                 ProductCode = p.ProductCode,
@@ -42,7 +42,29 @@ namespace Services.Service
                 AvailableStock = p.AvailableStock,
                 Price = p.Price,
                 Images = p.Images.Select(img => img.ImageUrl).ToList()
+            }).ToList();*/
+
+            return products.Select(p => new ProductResponseDto
+            {
+                ProductId = p.ProductId,
+                ProductCode = p.ProductCode,
+                ProductName = p.ProductName,
+                Unit = p.Unit,
+                DefaultExpiration = p.DefaultExpiration,
+                CategoryId = p.CategoryId,
+                Description = p.Description,
+                TaxId = p.TaxId,
+                CreatedBy = p.CreatedBy,
+                CreatedByName = p.Creator?.Employee?.FullName ?? p.Creator?.Username ?? "Unknown",
+                CreatedDate = p.CreatedDate,
+                UpdatedBy = p.UpdatedBy, // OK nếu DTO là Guid?
+                UpdatedByName = p.Updater?.Employee?.FullName ?? p.Updater?.Username ?? "Chưa cập nhật",
+                UpdatedDate = p.UpdatedDate,
+                AvailableStock = p.AvailableStock,
+                Price = p.Price,
+                Images = p.Images.Select(img => img.ImageUrl).ToList()
             }).ToList();
+
         }
 
         public async Task<ProductResponseDto> GetProductByIdAsync(long id)
@@ -61,8 +83,10 @@ namespace Services.Service
                 Description = product.Description,
                 TaxId = product.TaxId,
                 CreatedBy = product.CreatedBy,
+                CreatedByName = product.Creator?.Employee?.FullName ?? product.Creator?.Username ?? "Unknown",
                 CreatedDate = product.CreatedDate,
                 UpdatedBy = product.UpdatedBy,
+                UpdatedByName = product.Updater?.Employee?.FullName ?? product.Updater?.Username ?? "Chưa cập nhật",
                 UpdatedDate = product.UpdatedDate,
                 AvailableStock = product.AvailableStock,
                 Price = product.Price,

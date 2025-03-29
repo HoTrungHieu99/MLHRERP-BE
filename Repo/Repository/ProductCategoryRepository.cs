@@ -19,15 +19,37 @@ namespace Repo.Repository
             _context = context;
         }
 
-        public async Task<IEnumerable<ProductCategory>> GetAllAsync()
+        /*public async Task<IEnumerable<ProductCategory>> GetAllAsync()
         {
             return await _context.ProductCategories.ToListAsync();
+        }*/
+
+        public async Task<List<ProductCategory>> GetAllAsync()
+        {
+            return await _context.ProductCategories
+                .Include(c => c.Creator)
+                    .ThenInclude(u => u.Employee)
+                .Include(c => c.Updater)
+                    .ThenInclude(u => u.Employee)
+                .ToListAsync();
         }
+
+
+        /*public async Task<ProductCategory> GetByIdAsync(long id)
+        {
+            return await _context.ProductCategories.FindAsync(id);
+        }*/
 
         public async Task<ProductCategory> GetByIdAsync(long id)
         {
-            return await _context.ProductCategories.FindAsync(id);
+            return await _context.ProductCategories
+                .Include(c => c.Creator)
+                    .ThenInclude(u => u.Employee)
+                .Include(c => c.Updater)
+                    .ThenInclude(u => u.Employee)
+                .FirstOrDefaultAsync(c => c.CategoryId == id);
         }
+
 
         public async Task<ProductCategory> AddAsync(ProductCategory category)
         {
@@ -54,5 +76,6 @@ namespace Repo.Repository
             await _context.SaveChangesAsync();
             return true;
         }
+
     }
 }

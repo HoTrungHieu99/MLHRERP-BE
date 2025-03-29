@@ -9,7 +9,8 @@ namespace Repo.IRepository
 {
     public interface IProductCategoryRepository
     {
-        Task<IEnumerable<ProductCategory>> GetAllAsync();
+        //Task<IEnumerable<ProductCategory>> GetAllAsync();
+        Task<List<ProductCategory>> GetAllAsync();
         Task<ProductCategory> GetByIdAsync(long id);
         Task<ProductCategory> AddAsync(ProductCategory category);
         Task<ProductCategory> UpdateAsync(ProductCategory category);
