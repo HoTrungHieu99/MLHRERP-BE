@@ -1,12 +1,11 @@
-﻿using BusinessObject.DTO.Product;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BusinessObject.DTO
+namespace BusinessObject.DTO.Product
 {
     public class CreateRequestProductDto
     {
@@ -14,7 +13,7 @@ namespace BusinessObject.DTO
         public string AgencyName { get; set; }
         /*public string RequestStatus { get; set; }*/
         public string Note { get; set; } // Ghi chú của Request
-        public List<RequestProductDetailDto> Products { get; set; }
+        public List<CreateRequestProductDetailDto> Products { get; set; }
     }
 
 }

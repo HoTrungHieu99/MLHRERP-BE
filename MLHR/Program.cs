@@ -168,11 +168,24 @@ builder.Services.AddHttpClient();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ✅ Bật CORS (cho phép gọi API từ các client khác nhau)
+/*// ✅ Bật CORS (cho phép gọi API từ các client khác nhau)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
         builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+});*/
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", builder =>
+        builder
+            .WithOrigins(
+                "https://admin-warehouse-otme.vercel.app", // ✅ domain frontend chính thức
+                "http://localhost:5173"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials() // ✅ cho phép gửi token/cookie
+    );
 });
 
 builder.Services.AddSignalR();
@@ -192,8 +205,11 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
-// ✅ Bật CORS
-app.UseCors("AllowAllOrigins");
+/*// ✅ Bật CORS
+app.UseCors("AllowAllOrigins");*/
+
+app.UseCors("AllowFrontend");
+
 
 app.UseAuthentication();
 // ✅ Bật Authorization
