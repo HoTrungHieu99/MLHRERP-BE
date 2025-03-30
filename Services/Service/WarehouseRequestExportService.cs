@@ -37,12 +37,13 @@ namespace Services.Service
                 WarehouseRequestExportId = x.WarehouseRequestExportId,
                 RequestExportId = x.RequestExportId,
                 ProductId = x.ProductId,
-                ProductName = x.Product.ProductName,
-                AgencyName = x.RequestExport.Order.RequestProduct.AgencyAccount.AgencyName,
-                OrderCode = x.RequestExport.Order.OrderCode,
+                ProductName = x.Product?.ProductName,
+                AgencyName = x.RequestExport?.Order?.RequestProduct?.AgencyAccount?.AgencyName,
+                OrderCode = x.RequestExport?.Order?.OrderCode,
                 QuantityRequested = x.QuantityRequested,
                 RemainingQuantity = x.RemainingQuantity,
                 Status = x.Status,
+                ApprovedByFullName = x.User?.Employee?.FullName
             }).ToList();
         }
 

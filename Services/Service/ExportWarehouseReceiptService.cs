@@ -94,7 +94,7 @@ namespace Services.Service
             return await _repository.CreateReceiptAsync(receipt);
         }
 
-        public async Task ApproveReceiptAsync(long id)
+        public async Task ApproveReceiptAsync(long id, Guid approvedBy)
         {
             var receipt = await _repository.GetReceiptByIdAsync(id);
             if (receipt == null) throw new Exception("Receipt not found");
@@ -110,9 +110,7 @@ namespace Services.Service
                 var warehouseProduct = warehouseProducts.First(wp => wp.WarehouseProductId == detail.WarehouseProductId);
 
                 if (warehouseProduct.Quantity < detail.Quantity)
-                {
                     throw new Exception($"Insufficient quantity in warehouse for product {warehouseProduct.ProductId}");
-                }
 
                 warehouseProduct.Quantity -= detail.Quantity;
 
@@ -120,15 +118,48 @@ namespace Services.Service
                 if (product != null)
                 {
                     if (product.AvailableStock < detail.Quantity)
-                    {
                         throw new Exception($"Product stock is insufficient for product {product.ProductId}");
-                    }
 
                     product.AvailableStock -= detail.Quantity;
                     _context.Products.Update(product);
                 }
             }
 
+            // ✅ Gộp số lượng xuất theo ProductId
+            var groupedExportDetails = receipt.ExportWarehouseReceiptDetails
+                .GroupBy(d => d.ProductId)
+                .ToDictionary(g => g.Key, g => g.Sum(d => d.Quantity));
+
+            // ✅ Cập nhật WarehouseRequestExport
+            var requestExports = await _context.WarehouseRequestExports
+                .Where(x => x.RequestExportId == receipt.RequestExportId && x.WarehouseId == receipt.WarehouseId)
+                .ToListAsync();
+
+            foreach (var wr in requestExports)
+            {
+                if (groupedExportDetails.TryGetValue(wr.ProductId, out int approvedQty))
+                {
+                    wr.QuantityApproved = approvedQty;
+                    wr.RemainingQuantity = wr.QuantityRequested - approvedQty;
+                    wr.Status = "APPROVED";
+                    wr.ApprovedBy = approvedBy;
+                }
+            }
+
+            _context.WarehouseRequestExports.UpdateRange(requestExports);
+
+            // ✅ Cập nhật trạng thái cho RequestExport
+            var totalRemaining = requestExports.Sum(x => x.RemainingQuantity);
+            var requestExport = await _context.RequestExports
+                .FirstOrDefaultAsync(x => x.RequestExportId == receipt.RequestExportId);
+
+            if (requestExport != null)
+            {
+                requestExport.Status = totalRemaining == 0 ? "Approved" : "Partially_Exported";
+                _context.RequestExports.Update(requestExport);
+            }
+
+            // ✅ Ghi lại giao dịch
             var exportTransaction = new ExportTransaction
             {
                 DocumentNumber = receipt.DocumentNumber,
@@ -137,9 +168,9 @@ namespace Services.Service
                 ExportType = receipt.ExportType,
                 WarehouseId = receipt.WarehouseId,
                 Note = "Approved Export",
-                RequestExportId = receipt.RequestExportId, // 🔥 Thêm RequestExportId
-                OrderCode = receipt.RequestExport.Order.OrderCode, // 🔥 Lấy OrderCode
-                AgencyName = receipt.RequestExport.Order.RequestProduct.AgencyAccount.AgencyName, // 🔥 Lấy AgencyName
+                RequestExportId = receipt.RequestExportId,
+                OrderCode = receipt.RequestExport.Order.OrderCode,
+                AgencyName = receipt.RequestExport.Order.RequestProduct.AgencyAccount.AgencyName,
                 ExportTransactionDetail = receipt.ExportWarehouseReceiptDetails.Select(d => new ExportTransactionDetail
                 {
                     WarehouseProductId = d.WarehouseProductId,
@@ -152,8 +183,10 @@ namespace Services.Service
             };
 
             _context.ExportTransactions.Add(exportTransaction);
+
             await _context.SaveChangesAsync();
         }
+
 
         public async Task<List<ExportWarehouseReceipt>> GetAllReceiptsByWarehouseIdAsync(long warehouseId)
         {
