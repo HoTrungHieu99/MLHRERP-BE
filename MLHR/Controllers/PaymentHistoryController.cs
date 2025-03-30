@@ -6,7 +6,6 @@ namespace MLHR.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "4, 5")]
     public class PaymentHistoryController : ControllerBase
     {
         private readonly IPaymentHistoryService _service;
@@ -15,21 +14,22 @@ namespace MLHR.Controllers
         {
             _service = service;
         }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAll()
         {
-            var data = await _service.GetByIdAsync(id);
+            var data = await _service.GetAllPaymentHistoriesAsync();
+            return Ok(data);
+        }
+
+        [HttpGet("{Payment-History-id}")]
+        public async Task<IActionResult> GetById(Guid PaymentHistoryId)
+        {
+            var data = await _service.GetPaymentHistoryByIdAsync(PaymentHistoryId);
             if (data == null) return NotFound("PaymentHistory not found.");
             return Ok(data);
         }
 
-        [HttpGet("all")]
-        public async Task<IActionResult> GetAll()
-        {
-            var data = await _service.GetAllAsync();
-            return Ok(data);
-        }
+        
     }
 
 }

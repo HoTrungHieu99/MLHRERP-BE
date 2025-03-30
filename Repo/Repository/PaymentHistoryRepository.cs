@@ -22,21 +22,21 @@ namespace Repo.Repository
         public async Task<PaymentHistory> GetByIdAsync(Guid id)
         {
             return await _context.PaymentHistories
-                .Include(p => p.Order)
-                .Include(p => p.PrePayment)
-                .Include(p => p.User)
-                .Include(p => p.PaymentTransactions)
-                .FirstOrDefaultAsync(p => p.PaymentHistoryId == id);
+                .Include(ph => ph.Order)
+                    .ThenInclude(o => o.RequestProduct)
+                        .ThenInclude(rp => rp.AgencyAccount)
+                .FirstOrDefaultAsync(ph => ph.PaymentHistoryId == id);
         }
+
 
         public async Task<List<PaymentHistory>> GetAllAsync()
         {
             return await _context.PaymentHistories
-                .Include(p => p.Order)
-                .Include(p => p.PrePayment)
-                .Include(p => p.User)
-                .Include(p => p.PaymentTransactions)
+                .Include(ph => ph.Order)
+                    .ThenInclude(o => o.RequestProduct)
+                        .ThenInclude(rp => rp.AgencyAccount)
                 .ToListAsync();
         }
+
     }
 }
