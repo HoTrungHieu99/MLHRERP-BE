@@ -38,5 +38,15 @@ namespace Repo.Repository
                 .ToListAsync();
         }
 
+        public async Task<List<PaymentHistory>> GetPaymentHistoryByUserIdAsync(Guid userId)
+        {
+            return await _context.PaymentHistories
+                .Include(ph => ph.Order)
+                    .ThenInclude(o => o.RequestProduct)
+                        .ThenInclude(rp => rp.AgencyAccount)
+                .Where(ph => ph.UserId == userId)
+                .ToListAsync();
+        }
+
     }
 }

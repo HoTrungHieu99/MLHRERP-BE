@@ -60,10 +60,31 @@ namespace Services.Service
                 PaymentHistoryId = ph.PaymentHistoryId,
                 OrderId = ph.OrderId,
                 OrderCode = ph.Order?.OrderCode ?? "N/A",
-
                 AgencyId = ph.Order?.RequestProduct?.AgencyId ?? 0,
                 AgencyName = ph.Order?.RequestProduct?.AgencyAccount?.AgencyName ?? "Unknown",
+                PaymentMethod = ph.PaymentMethod,
+                PaymentDate = ph.PaymentDate,
+                SerieNumber = ph.SerieNumber,
+                Status = ph.Status,
+                TotalAmountPayment = ph.TotalAmountPayment,
+                RemainingDebtAmount = ph.RemainingDebtAmount,
+                PaymentAmount = ph.PaymentAmount,
+                CreatedAt = ph.CreatedAt,
+                UpdatedAt = ph.UpdatedAt
+            }).ToList();
+        }
 
+        public async Task<List<PaymentHistoryDto>> GetPaymentHistoriesByUserIdAsync(Guid userId)
+        {
+            var payments = await _repository.GetPaymentHistoryByUserIdAsync(userId);
+
+            return payments.Select(ph => new PaymentHistoryDto
+            {
+                PaymentHistoryId = ph.PaymentHistoryId,
+                OrderId = ph.OrderId,
+                OrderCode = ph.Order?.OrderCode ?? "N/A",
+                AgencyId = ph.Order?.RequestProduct?.AgencyId ?? 0,
+                AgencyName = ph.Order?.RequestProduct?.AgencyAccount?.AgencyName ?? "Unknown",
                 PaymentMethod = ph.PaymentMethod,
                 PaymentDate = ph.PaymentDate,
                 SerieNumber = ph.SerieNumber,

@@ -11,6 +11,7 @@ namespace Repo.IRepository
     {
         Task<PaymentHistory> GetByIdAsync(Guid id);
         Task<List<PaymentHistory>> GetAllAsync();
+        Task<List<PaymentHistory>> GetPaymentHistoryByUserIdAsync(Guid userId);
     }
 
 }
