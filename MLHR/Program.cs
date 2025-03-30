@@ -176,18 +176,20 @@ builder.Services.AddCors(options =>
 });*/
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", builder =>
-        builder
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy
             .WithOrigins(
-                "https://admin-warehouse-otme.vercel.app", // ✅ domain frontend chính thức
-                "http://localhost:5173",
-                https://clone-ui-user.vercel.app/
+                "https://admin-warehouse-otme.vercel.app", // ✅ domain chính thức
+                "http://localhost:5173",                   // ✅ local FE
+                "https://clone-ui-user.vercel.app"         // ✅ nếu có clone UI
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials() // ✅ cho phép gửi token/cookie
-    );
+            .AllowCredentials(); // ✅ Cho phép gửi token/cookie
+    });
 });
+
 
 builder.Services.AddSignalR();
 
