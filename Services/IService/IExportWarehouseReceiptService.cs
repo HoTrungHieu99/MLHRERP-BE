@@ -14,7 +14,7 @@ namespace Services.IService
         Task ApproveReceiptAsync(long id, Guid approvedBy);
 
         Task<List<ExportWarehouseReceipt>> GetAllReceiptsByWarehouseIdAsync(long warehouseId);
-        Task<ExportWarehouseReceipt> CreateFromRequestAsync(int requestExportId, long warehouseId);
+        Task<ExportWarehouseReceipt> CreateFromRequestAsync(int requestExportId, long warehouseId, Guid approvedBy);
         Task<bool> UpdateExportReceiptAsync(UpdateExportWarehouseReceiptFullDto dto);
     }
 

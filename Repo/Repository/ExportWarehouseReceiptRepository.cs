@@ -264,6 +264,38 @@ namespace Repo.Repository
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> ReceiptExistsAsync(int requestExportId)
+        {
+            return await _context.ExportWarehouseReceipts
+                .AnyAsync(x => x.RequestExportId == requestExportId);
+        }
+
+        public async Task<RequestExport> GetRequestExportWithDetailsAsync(int requestExportId)
+        {
+            return await _context.RequestExports
+                .Include(x => x.RequestExportDetails)
+                .Include(x => x.Order)
+                    .ThenInclude(o => o.RequestProduct)
+                        .ThenInclude(x => x.AgencyAccount)
+                .FirstOrDefaultAsync(x => x.RequestExportId == requestExportId);
+        }
+
+        public async Task<List<WarehouseProduct>> GetAvailableWarehouseProductsAsync(long productId, long warehouseId)
+        {
+            return await _context.WarehouseProduct
+                .Include(wp => wp.Product)
+                .Include(wp => wp.Batch)
+                .Where(wp => wp.ProductId == productId && wp.WarehouseId == warehouseId && wp.Quantity > 0)
+                .OrderBy(wp => wp.Batch.ExpiryDate)
+                .ToListAsync();
+        }
+
+        public async Task AddExportReceiptAsync(ExportWarehouseReceipt receipt)
+        {
+            await _context.ExportWarehouseReceipts.AddAsync(receipt);
+            await _context.SaveChangesAsync();
+        }
     }
 
 }

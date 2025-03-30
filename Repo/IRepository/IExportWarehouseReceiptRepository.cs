@@ -17,6 +17,12 @@ namespace Repo.IRepository
         Task<ExportWarehouseReceipt> CreateFromRequestAsync(int requestExportId, long warehouseId);
 
         Task<bool> UpdateFullAsync(UpdateExportWarehouseReceiptFullDto dto);
+
+
+        Task<RequestExport> GetRequestExportWithDetailsAsync(int requestExportId);
+        Task<List<WarehouseProduct>> GetAvailableWarehouseProductsAsync(long productId, long warehouseId);
+        Task AddExportReceiptAsync(ExportWarehouseReceipt receipt);
+        Task<bool> ReceiptExistsAsync(int requestExportId);
     }
 
 }
