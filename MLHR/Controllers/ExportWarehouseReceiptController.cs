@@ -29,8 +29,24 @@ namespace MLHR.Controllers
         [Authorize(Roles = "3")]
         public async Task<IActionResult> ApproveReceipt(long id)
         {
-            await _service.ApproveReceiptAsync(id);
-            return Ok("Receipt Approved");
+            try
+            {
+                // ✅ Lấy userId từ JWT token (ClaimTypes.NameIdentifier)
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+                {
+                    return Unauthorized("Invalid or missing user ID.");
+                }
+
+                // ✅ Gọi service và truyền userId vào
+                await _service.ApproveReceiptAsync(id, userId);
+
+                return Ok("Receipt Approved");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
         [HttpGet("get-all/{warehouseId}")]

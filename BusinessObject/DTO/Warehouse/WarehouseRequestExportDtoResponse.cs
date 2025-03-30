@@ -15,6 +15,8 @@ namespace BusinessObject.DTO.Warehouse
         public int RemainingQuantity { get; set; }
         public string ProductName { get; set; }
 
+        public string ApprovedByFullName { get; set; }
+
         public string OrderCode { get; set; }
         public string AgencyName { get; set; }
 

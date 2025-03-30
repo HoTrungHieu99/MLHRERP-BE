@@ -121,9 +121,11 @@ namespace Repo.Repository
             return await _context.WarehouseRequestExports
                 .Include(x => x.Product)
                 .Include(x => x.RequestExport)
-                .ThenInclude(re => re.Order)
-                .ThenInclude(o => o.RequestProduct)
-                .ThenInclude(o => o.AgencyAccount)
+                    .ThenInclude(re => re.Order)
+                        .ThenInclude(o => o.RequestProduct)
+                            .ThenInclude(rp => rp.AgencyAccount)
+                .Include(x => x.User)
+                    .ThenInclude(u => u.Employee)
                 .Where(x => x.WarehouseId == warehouseId)
                 .ToListAsync();
         }

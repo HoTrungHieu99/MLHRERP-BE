@@ -89,7 +89,7 @@ namespace Repo.Repository
             var requestExport = await _context.RequestExports
                 .Include(x => x.RequestExportDetails)
                 .Include(x => x.Order)
-                 .ThenInclude(o => o.RequestProduct)
+                    .ThenInclude(o => o.RequestProduct)
                         .ThenInclude(x => x.AgencyAccount)
                 .FirstOrDefaultAsync(x => x.RequestExportId == requestExportId);
 
@@ -119,29 +119,48 @@ namespace Repo.Repository
 
             foreach (var detail in requestExport.RequestExportDetails)
             {
-                var warehouseProduct = await _context.WarehouseProduct
+                int quantityNeeded = detail.RequestedQuantity;
+
+                // 🔍 Lấy danh sách warehouseProduct theo ProductId và WarehouseId (có tồn kho > 0), ưu tiên FIFO
+                var availableProducts = await _context.WarehouseProduct
                     .Include(wp => wp.Product)
                     .Include(wp => wp.Batch)
-                    .FirstOrDefaultAsync(wp => wp.ProductId == detail.ProductId && wp.WarehouseId == warehouseId);
+                    .Where(wp => wp.ProductId == detail.ProductId
+                                 && wp.WarehouseId == warehouseId
+                                 && wp.Quantity > 0)
+                    .OrderBy(wp => wp.Batch.ExpiryDate) // FIFO: Xuất hàng gần hết hạn trước
+                    .ToListAsync();
 
-                if (warehouseProduct == null)
-                    throw new InvalidOperationException($"WarehouseProduct not found for ProductId = {detail.ProductId} in WarehouseId = {warehouseId}");
+                if (availableProducts == null || !availableProducts.Any())
+                    throw new InvalidOperationException($"No available WarehouseProduct for ProductId = {detail.ProductId} in WarehouseId = {warehouseId}");
 
-                var unitPrice = warehouseProduct.Batch.SellingPrice ?? 0;
-                var amount = unitPrice * detail.RequestedQuantity;
-                totalAmount += amount;
-
-                receipt.ExportWarehouseReceiptDetails.Add(new ExportWarehouseReceiptDetail
+                foreach (var wp in availableProducts)
                 {
-                    WarehouseProductId = warehouseProduct.WarehouseProductId,
-                    ProductId = detail.ProductId,
-                    ProductName = warehouseProduct.Product.ProductName,
-                    BatchNumber = warehouseProduct.Batch.BatchCode,
-                    Quantity = detail.RequestedQuantity,
-                    UnitPrice = unitPrice,
-                    TotalProductAmount = amount,
-                    ExpiryDate = warehouseProduct.Batch.ExpiryDate
-                });
+                    if (quantityNeeded <= 0)
+                        break;
+
+                    int quantityToExport = Math.Min(quantityNeeded, wp.Quantity);
+                    var unitPrice = wp.Batch.SellingPrice ?? 0;
+                    var amount = quantityToExport * unitPrice;
+
+                    receipt.ExportWarehouseReceiptDetails.Add(new ExportWarehouseReceiptDetail
+                    {
+                        WarehouseProductId = wp.WarehouseProductId,
+                        ProductId = detail.ProductId,
+                        ProductName = wp.Product.ProductName,
+                        BatchNumber = wp.Batch.BatchCode,
+                        Quantity = quantityToExport,
+                        UnitPrice = unitPrice,
+                        TotalProductAmount = amount,
+                        ExpiryDate = wp.Batch.ExpiryDate
+                    });
+
+                    totalAmount += amount;
+                    quantityNeeded -= quantityToExport;
+                }
+
+                if (quantityNeeded > 0)
+                    throw new InvalidOperationException($"Not enough stock for ProductId = {detail.ProductId}. Still missing: {quantityNeeded}");
             }
 
             receipt.TotalAmount = totalAmount;
