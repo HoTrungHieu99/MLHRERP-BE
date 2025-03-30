@@ -180,7 +180,8 @@ builder.Services.AddCors(options =>
         builder
             .WithOrigins(
                 "https://admin-warehouse-otme.vercel.app", // ✅ domain frontend chính thức
-                "http://localhost:5173"
+                "http://localhost:5173",
+                https://clone-ui-user.vercel.app/
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
