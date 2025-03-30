@@ -196,10 +196,82 @@ namespace Services.Service
                 .ToListAsync();
         }
 
-        public async Task<ExportWarehouseReceipt> CreateFromRequestAsync(int requestExportId, long warehouseId)
+        public async Task<ExportWarehouseReceipt> CreateFromRequestAsync(int requestExportId, long warehouseId, Guid approvedBy)
         {
-            return await _repository.CreateFromRequestAsync(requestExportId, warehouseId);
+            if (await _repository.ReceiptExistsAsync(requestExportId))
+                throw new InvalidOperationException($"RequestExportId = {requestExportId} has already been used to create an export receipt.");
+
+            var requestExport = await _repository.GetRequestExportWithDetailsAsync(requestExportId);
+            if (requestExport == null)
+                throw new KeyNotFoundException("RequestExport not found");
+
+            if (!requestExport.RequestExportDetails.Any())
+                throw new InvalidOperationException("RequestExport has no details");
+
+            var receipt = new ExportWarehouseReceipt
+            {
+                DocumentNumber = $"EXP-{DateTime.Now:yyyyMMddHHmmss}",
+                DocumentDate = DateTime.Now,
+                ExportDate = DateTime.Now,
+                ExportType = "Xuất Bán",
+                TotalQuantity = requestExport.RequestExportDetails.Sum(d => d.RequestedQuantity),
+                TotalAmount = 0,
+                RequestExportId = requestExportId,
+                AgencyName = requestExport.Order?.RequestProduct?.AgencyAccount?.AgencyName,
+                OrderCode = requestExport.Order?.OrderCode,
+                WarehouseId = warehouseId,
+                Status = "Pending",
+                ExportWarehouseReceiptDetails = new List<ExportWarehouseReceiptDetail>()
+            };
+
+            decimal totalAmount = 0;
+
+            foreach (var detail in requestExport.RequestExportDetails)
+            {
+                int quantityNeeded = detail.RequestedQuantity;
+                var availableProducts = await _repository.GetAvailableWarehouseProductsAsync(detail.ProductId, warehouseId);
+
+                if (!availableProducts.Any())
+                    throw new InvalidOperationException($"No available stock for ProductId = {detail.ProductId} in WarehouseId = {warehouseId}");
+
+                foreach (var wp in availableProducts)
+                {
+                    if (quantityNeeded <= 0) break;
+
+                    int quantityToExport = Math.Min(quantityNeeded, wp.Quantity);
+                    var unitPrice = wp.Batch.SellingPrice ?? 0;
+                    var amount = quantityToExport * unitPrice;
+
+                    receipt.ExportWarehouseReceiptDetails.Add(new ExportWarehouseReceiptDetail
+                    {
+                        WarehouseProductId = wp.WarehouseProductId,
+                        ProductId = detail.ProductId,
+                        ProductName = wp.Product.ProductName,
+                        BatchNumber = wp.Batch.BatchCode,
+                        Quantity = quantityToExport,
+                        UnitPrice = unitPrice,
+                        TotalProductAmount = amount,
+                        ExpiryDate = wp.Batch.ExpiryDate
+                    });
+
+                    totalAmount += amount;
+                    quantityNeeded -= quantityToExport;
+                }
+
+                if (quantityNeeded > 0)
+                    throw new InvalidOperationException($"Not enough stock for ProductId = {detail.ProductId}. Missing: {quantityNeeded}");
+            }
+
+            receipt.TotalAmount = totalAmount;
+
+            await _repository.AddExportReceiptAsync(receipt);
+
+            // ✅ Tự động duyệt phiếu vừa tạo
+            await ApproveReceiptAsync(receipt.ExportWarehouseReceiptId, approvedBy);
+
+            return receipt;
         }
+
 
         public async Task<bool> UpdateExportReceiptAsync(UpdateExportWarehouseReceiptFullDto dto)
         {
