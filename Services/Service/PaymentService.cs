@@ -250,8 +250,8 @@ namespace Services.Service
                 var responseObject = JObject.Parse(responseContent);
                 var status = responseObject["data"]?["status"]?.ToString();
 
-                if (status != "PAID")
-                    return null!;
+                /*if (status == "PAID")
+                    return null!;*/
 
                 decimal paidAmount = requestquery.price;
 
@@ -271,7 +271,7 @@ namespace Services.Service
                     // Cộng dồn tiền thanh toán
                     existingHistory.PaymentAmount += paidAmount;
 
-                    if (existingHistory.PaymentAmount >= totalOrderAmount)
+                    if (existingHistory.PaymentAmount == totalOrderAmount)
                     {
                         existingHistory.RemainingDebtAmount = 0;
                         existingHistory.Status = "PAID";
@@ -302,7 +302,8 @@ namespace Services.Service
                         PaymentAmount = paidAmount,
                         CreatedAt = DateTime.Now,
                         UpdatedAt = DateTime.Now,  
-                        SerieNumber = $"SER-{DateTime.Now.Ticks}"
+                        SerieNumber = $"SER-{DateTime.Now.Ticks}",
+                        UserId = userId.Value
                     };
 
                     // ❗ KHÔNG gán PaymentHistoryId ở đây

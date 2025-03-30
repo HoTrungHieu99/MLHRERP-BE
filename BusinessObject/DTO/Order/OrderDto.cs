@@ -14,7 +14,7 @@ namespace BusinessObject.DTO.Order
         public decimal Discount { get; set; }
         public decimal FinalPrice { get; set; }
         public string Status { get; set; }
-
+        public long AgencyId { get; set; }
         public string SalesName { get; set; } // 👈 Lấy từ ApprovedByEmployee
         public string AgencyName { get; set; }
         public string RequestCode { get; set; }

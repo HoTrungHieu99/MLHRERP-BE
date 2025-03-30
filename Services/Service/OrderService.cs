@@ -48,6 +48,9 @@ namespace Services.Service
                 FinalPrice = o.FinalPrice,
                 Status = o.Status,
 
+                // ✅ Thêm AgencyId
+                AgencyId = o.RequestProduct?.AgencyId ?? 0, // nếu AgencyId là long
+
                 // ✅ Tên nhân viên bán hàng (sales)
                 SalesName = o.RequestProduct?.ApprovedByEmployee?.FullName ?? "Chưa duyệt",
 
@@ -72,6 +75,7 @@ namespace Services.Service
             }).ToList();
         }
 
+
         /*public async Task<Order> GetOrderByIdAsync(Guid orderId)
         {
             return await _orderRepository.GetOrderByIdAsync(orderId);
@@ -94,7 +98,8 @@ namespace Services.Service
                 Discount = order.Discount,
                 FinalPrice = order.FinalPrice,
                 Status = order.Status,
-
+                // ✅ Thêm AgencyId
+                AgencyId = order.RequestProduct?.AgencyId ?? 0, // nếu AgencyId là long
                 SalesName = order.RequestProduct?.ApprovedByEmployee?.FullName ?? "Chưa duyệt",
                 AgencyName = order.RequestProduct?.AgencyAccount?.AgencyName ?? "Unknown",
                 RequestCode = order.RequestProduct?.RequestCode ?? "N/A",
@@ -230,7 +235,8 @@ namespace Services.Service
                 Discount = o.Discount,
                 FinalPrice = o.FinalPrice,
                 Status = o.Status,
-
+                // ✅ Thêm AgencyId
+                AgencyId = o.RequestProduct?.AgencyId ?? 0, // nếu AgencyId là long
                 SalesName = o.RequestProduct?.ApprovedByEmployee?.FullName ?? "Chưa duyệt",
                 AgencyName = o.RequestProduct?.AgencyAccount?.AgencyName ?? "Unknown",
                 RequestCode = o.RequestProduct?.RequestCode ?? "N/A",
