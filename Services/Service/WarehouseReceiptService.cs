@@ -100,12 +100,30 @@ namespace Services.Service
         }
 
 
-        public async Task<List<WarehouseReceiptDTO>> GetAllReceiptsByWarehouseIdAsync(long warehouseId)
+        public async Task<List<WarehouseReceiptDTO>> GetAllReceiptsByWarehouseIdAsync(long warehouseId, string? sortBy = null)
         {
             var receipts = await _repository.GetAllAsync();
 
             // Lọc theo warehouseId
-            var filteredReceipts = receipts.Where(receipt => receipt.WarehouseId == warehouseId).ToList();
+            var filteredReceipts = receipts
+                .Where(receipt => receipt.WarehouseId == warehouseId);
+
+            // 👉 Xử lý sắp xếp theo yêu cầu
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                switch (sortBy.ToLower())
+                {
+                    case "status":
+                        filteredReceipts = filteredReceipts.OrderBy(r => r.IsApproved);
+                        break;
+                    case "dateimport_desc":
+                        filteredReceipts = filteredReceipts.OrderByDescending(r => r.DateImport);
+                        break;
+                    case "dateimport_asc":
+                        filteredReceipts = filteredReceipts.OrderBy(r => r.DateImport);
+                        break;
+                }
+            }
 
             return filteredReceipts.Select(receipt => new WarehouseReceiptDTO
             {
@@ -120,7 +138,6 @@ namespace Services.Service
                 TotalPrice = receipt.TotalPrice,
                 IsApproved = receipt.IsApproved,
                 Batches = JsonConvert.DeserializeObject<List<BatchResponseDto>>(receipt.BatchesJson) ?? new List<BatchResponseDto>()
-                
             }).ToList();
         }
 

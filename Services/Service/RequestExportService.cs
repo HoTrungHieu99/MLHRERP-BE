@@ -19,15 +19,48 @@ namespace Services.Service
             _requestExportRepository = requestExportRepository;
         }
 
-        public async Task<List<RequestExportDto>> GetAllRequestExportsAsync()
+        public async Task<List<RequestExportDto>> GetAllRequestExportsAsync(string? sortBy = null)
         {
             var requestExports = await _requestExportRepository.GetAllRequestExportsAsync();
+
+            // ✅ Ánh xạ độ ưu tiên cho từng trạng thái
+            var statusPriority = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+    {
+        { "Pending", 0 },
+        { "Requested", 1 },
+        { "Approved", 2 }
+    };
+
+            // ✅ Sắp xếp theo yêu cầu
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                switch (sortBy.ToLower())
+                {
+                    case "status":
+                        requestExports = requestExports
+                            .OrderBy(re => statusPriority.ContainsKey(re.Status) ? statusPriority[re.Status] : 99)
+                            .ToList();
+                        break;
+
+                    case "approveddate_desc":
+                        requestExports = requestExports
+                            .OrderByDescending(re => re.ApprovedDate ?? DateTime.MinValue)
+                            .ToList();
+                        break;
+
+                    case "approveddate_asc":
+                        requestExports = requestExports
+                            .OrderBy(re => re.ApprovedDate ?? DateTime.MinValue)
+                            .ToList();
+                        break;
+                }
+            }
 
             return requestExports.Select(re => new RequestExportDto
             {
                 RequestExportId = re.RequestExportId,
                 OrderId = re.OrderId,
-                AgencyName = re.RequestedByAgency?.AgencyName ?? "Unknown", // 👈 Gán tên đại lý
+                AgencyName = re.RequestedByAgency?.AgencyName ?? "Unknown",
                 ApprovedByName = re.ApprovedByEmployee?.FullName ?? "Chưa duyệt",
                 Status = re.Status,
                 ApprovedDate = re.ApprovedDate,
@@ -39,10 +72,9 @@ namespace Services.Service
                     ProductId = red.ProductId,
                     ProductName = red.Product?.ProductName ?? "N/A",
                     Unit = red.Product?.Unit ?? "N/A",
-                    Price = red.Product?.Price ?? 0, // hoặc giá khác nếu có
+                    Price = red.Product?.Price ?? 0,
                     RequestedQuantity = red.RequestedQuantity
                 }).ToList()
-
             }).ToList();
         }
 

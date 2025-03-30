@@ -188,12 +188,29 @@ namespace Services.Service
         }
 
 
-        public async Task<List<ExportWarehouseReceipt>> GetAllReceiptsByWarehouseIdAsync(long warehouseId)
+        public async Task<List<ExportWarehouseReceipt>> GetAllReceiptsByWarehouseIdAsync(long warehouseId, string? sortBy = null)
         {
-            return await _context.ExportWarehouseReceipts
-                .Where(r => r.WarehouseId == warehouseId)
-                .Include(r => r.ExportWarehouseReceiptDetails) // Nếu cần lấy chi tiết sản phẩm
-                .ToListAsync();
+            var receipts = await _repository.GetAllReceiptsByWarehouseIdAsync(warehouseId);
+
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                switch (sortBy.ToLower())
+                {
+                    case "status":
+                        receipts = receipts
+                            .OrderBy(r => r.Status == "Approved" ? 1 : 0) // ✅ Pending trước, Approved sau
+                            .ToList();
+                        break;
+                    case "exportdate_desc":
+                        receipts = receipts.OrderByDescending(r => r.ExportDate).ToList();
+                        break;
+                    case "exportdate_asc":
+                        receipts = receipts.OrderBy(r => r.ExportDate).ToList();
+                        break;
+                }
+            }
+
+            return receipts;
         }
 
         public async Task<ExportWarehouseReceipt> CreateFromRequestAsync(int requestExportId, long warehouseId, Guid approvedBy)

@@ -86,13 +86,15 @@ namespace MLHR.Controllers
 
         [Authorize(Roles = "3")]
         [HttpGet("{warehouseId}/products")]
-        public async Task<ActionResult<IEnumerable<WarehouseProductDto>>> GetProductsByWarehouseId(long warehouseId)
+        public async Task<ActionResult<IEnumerable<WarehouseProductDto>>> GetProductsByWarehouseId(long warehouseId, [FromQuery] string? sortBy)
         {
-            var products = await _warehouseService.GetProductsByWarehouseIdAsync(warehouseId);
+            var products = await _warehouseService.GetProductsByWarehouseIdAsync(warehouseId, sortBy);
+
             if (products == null || !products.Any())
             {
                 return NotFound("No products found in this warehouse.");
             }
+
             return Ok(products);
         }
 

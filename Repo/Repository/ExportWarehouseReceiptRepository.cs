@@ -296,6 +296,14 @@ namespace Repo.Repository
             await _context.ExportWarehouseReceipts.AddAsync(receipt);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<List<ExportWarehouseReceipt>> GetAllReceiptsByWarehouseIdAsync(long warehouseId)
+        {
+            return await _context.ExportWarehouseReceipts
+                .Where(r => r.WarehouseId == warehouseId)
+                .Include(r => r.ExportWarehouseReceiptDetails)
+                .ToListAsync();
+        }
     }
 
 }

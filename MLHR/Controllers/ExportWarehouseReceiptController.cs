@@ -50,9 +50,9 @@ namespace MLHR.Controllers
         }
 
         [HttpGet("get-all/{warehouseId}")]
-        public async Task<IActionResult> GetAllByWarehouseId(long warehouseId)
+        public async Task<IActionResult> GetAllByWarehouseId(long warehouseId, [FromQuery] string? sortBy)
         {
-            var receipts = await _service.GetAllReceiptsByWarehouseIdAsync(warehouseId);
+            var receipts = await _service.GetAllReceiptsByWarehouseIdAsync(warehouseId, sortBy);
             if (receipts == null || !receipts.Any())
             {
                 return NotFound(new { message = "No export receipts found for this warehouse." });

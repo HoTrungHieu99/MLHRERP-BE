@@ -32,15 +32,33 @@ namespace MLHR.Controllers
         }
 
         [HttpGet("warehouse/{warehouseId}")]
-        public async Task<IActionResult> GetByWarehouseId(long warehouseId)
+        public async Task<IActionResult> GetByWarehouseId(long warehouseId, [FromQuery] string? sortBy)
         {
-            var results = await _service.GetByWarehouseIdAsync(warehouseId);
+            var results = await _service.GetByWarehouseIdAsync(warehouseId, sortBy);
             if (results == null || !results.Any())
             {
                 return NotFound("No warehouse request exports found for the given warehouse ID.");
             }
 
             return Ok(results);
+        }
+
+        [HttpGet("{warehouseRequestExportId}")]
+        public async Task<IActionResult> GetByWarehouseRequestExportId(int warehouseRequestExportId)
+        {
+            try
+            {
+                var result = await _service.GetByWarehouseRequestExportIdAsync(warehouseRequestExportId);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal server error", detail = ex.Message });
+            }
         }
 
 

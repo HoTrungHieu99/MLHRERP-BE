@@ -73,9 +73,9 @@ namespace Repo.Repository
             await _context.SaveChangesAsync(); // 🔥 Lưu thay đổi vào DB
         }
 
-        public async Task<IEnumerable<WarehouseProductDto>> GetProductsByWarehouseIdAsync(long warehouseId)
+        public async Task<IEnumerable<WarehouseProductDto>> GetProductsByWarehouseIdAsync(long warehouseId, string sortBy = null)
         {
-            return await _context.WarehouseProduct
+            var query = _context.WarehouseProduct
                 .Where(wp => wp.WarehouseId == warehouseId)
                 .Select(wp => new WarehouseProductDto
                 {
@@ -89,8 +89,26 @@ namespace Repo.Repository
                     Quantity = wp.Quantity,
                     Status = wp.Status,
                     Price = wp.Batch.SellingPrice
-                })
-                .ToListAsync();
+                });
+
+            // Sort logic
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                switch (sortBy.ToLower())
+                {
+                    case "status":
+                        query = query.OrderBy(wp => wp.Status);
+                        break;
+                    case "expirationdate_desc":
+                        query = query.OrderByDescending(wp => wp.ExpirationDate);
+                        break;
+                    case "expirationdate_asc":
+                        query = query.OrderBy(wp => wp.ExpirationDate);
+                        break;
+                }
+            }
+
+            return await query.ToListAsync();
         }
 
         public async Task<WarehouseProductDto> GetProductByIdAsync(long warehouseProductId)

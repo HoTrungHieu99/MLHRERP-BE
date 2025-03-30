@@ -38,9 +38,29 @@ namespace Services.Service
         }
 
 
-        public async Task<List<WarehouseRequestExportDtoResponse>> GetByWarehouseIdAsync(long warehouseId)
+        public async Task<List<WarehouseRequestExportDtoResponse>> GetByWarehouseIdAsync(long warehouseId, string? sortBy = null)
         {
             var data = await _repository.GetByWarehouseIdAsync(warehouseId);
+
+            // ✅ Sắp xếp theo yêu cầu
+            if (!string.IsNullOrEmpty(sortBy))
+            {
+                switch (sortBy.ToLower())
+                {
+                    case "status":
+                        // Pending trước, Approved sau
+                        data = data.OrderBy(x => x.Status == "APPROVED" ? 1 : 0).ToList();
+                        break;
+
+                    case "createddate_desc":
+                        data = data.OrderByDescending(x => x.RequestExport?.RequestDate ?? DateTime.MinValue).ToList();
+                        break;
+
+                    case "createddate_asc":
+                        data = data.OrderBy(x => x.RequestExport?.RequestDate ?? DateTime.MinValue).ToList();
+                        break;
+                }
+            }
 
             return data.Select(x => new WarehouseRequestExportDtoResponse
             {
@@ -56,6 +76,29 @@ namespace Services.Service
                 ApprovedByFullName = x.User?.Employee?.FullName
             }).ToList();
         }
+
+        public async Task<WarehouseRequestExportDtoResponse> GetByWarehouseRequestExportIdAsync(int warehouseRequestExportId)
+        {
+            var x = await _repository.GetByIdAsync(warehouseRequestExportId);
+
+            if (x == null)
+                throw new KeyNotFoundException("Warehouse request not found");
+
+            return new WarehouseRequestExportDtoResponse
+            {
+                WarehouseRequestExportId = x.WarehouseRequestExportId,
+                RequestExportId = x.RequestExportId,
+                ProductId = x.ProductId,
+                ProductName = x.Product?.ProductName,
+                AgencyName = x.RequestExport?.Order?.RequestProduct?.AgencyAccount?.AgencyName,
+                OrderCode = x.RequestExport?.Order?.OrderCode,
+                QuantityRequested = x.QuantityRequested,
+                RemainingQuantity = x.RemainingQuantity,
+                Status = x.Status,
+                ApprovedByFullName = x.User?.Employee?.FullName
+            };
+        }
+
 
         public async Task<bool> ApproveRequestAsync(int warehouseRequestExportId, int quantityApproved, Guid approvedBy)
         {

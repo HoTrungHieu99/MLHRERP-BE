@@ -16,7 +16,7 @@ namespace Services.IService
         void UpdateWarehouse(Guid userId, int warehouseId, string warehousName, string street, string province, string district, string ward, string note);
         Task<bool> DeleteWarehouseAsync(int warehouseId);
 
-        Task<IEnumerable<WarehouseProductDto>> GetProductsByWarehouseIdAsync(long warehouseId);
+        Task<IEnumerable<WarehouseProductDto>> GetProductsByWarehouseIdAsync(long warehouseId, string sortBy = null);
         Task<WarehouseProductDto> GetProductByIdAsync(long warehouseProductId);
 
     }

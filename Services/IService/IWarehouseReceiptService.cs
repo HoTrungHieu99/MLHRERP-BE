@@ -12,7 +12,8 @@ namespace Services.IService
     {
         Task<bool> CreateReceiptAsync(WarehouseReceiptRequest request, Guid currentUserId);
         Task<bool> ApproveReceiptAsync(long id, Guid currentUserId);
-        Task<List<WarehouseReceiptDTO>> GetAllReceiptsByWarehouseIdAsync(long warehouseId);
+        Task<List<WarehouseReceiptDTO>> GetAllReceiptsByWarehouseIdAsync(long warehouseId, string? sortBy = null);
+
 
         Task<WarehouseReceiptDTO?> GetWarehouseReceiptDTOIdAsync(long Id);
     }

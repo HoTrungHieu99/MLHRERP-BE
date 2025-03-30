@@ -18,7 +18,8 @@ namespace Repo.IRepository
         void UpdateWarehouse(Warehouse warehouse);
         Task DeleteWarehouseAsync(Warehouse warehouse);
 
-        Task<IEnumerable<WarehouseProductDto>> GetProductsByWarehouseIdAsync(long warehouseId);
+        Task<IEnumerable<WarehouseProductDto>> GetProductsByWarehouseIdAsync(long warehouseId, string sortBy = null);
+
         Task<WarehouseProductDto> GetProductByIdAsync(long warehouseProductId);
         Task<Guid> GetUserIdByWarehouseIdAsync(long warehouseId);
     }

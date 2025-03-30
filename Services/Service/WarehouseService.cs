@@ -128,9 +128,9 @@ namespace Services.Service
             return true;
         }
 
-        public async Task<IEnumerable<WarehouseProductDto>> GetProductsByWarehouseIdAsync(long warehouseId)
+        public async Task<IEnumerable<WarehouseProductDto>> GetProductsByWarehouseIdAsync(long warehouseId, string sortBy = null)
         {
-            return await _warehouseRepo.GetProductsByWarehouseIdAsync(warehouseId);
+            return await _warehouseRepo.GetProductsByWarehouseIdAsync(warehouseId, sortBy);
         }
 
         public async Task<WarehouseProductDto> GetProductByIdAsync(long warehouseProductId)

@@ -23,6 +23,9 @@ namespace Repo.IRepository
         Task<List<WarehouseProduct>> GetAvailableWarehouseProductsAsync(long productId, long warehouseId);
         Task AddExportReceiptAsync(ExportWarehouseReceipt receipt);
         Task<bool> ReceiptExistsAsync(int requestExportId);
+
+        Task<List<ExportWarehouseReceipt>> GetAllReceiptsByWarehouseIdAsync(long warehouseId);
+
     }
 
 }

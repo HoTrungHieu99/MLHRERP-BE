@@ -18,9 +18,9 @@ namespace MLHR.Controllers
         // ✅ API GET: Lấy danh sách RequestExport kèm RequestExportDetail
         [HttpGet("all")]
         [Authorize(Roles = "3, 4")]
-        public async Task<IActionResult> GetAllRequestExports()
+        public async Task<IActionResult> GetAllRequestExports([FromQuery] string? sortBy)
         {
-            var requestExports = await _requestExportService.GetAllRequestExportsAsync();
+            var requestExports = await _requestExportService.GetAllRequestExportsAsync(sortBy);
             return Ok(requestExports);
         }
 

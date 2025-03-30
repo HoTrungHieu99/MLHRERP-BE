@@ -10,7 +10,8 @@ namespace Services.IService
 {
     public interface IRequestExportService
     {
-        Task<List<RequestExportDto>> GetAllRequestExportsAsync();
+        Task<List<RequestExportDto>> GetAllRequestExportsAsync(string? sortBy = null);
+
         Task<RequestExportDto> GetRequestExportByIdAsync(int requestId);
     }
 }
