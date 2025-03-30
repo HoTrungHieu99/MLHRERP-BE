@@ -267,6 +267,7 @@ namespace Services.Service
             await _repository.AddExportReceiptAsync(receipt);
 
             // ✅ Tự động duyệt phiếu vừa tạo
+            //ko xoa dc approved nen de do
             await ApproveReceiptAsync(receipt.ExportWarehouseReceiptId, approvedBy);
 
             return receipt;
