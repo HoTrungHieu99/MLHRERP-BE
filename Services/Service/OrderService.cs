@@ -181,9 +181,9 @@ namespace Services.Service
                 await _orderRepository.UpdateOrderAsync(order);
                 await _orderRepository.SaveChangesAsync();
 
-                // Gửi cho KHO
+               /* // Gửi cho KHO
                 await _hub.Clients.Group("3")
-                    .SendAsync("ReceiveNotification", $"🚚 Có Đơn Hàng Mới Được Đặt!");
+                    .SendAsync("ReceiveNotification", $"🚚 Có Đơn Hàng Mới Được Đặt!");*/
                 return true;
             }
             catch (DbUpdateException ex) // ✅ Bắt lỗi từ Entity Framework

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BusinessObject.DTO.Warehouse;
 using BusinessObject.Models;
 using DataAccessLayer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Repo.IRepository;
 using Services.IService;
@@ -16,17 +17,26 @@ namespace Services.Service
     {
         private readonly IWarehouseRequestExportRepository _repository;
         private readonly MinhLongDbContext _context;
+        private readonly IHubContext<NotificationHub> _hub;
 
-        public WarehouseRequestExportService(IWarehouseRequestExportRepository repository, MinhLongDbContext context)
+        public WarehouseRequestExportService(IWarehouseRequestExportRepository repository, MinhLongDbContext context, IHubContext<NotificationHub> hub)
         {
             _repository = repository;
             _context = context;
+            _hub = hub;
         }
 
         public async Task<WarehouseRequestExport> CreateWarehouseRequestExportAsync(long warehouseId, int requestExportId)
         {
-            return await _repository.CreateWarehouseRequestExportAsync(warehouseId, requestExportId);
+            var result = await _repository.CreateWarehouseRequestExportAsync(warehouseId, requestExportId);
+
+            // ✅ Gửi thông báo cho KHO (GroupId = 3)
+            await _hub.Clients.Group("3").SendAsync("ReceiveNotification",
+                $"🚚 Yêu cầu xuất kho mới!");
+
+            return result;
         }
+
 
         public async Task<List<WarehouseRequestExportDtoResponse>> GetByWarehouseIdAsync(long warehouseId)
         {
