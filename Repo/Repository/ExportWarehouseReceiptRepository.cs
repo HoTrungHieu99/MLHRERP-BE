@@ -86,6 +86,13 @@ namespace Repo.Repository
 
         public async Task<ExportWarehouseReceipt> CreateFromRequestAsync(int requestExportId, long warehouseId)
         {
+            // ✅ Kiểm tra đã có phiếu xuất cho RequestExportId chưa
+            bool receiptExists = await _context.ExportWarehouseReceipts
+                .AnyAsync(x => x.RequestExportId == requestExportId);
+
+            if (receiptExists)
+                throw new InvalidOperationException($"RequestExportId = {requestExportId} has already been used to create an export receipt.");
+
             var requestExport = await _context.RequestExports
                 .Include(x => x.RequestExportDetails)
                 .Include(x => x.Order)
@@ -121,14 +128,13 @@ namespace Repo.Repository
             {
                 int quantityNeeded = detail.RequestedQuantity;
 
-                // 🔍 Lấy danh sách warehouseProduct theo ProductId và WarehouseId (có tồn kho > 0), ưu tiên FIFO
                 var availableProducts = await _context.WarehouseProduct
                     .Include(wp => wp.Product)
                     .Include(wp => wp.Batch)
                     .Where(wp => wp.ProductId == detail.ProductId
                                  && wp.WarehouseId == warehouseId
                                  && wp.Quantity > 0)
-                    .OrderBy(wp => wp.Batch.ExpiryDate) // FIFO: Xuất hàng gần hết hạn trước
+                    .OrderBy(wp => wp.Batch.ExpiryDate)
                     .ToListAsync();
 
                 if (availableProducts == null || !availableProducts.Any())
@@ -170,6 +176,7 @@ namespace Repo.Repository
 
             return receipt;
         }
+
 
         public async Task<bool> UpdateFullAsync(UpdateExportWarehouseReceiptFullDto dto)
         {
