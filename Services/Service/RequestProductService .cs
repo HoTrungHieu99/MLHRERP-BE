@@ -455,7 +455,7 @@ namespace Services.Service
 
                 // Gửi cho AGENCY
                 await _hub.Clients.Group("2")
-                    .SendAsync("ReceiveNotification", $"✅ Đơn hàng {requestOrderCode} đã được duyệt!");
+                    .SendAsync("ReceiveNotification", $"✅ Đơn hàng {requestProduct.RequestCode} đã được duyệt!");
             }
             catch (DbUpdateException ex)
             {
