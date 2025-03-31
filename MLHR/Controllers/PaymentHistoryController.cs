@@ -23,7 +23,7 @@ namespace MLHR.Controllers
             return Ok(data);
         }
 
-        [HttpGet("{Payment-History-id}")]
+        [HttpGet("Payment-History-id/{PaymentHistoryId}")]
         public async Task<IActionResult> GetById(Guid PaymentHistoryId)
         {
             var data = await _service.GetPaymentHistoryByIdAsync(PaymentHistoryId);

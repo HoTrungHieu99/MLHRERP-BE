@@ -107,9 +107,15 @@ namespace MLHR.Controllers
                 string accountId = Request.Query["accountId"]!;
                 Guid orderId = Guid.Parse(Request.Query["orderId"]!);
 
+                // 🔹 B3. Tìm đơn hàng liên kết với orderCode
+                var order = await _orderService.GetOrderByIdAsync(orderId); // nếu bạn lưu orderCode trong bảng Order
+                if (order == null)
+                    throw new Exception("Không tìm thấy đơn hàng tương ứng với orderCode.");
+
                 // 🔹 B2. Kiểm tra nếu Transaction đã xử lý rồi
                 var existingTransaction = await _paymentRepository.GetTransactionByReferenceAsync(orderCode.ToString());
-                if (existingTransaction != null)
+                var paymentHistory = await _paymentRepository.GetPaymentHistoryByOrderIdAsync(orderId);
+                /*if (existingTransaction != null)
                 {
                     // ✅ Đã xử lý rồi → Trả giao diện luôn
                     string formattedAmount = $"{amount:N0} VND";
@@ -119,12 +125,26 @@ namespace MLHR.Controllers
                 <h1 style='color:green'>BẠN ĐÃ THANH TOÁN THÀNH CÔNG ĐƠN HÀNG #{orderCode}</h1>
                 <p>Số tiền Thanh Toán: {formattedAmount}</p>
                 <p>Cảm ơn bạn đã thanh toán!</p></body></html>", "text/html");
+                }*/
+
+                if (existingTransaction != null)
+                {
+                    string formattedAmount = $"{amount:N0} VND";
+                    // ✅ Đã xử lý rồi → Chuyển hướng đến trang giao diện thành công
+                    return new JsonResult(new
+                    {
+                        success = true,
+                        //message = "Thanh toán thành công",
+                        orderCode = order.OrderCode,
+                        amount = formattedAmount,
+                        createDate = existingTransaction.PaymentDate,
+                        serialNumber = paymentHistory.SerieNumber
+                    });
+
                 }
 
-                // 🔹 B3. Tìm đơn hàng liên kết với orderCode
-                var order = await _orderService.GetOrderByIdAsync(orderId); // nếu bạn lưu orderCode trong bảng Order
-                if (order == null)
-                    throw new Exception("Không tìm thấy đơn hàng tương ứng với orderCode.");
+
+
 
                 // 🔹 B4. Chuẩn bị dữ liệu xác nhận
                 var queryRequest = new QueryRequest
@@ -142,12 +162,24 @@ namespace MLHR.Controllers
 
                 if (result != null && result.code == "00")
                 {
-                    return Content($@"
+                    /*return Content($@"
                 <html><head><meta charset='UTF-8'><title>Thành công</title></head>
                 <body style='text-align:center;font-family:sans-serif'>
                 <h1 style='color:green'>BẠN ĐÃ THANH TOÁN THÀNH CÔNG ĐƠN HÀNG #{order.OrderCode}</h1>
                 <p>Số tiền Thanh Toán: {formattedAmount2}</p>
-                <p>Cảm ơn bạn đã thanh toán!</p></body></html>", "text/html");
+                <p>Cảm ơn bạn đã thanh toán!</p></body></html>", "text/html");*/
+
+                    return new JsonResult(new
+                    {
+                        success = true,
+                        //message = "Thanh toán thành công",
+                        orderCode = order.OrderCode,
+                        amount = formattedAmount2,
+                        createDate = existingTransaction.PaymentDate,
+                        serialNumber = paymentHistory.SerieNumber
+                    });
+
+
                 }
 
                 return Redirect("https://minhlong.mlhr.org/api/Payment/payment-fail");
