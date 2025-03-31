@@ -1,5 +1,6 @@
 ﻿using BusinessObject.DTO.PaymentDTO;
 using BusinessObject.Models;
+using MailKit.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -196,13 +197,18 @@ namespace MLHR.Controllers
         [HttpGet("payment-fail")]
         public IActionResult PaymentFail()
         {
-
-            return Content($@"
+            /*return Content($@"
             <html><head><meta charset='UTF-8'><title>Thất bại</title></head>
             <body style='text-align:center;font-family:sans-serif'>
             <h1 style='color:red'>BẠN ĐÃ THANH TOÁN THẤT BẠI</h1>
             <p>Giao dịch không thành công hoặc dữ liệu phản hồi không hợp lệ.</p>
-            <p>Xin vui lòng thử lại hoặc liên hệ hỗ trợ.</p></body></html>", "text/html");
+            <p>Xin vui lòng thử lại hoặc liên hệ hỗ trợ.</p></body></html>", "text/html");*/
+
+            return new JsonResult(new
+            {
+                success = false,
+                message = "Thanh Toan That Bai",
+            });
         }
 
         [HttpGet("test-ping")]
