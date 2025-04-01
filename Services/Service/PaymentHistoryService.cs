@@ -46,7 +46,8 @@ namespace Services.Service
                 RemainingDebtAmount = payment.RemainingDebtAmount,
                 PaymentAmount = payment.PaymentAmount,
                 CreatedAt = payment.CreatedAt,
-                UpdatedAt = payment.UpdatedAt
+                UpdatedAt = payment.UpdatedAt,
+                TransactionReference = payment.PaymentTransactions?.FirstOrDefault()?.TransactionReference ?? "N/A" // 👈 Lấy TransactionReference
             };
         }
 
@@ -70,7 +71,8 @@ namespace Services.Service
                 RemainingDebtAmount = ph.RemainingDebtAmount,
                 PaymentAmount = ph.PaymentAmount,
                 CreatedAt = ph.CreatedAt,
-                UpdatedAt = ph.UpdatedAt
+                UpdatedAt = ph.UpdatedAt,
+                TransactionReference = ph.PaymentTransactions?.FirstOrDefault()?.TransactionReference ?? "N/A"
             }).ToList();
         }
 
@@ -93,7 +95,8 @@ namespace Services.Service
                 RemainingDebtAmount = ph.RemainingDebtAmount,
                 PaymentAmount = ph.PaymentAmount,
                 CreatedAt = ph.CreatedAt,
-                UpdatedAt = ph.UpdatedAt
+                UpdatedAt = ph.UpdatedAt,
+                TransactionReference = ph.PaymentTransactions?.FirstOrDefault()?.TransactionReference ?? "N/A"
             }).ToList();
         }
 

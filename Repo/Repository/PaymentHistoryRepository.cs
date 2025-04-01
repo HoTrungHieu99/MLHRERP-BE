@@ -25,6 +25,7 @@ namespace Repo.Repository
                 .Include(ph => ph.Order)
                     .ThenInclude(o => o.RequestProduct)
                         .ThenInclude(rp => rp.AgencyAccount)
+                        .Include(ph => ph.PaymentTransactions)
                 .FirstOrDefaultAsync(ph => ph.PaymentHistoryId == id);
         }
 
@@ -35,6 +36,7 @@ namespace Repo.Repository
                 .Include(ph => ph.Order)
                     .ThenInclude(o => o.RequestProduct)
                         .ThenInclude(rp => rp.AgencyAccount)
+                        .Include(ph => ph.PaymentTransactions)
                 .ToListAsync();
         }
 
@@ -44,6 +46,7 @@ namespace Repo.Repository
                 .Include(ph => ph.Order)
                     .ThenInclude(o => o.RequestProduct)
                         .ThenInclude(rp => rp.AgencyAccount)
+                        .Include(ph => ph.PaymentTransactions)
                 .Where(ph => ph.UserId == userId)
                 .ToListAsync();
         }
