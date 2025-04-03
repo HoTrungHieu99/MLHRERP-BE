@@ -30,6 +30,9 @@ namespace BusinessObject.Models
         [ForeignKey("WarehouseId")]
         public Warehouse Warehouse { get; set; }
 
+        [ForeignKey("WarehouseTransferRequest")]
+        public long? WarehouseTransferRequestId { get; set; }
+        public WarehouseTransferRequest? WarehouseTransferRequest { get; set; }
         public ICollection<ExportTransactionDetail> ExportTransactionDetail { get; set; }
     }
 }

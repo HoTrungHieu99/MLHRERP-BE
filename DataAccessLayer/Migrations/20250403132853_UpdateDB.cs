@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class UpdateDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -28,7 +28,7 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "OTPEmail",
+                name: "OTPEmails",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -40,7 +40,7 @@ namespace DataAccessLayer.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OTPEmail", x => x.Id);
+                    table.PrimaryKey("PK_OTPEmails", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -817,80 +817,6 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ExportTransaction",
-                columns: table => new
-                {
-                    ExportTransactionId = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    DocumentNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DocumentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    WarehouseId = table.Column<long>(type: "bigint", nullable: false),
-                    ExportType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ExportDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RequestExportId = table.Column<int>(type: "int", nullable: false),
-                    AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OrderCode = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ExportTransaction", x => x.ExportTransactionId);
-                    table.ForeignKey(
-                        name: "FK_ExportTransaction_RequestExport_RequestExportId",
-                        column: x => x.RequestExportId,
-                        principalTable: "RequestExport",
-                        principalColumn: "RequestExportId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ExportTransaction_Warehouse_WarehouseId",
-                        column: x => x.WarehouseId,
-                        principalTable: "Warehouse",
-                        principalColumn: "WarehouseId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ExportWarehouseReceipt",
-                columns: table => new
-                {
-                    ExportWarehouseReceiptId = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    DocumentNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DocumentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExportDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExportType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TotalQuantity = table.Column<int>(type: "int", nullable: false),
-                    TotalAmount = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
-                    RequestExportId = table.Column<int>(type: "int", nullable: false),
-                    AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OrderCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    WarehouseId = table.Column<long>(type: "bigint", nullable: false),
-                    ProductId = table.Column<long>(type: "bigint", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ExportWarehouseReceipt", x => x.ExportWarehouseReceiptId);
-                    table.ForeignKey(
-                        name: "FK_ExportWarehouseReceipt_Product_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Product",
-                        principalColumn: "ProductId");
-                    table.ForeignKey(
-                        name: "FK_ExportWarehouseReceipt_RequestExport_RequestExportId",
-                        column: x => x.RequestExportId,
-                        principalTable: "RequestExport",
-                        principalColumn: "RequestExportId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ExportWarehouseReceipt_Warehouse_WarehouseId",
-                        column: x => x.WarehouseId,
-                        principalTable: "Warehouse",
-                        principalColumn: "WarehouseId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "RequestExportDetail",
                 columns: table => new
                 {
@@ -961,6 +887,64 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WarehouseTransferRequest",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RequestCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    SourceWarehouseId = table.Column<long>(type: "bigint", nullable: true),
+                    DestinationWarehouseId = table.Column<long>(type: "bigint", nullable: false),
+                    RequestDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpectedDeliveryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RequestedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ApprovedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    PlannedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    RequestExportId = table.Column<int>(type: "int", nullable: false),
+                    OrderCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WarehouseTransferRequest", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WarehouseTransferRequest_RequestExport_RequestExportId",
+                        column: x => x.RequestExportId,
+                        principalTable: "RequestExport",
+                        principalColumn: "RequestExportId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_WarehouseTransferRequest_User_ApprovedBy",
+                        column: x => x.ApprovedBy,
+                        principalTable: "User",
+                        principalColumn: "UserId");
+                    table.ForeignKey(
+                        name: "FK_WarehouseTransferRequest_User_PlannedBy",
+                        column: x => x.PlannedBy,
+                        principalTable: "User",
+                        principalColumn: "UserId");
+                    table.ForeignKey(
+                        name: "FK_WarehouseTransferRequest_User_RequestedBy",
+                        column: x => x.RequestedBy,
+                        principalTable: "User",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_WarehouseTransferRequest_Warehouse_DestinationWarehouseId",
+                        column: x => x.DestinationWarehouseId,
+                        principalTable: "Warehouse",
+                        principalColumn: "WarehouseId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_WarehouseTransferRequest_Warehouse_SourceWarehouseId",
+                        column: x => x.SourceWarehouseId,
+                        principalTable: "Warehouse",
+                        principalColumn: "WarehouseId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "WarehouseProduct",
                 columns: table => new
                 {
@@ -992,6 +976,158 @@ namespace DataAccessLayer.Migrations
                         column: x => x.WarehouseId,
                         principalTable: "Warehouse",
                         principalColumn: "WarehouseId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ExportTransaction",
+                columns: table => new
+                {
+                    ExportTransactionId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DocumentNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DocumentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    WarehouseId = table.Column<long>(type: "bigint", nullable: false),
+                    ExportType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ExportDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RequestExportId = table.Column<int>(type: "int", nullable: false),
+                    AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OrderCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    WarehouseTransferRequestId = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExportTransaction", x => x.ExportTransactionId);
+                    table.ForeignKey(
+                        name: "FK_ExportTransaction_RequestExport_RequestExportId",
+                        column: x => x.RequestExportId,
+                        principalTable: "RequestExport",
+                        principalColumn: "RequestExportId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ExportTransaction_WarehouseTransferRequest_WarehouseTransferRequestId",
+                        column: x => x.WarehouseTransferRequestId,
+                        principalTable: "WarehouseTransferRequest",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ExportTransaction_Warehouse_WarehouseId",
+                        column: x => x.WarehouseId,
+                        principalTable: "Warehouse",
+                        principalColumn: "WarehouseId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ExportWarehouseReceipt",
+                columns: table => new
+                {
+                    ExportWarehouseReceiptId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    DocumentNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DocumentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExportDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExportType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TotalQuantity = table.Column<int>(type: "int", nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
+                    RequestExportId = table.Column<int>(type: "int", nullable: false),
+                    AgencyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OrderCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    WarehouseId = table.Column<long>(type: "bigint", nullable: false),
+                    WarehouseTransferRequestId = table.Column<long>(type: "bigint", nullable: true),
+                    ProductId = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExportWarehouseReceipt", x => x.ExportWarehouseReceiptId);
+                    table.ForeignKey(
+                        name: "FK_ExportWarehouseReceipt_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "ProductId");
+                    table.ForeignKey(
+                        name: "FK_ExportWarehouseReceipt_RequestExport_RequestExportId",
+                        column: x => x.RequestExportId,
+                        principalTable: "RequestExport",
+                        principalColumn: "RequestExportId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ExportWarehouseReceipt_WarehouseTransferRequest_WarehouseTransferRequestId",
+                        column: x => x.WarehouseTransferRequestId,
+                        principalTable: "WarehouseTransferRequest",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ExportWarehouseReceipt_Warehouse_WarehouseId",
+                        column: x => x.WarehouseId,
+                        principalTable: "Warehouse",
+                        principalColumn: "WarehouseId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WarehouseTransferProduct",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    WarehouseTransferRequestId = table.Column<long>(type: "bigint", nullable: false),
+                    ProductId = table.Column<long>(type: "bigint", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    Unit = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WarehouseTransferProduct", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WarehouseTransferProduct_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "ProductId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_WarehouseTransferProduct_WarehouseTransferRequest_WarehouseTransferRequestId",
+                        column: x => x.WarehouseTransferRequestId,
+                        principalTable: "WarehouseTransferRequest",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ExportTransactionDetail",
+                columns: table => new
+                {
+                    ExportTransactionDetailId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ExportTransactionId = table.Column<long>(type: "bigint", nullable: false),
+                    WarehouseProductId = table.Column<long>(type: "bigint", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
+                    TotalProductAmount = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ProductId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExportTransactionDetail", x => x.ExportTransactionDetailId);
+                    table.ForeignKey(
+                        name: "FK_ExportTransactionDetail_ExportTransaction_ExportTransactionId",
+                        column: x => x.ExportTransactionId,
+                        principalTable: "ExportTransaction",
+                        principalColumn: "ExportTransactionId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ExportTransactionDetail_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
+                        principalColumn: "ProductId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ExportTransactionDetail_WarehouseProduct_WarehouseProductId",
+                        column: x => x.WarehouseProductId,
+                        principalTable: "WarehouseProduct",
+                        principalColumn: "WarehouseProductId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -1031,43 +1167,6 @@ namespace DataAccessLayer.Migrations
                         column: x => x.WarehouseId,
                         principalTable: "Warehouse",
                         principalColumn: "WarehouseId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ExportTransactionDetail",
-                columns: table => new
-                {
-                    ExportTransactionDetailId = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ExportTransactionId = table.Column<long>(type: "bigint", nullable: false),
-                    WarehouseProductId = table.Column<long>(type: "bigint", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
-                    TotalProductAmount = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
-                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ProductId = table.Column<long>(type: "bigint", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ExportTransactionDetail", x => x.ExportTransactionDetailId);
-                    table.ForeignKey(
-                        name: "FK_ExportTransactionDetail_ExportTransaction_ExportTransactionId",
-                        column: x => x.ExportTransactionId,
-                        principalTable: "ExportTransaction",
-                        principalColumn: "ExportTransactionId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ExportTransactionDetail_Product_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Product",
-                        principalColumn: "ProductId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ExportTransactionDetail_WarehouseProduct_WarehouseProductId",
-                        column: x => x.WarehouseProductId,
-                        principalTable: "WarehouseProduct",
-                        principalColumn: "WarehouseProductId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -1183,6 +1282,11 @@ namespace DataAccessLayer.Migrations
                 column: "WarehouseId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ExportTransaction_WarehouseTransferRequestId",
+                table: "ExportTransaction",
+                column: "WarehouseTransferRequestId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ExportTransactionDetail_ExportTransactionId",
                 table: "ExportTransactionDetail",
                 column: "ExportTransactionId");
@@ -1211,6 +1315,11 @@ namespace DataAccessLayer.Migrations
                 name: "IX_ExportWarehouseReceipt_WarehouseId",
                 table: "ExportWarehouseReceipt",
                 column: "WarehouseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExportWarehouseReceipt_WarehouseTransferRequestId",
+                table: "ExportWarehouseReceipt",
+                column: "WarehouseTransferRequestId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ExportWarehouseReceiptDetail_ExportWarehouseReceiptId",
@@ -1451,6 +1560,46 @@ namespace DataAccessLayer.Migrations
                 name: "IX_WarehouseRequestExport_WarehouseId",
                 table: "WarehouseRequestExport",
                 column: "WarehouseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WarehouseTransferProduct_ProductId",
+                table: "WarehouseTransferProduct",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WarehouseTransferProduct_WarehouseTransferRequestId",
+                table: "WarehouseTransferProduct",
+                column: "WarehouseTransferRequestId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WarehouseTransferRequest_ApprovedBy",
+                table: "WarehouseTransferRequest",
+                column: "ApprovedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WarehouseTransferRequest_DestinationWarehouseId",
+                table: "WarehouseTransferRequest",
+                column: "DestinationWarehouseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WarehouseTransferRequest_PlannedBy",
+                table: "WarehouseTransferRequest",
+                column: "PlannedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WarehouseTransferRequest_RequestedBy",
+                table: "WarehouseTransferRequest",
+                column: "RequestedBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WarehouseTransferRequest_RequestExportId",
+                table: "WarehouseTransferRequest",
+                column: "RequestExportId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WarehouseTransferRequest_SourceWarehouseId",
+                table: "WarehouseTransferRequest",
+                column: "SourceWarehouseId");
         }
 
         /// <inheritdoc />
@@ -1472,7 +1621,7 @@ namespace DataAccessLayer.Migrations
                 name: "OrderDetail");
 
             migrationBuilder.DropTable(
-                name: "OTPEmail");
+                name: "OTPEmails");
 
             migrationBuilder.DropTable(
                 name: "PaymentTransaction");
@@ -1502,6 +1651,9 @@ namespace DataAccessLayer.Migrations
                 name: "WarehouseRequestExport");
 
             migrationBuilder.DropTable(
+                name: "WarehouseTransferProduct");
+
+            migrationBuilder.DropTable(
                 name: "AgencyLevel");
 
             migrationBuilder.DropTable(
@@ -1526,7 +1678,7 @@ namespace DataAccessLayer.Migrations
                 name: "Batch");
 
             migrationBuilder.DropTable(
-                name: "RequestExport");
+                name: "WarehouseTransferRequest");
 
             migrationBuilder.DropTable(
                 name: "ImportTransactionDetail");
@@ -1535,7 +1687,7 @@ namespace DataAccessLayer.Migrations
                 name: "Product");
 
             migrationBuilder.DropTable(
-                name: "Order");
+                name: "RequestExport");
 
             migrationBuilder.DropTable(
                 name: "ImportTransaction");
@@ -1547,10 +1699,13 @@ namespace DataAccessLayer.Migrations
                 name: "TaxConfig");
 
             migrationBuilder.DropTable(
-                name: "RequestProduct");
+                name: "Order");
 
             migrationBuilder.DropTable(
                 name: "Warehouse");
+
+            migrationBuilder.DropTable(
+                name: "RequestProduct");
 
             migrationBuilder.DropTable(
                 name: "AgencyAccount");

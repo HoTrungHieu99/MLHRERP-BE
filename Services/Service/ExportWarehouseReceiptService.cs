@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO.Warehouse;
+﻿using BusinessObject.DTO.RequestExport;
+using BusinessObject.DTO.Warehouse;
 using BusinessObject.Models;
 using DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
@@ -15,12 +16,14 @@ namespace Services.Service
     public class ExportWarehouseReceiptService : IExportWarehouseReceiptService
     {
         private readonly IExportWarehouseReceiptRepository _repository;
+        private readonly IWarehouseTransferRepository _transferRequestRepo;
         private readonly MinhLongDbContext _context;
 
-        public ExportWarehouseReceiptService(IExportWarehouseReceiptRepository repository, MinhLongDbContext context)
+        public ExportWarehouseReceiptService(IExportWarehouseReceiptRepository repository,  MinhLongDbContext context, IWarehouseTransferRepository transferRequestRepo)
         {
             _repository = repository;
             _context = context;
+            _transferRequestRepo = transferRequestRepo;
         }
 
         public async Task<ExportWarehouseReceipt> CreateReceiptAsync(ExportWarehouseReceiptDTO dto)
@@ -125,41 +128,44 @@ namespace Services.Service
                 }
             }
 
-            // ✅ Gộp số lượng xuất theo ProductId
+            // Gộp số lượng xuất theo ProductId
             var groupedExportDetails = receipt.ExportWarehouseReceiptDetails
                 .GroupBy(d => d.ProductId)
                 .ToDictionary(g => g.Key, g => g.Sum(d => d.Quantity));
 
-            // ✅ Cập nhật WarehouseRequestExport
-            var requestExports = await _context.WarehouseRequestExports
-                .Where(x => x.RequestExportId == receipt.RequestExportId && x.WarehouseId == receipt.WarehouseId)
-                .ToListAsync();
-
-            foreach (var wr in requestExports)
+            // Nếu là xuất bán → cập nhật WarehouseRequestExport
+            if (receipt.ExportType == "Xuất Bán")
             {
-                if (groupedExportDetails.TryGetValue(wr.ProductId, out int approvedQty))
+                var requestExports = await _context.WarehouseRequestExports
+                    .Where(x => x.RequestExportId == receipt.RequestExportId && x.WarehouseId == receipt.WarehouseId)
+                    .ToListAsync();
+
+                foreach (var wr in requestExports)
                 {
-                    wr.QuantityApproved = approvedQty;
-                    wr.RemainingQuantity = wr.QuantityRequested - approvedQty;
-                    wr.Status = "APPROVED";
-                    wr.ApprovedBy = approvedBy;
+                    if (groupedExportDetails.TryGetValue(wr.ProductId, out int approvedQty))
+                    {
+                        wr.QuantityApproved = approvedQty;
+                        wr.RemainingQuantity = wr.QuantityRequested - approvedQty;
+                        wr.Status = "APPROVED";
+                        wr.ApprovedBy = approvedBy;
+                    }
+                }
+
+                _context.WarehouseRequestExports.UpdateRange(requestExports);
+
+                // Cập nhật trạng thái RequestExport
+                var totalRemaining = requestExports.Sum(x => x.RemainingQuantity);
+                var requestExport = await _context.RequestExports
+                    .FirstOrDefaultAsync(x => x.RequestExportId == receipt.RequestExportId);
+
+                if (requestExport != null)
+                {
+                    requestExport.Status = totalRemaining == 0 ? "Approved" : "Partially_Exported";
+                    _context.RequestExports.Update(requestExport);
                 }
             }
 
-            _context.WarehouseRequestExports.UpdateRange(requestExports);
-
-            // ✅ Cập nhật trạng thái cho RequestExport
-            var totalRemaining = requestExports.Sum(x => x.RemainingQuantity);
-            var requestExport = await _context.RequestExports
-                .FirstOrDefaultAsync(x => x.RequestExportId == receipt.RequestExportId);
-
-            if (requestExport != null)
-            {
-                requestExport.Status = totalRemaining == 0 ? "Approved" : "Partially_Exported";
-                _context.RequestExports.Update(requestExport);
-            }
-
-            // ✅ Ghi lại giao dịch
+            // Ghi lại ExportTransaction
             var exportTransaction = new ExportTransaction
             {
                 DocumentNumber = receipt.DocumentNumber,
@@ -169,8 +175,8 @@ namespace Services.Service
                 WarehouseId = receipt.WarehouseId,
                 Note = "Approved Export",
                 RequestExportId = receipt.RequestExportId,
-                OrderCode = receipt.RequestExport.Order.OrderCode,
-                AgencyName = receipt.RequestExport.Order.RequestProduct.AgencyAccount.AgencyName,
+                OrderCode = receipt.OrderCode, // vẫn có thể dùng nếu bạn muốn lưu cho trace
+                AgencyName = receipt.ExportType == "Xuất Bán" ? receipt.RequestExport.Order?.RequestProduct?.AgencyAccount?.AgencyName : null,
                 ExportTransactionDetail = receipt.ExportWarehouseReceiptDetails.Select(d => new ExportTransactionDetail
                 {
                     WarehouseProductId = d.WarehouseProductId,
@@ -294,6 +300,87 @@ namespace Services.Service
         public async Task<bool> UpdateExportReceiptAsync(UpdateExportWarehouseReceiptFullDto dto)
         {
             return await _repository.UpdateFullAsync(dto);
+        }
+
+        public async Task<ExportWarehouseReceipt> CreateReceiptFromTransferAsync(ExportWarehouseTransferDTO dto, Guid userId)
+        {
+            var transferRequest = await _context.WarehouseTransferRequests
+                .Include(r => r.TransferProducts)
+                .FirstOrDefaultAsync(r => r.Id == dto.WarehouseTransferRequestId);
+
+            if (transferRequest == null)
+                throw new Exception("Không tìm thấy yêu cầu điều phối.");
+
+            if (!transferRequest.TransferProducts.Any())
+                throw new Exception("Yêu cầu điều phối không có sản phẩm.");
+
+            // ✅ Tạo phiếu xuất
+            var receipt = new ExportWarehouseReceipt
+            {
+                DocumentNumber = $"EXP-TRANS-{DateTime.Now:yyyyMMddHHmmss}",
+                DocumentDate = DateTime.Now,
+                ExportDate = dto.ExportDate,
+                ExportType = "Xuất Điều Phối",
+                WarehouseId = dto.SourceWarehouseId,
+                RequestExportId = transferRequest.RequestExportId,
+                OrderCode = transferRequest.OrderCode,
+                AgencyName = null,
+                Status = "Pending",
+                ExportWarehouseReceiptDetails = new List<ExportWarehouseReceiptDetail>(),
+                TotalQuantity = 0,
+                TotalAmount = 0,
+                WarehouseTransferRequestId = dto.WarehouseTransferRequestId
+            };
+
+            int totalQty = 0;
+            decimal totalAmount = 0;
+
+            foreach (var item in transferRequest.TransferProducts)
+            {
+                var wp = await _context.WarehouseProduct
+                    .Include(p => p.Product)
+                    .Include(p => p.Batch)
+                    .FirstOrDefaultAsync(w => w.ProductId == item.ProductId &&
+                                              w.WarehouseId == dto.SourceWarehouseId &&
+                                              w.Quantity >= item.Quantity);
+
+                if (wp == null)
+                    throw new Exception($"Không đủ tồn kho cho sản phẩm ID: {item.ProductId}");
+
+                var unitPrice = wp.Batch?.SellingPrice ?? 0;
+                var amount = unitPrice * item.Quantity;
+
+                receipt.ExportWarehouseReceiptDetails.Add(new ExportWarehouseReceiptDetail
+                {
+                    WarehouseProductId = wp.WarehouseProductId,
+                    ProductId = item.ProductId,
+                    ProductName = wp.Product.ProductName,
+                    BatchNumber = wp.Batch.BatchCode,
+                    Quantity = item.Quantity,
+                    UnitPrice = unitPrice,
+                    TotalProductAmount = amount,
+                    ExpiryDate = wp.Batch.ExpiryDate
+                });
+
+                totalQty += item.Quantity;
+                totalAmount += amount;
+            }
+
+            receipt.TotalQuantity = totalQty;
+            receipt.TotalAmount = totalAmount;
+
+            // ✅ Lưu phiếu xuất
+            await _repository.AddExportReceiptAsync(receipt);
+
+            transferRequest.Status = "Approved";
+            transferRequest.ApprovedBy = userId;
+            await _transferRequestRepo.UpdateAsync(transferRequest);
+
+
+            // ✅ Duyệt luôn phiếu
+            await ApproveReceiptAsync(receipt.ExportWarehouseReceiptId, userId);
+
+            return receipt;
         }
     }
 

@@ -144,9 +144,9 @@ namespace Services.Service
                     throw new ArgumentException("Position must be 'STAFF' or 'MANAGER' for EMPLOYEE.");
                 }
                 if (string.IsNullOrWhiteSpace(request.Department) ||
-                    (request.Department.ToUpper() != "WAREHOUSE MANAGER" && request.Department.ToUpper() != "SALES MANAGER" && request.Department.ToUpper() != "ACCOUNTANT MANAGER"))
+                    (request.Department.ToUpper() != "WAREHOUSE MANAGER" && request.Department.ToUpper() != "SALES MANAGER" && request.Department.ToUpper() != "ACCOUNTANT MANAGER" && request.Department.ToUpper() != "WAREHOUSE PLANNER"))
                 {
-                    throw new ArgumentException("Department must be 'WAREHOUSE MANAGER' or 'SALES MANAGER' or 'ACCOUNTANT MANAGER' for EMPLOYEE.");
+                    throw new ArgumentException("Department must be 'WAREHOUSE MANAGER' or 'SALES MANAGER' or 'ACCOUNTANT MANAGER' or 'WAREHOUSE PLANNER' for EMPLOYEE.");
                 }
 
                 // ✅ Nếu là Employee thì AgencyName có thể null
@@ -573,6 +573,9 @@ namespace Services.Service
                     break;
                 case 5:
                     employee.Department = "ACCOUNTANT MANAGER";
+                    break;
+                case 6:
+                    employee.Department = "WAREHOUSE PLANNER";
                     break;
             }
 

@@ -185,6 +185,39 @@ namespace Repo.Repository
                 .ToListAsync();
         }
 
+        public async Task<WarehouseTransferRequest?> GetTransferRequestWithExportDetailsAsync(long transferRequestId)
+        {
+            return await _context.WarehouseTransferRequests
+                .Include(r => r.TransferProducts)
+                .Include(r => r.ExportWarehouseReceipts)
+                    .ThenInclude(e => e.ExportWarehouseReceiptDetails)
+                .FirstOrDefaultAsync(r => r.Id == transferRequestId);
+        }
+
+        public async Task<Guid?> GetUserIdOfWarehouseAsync(long warehouseId)
+        {
+            return await _context.Warehouses
+                .Where(w => w.WarehouseId == warehouseId)
+                .Select(w => w.UserId)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<WarehouseReceipt> CreateReceiptAsync(WarehouseReceipt receipt)
+        {
+            _context.WarehouseReceipts.Add(receipt);
+            await _context.SaveChangesAsync();
+            return receipt;
+        }
+
+        public async Task<ExportWarehouseReceipt?> GetApprovedExportReceiptByTransferIdAsync(long transferRequestId)
+        {
+            return await _context.ExportWarehouseReceipts
+                .Include(e => e.ExportWarehouseReceiptDetails)
+                .FirstOrDefaultAsync(r =>
+                    r.WarehouseTransferRequestId == transferRequestId &&
+                    r.Status == "Approved");
+        }
+
     }
 
 }

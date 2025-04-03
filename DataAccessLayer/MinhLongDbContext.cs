@@ -82,6 +82,9 @@ namespace DataAccessLayer
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<OTPEmail> OTPEmails { get; set; }
 
+        public DbSet<WarehouseTransferRequest> WarehouseTransferRequests { get; set; }
+        public DbSet<WarehouseTransferProduct> WarehouseTransferProducts { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // 🏷️ **Định danh bảng**
@@ -122,7 +125,8 @@ namespace DataAccessLayer
             modelBuilder.Entity<RequestExportDetail>().ToTable("RequestExportDetail");
             modelBuilder.Entity<WarehouseRequestExport>().ToTable("WarehouseRequestExport");
             modelBuilder.Entity<OrderDetail>().ToTable("OrderDetail");
-            modelBuilder.Entity<OTPEmail>().ToTable("OTPEmail");
+            modelBuilder.Entity<WarehouseTransferRequest>().ToTable("WarehouseTransferRequest");
+            modelBuilder.Entity<WarehouseTransferProduct>().ToTable("WarehouseTransferProduct");
 
 
             // 🔥 **Cấu hình quan hệ**
@@ -182,6 +186,8 @@ namespace DataAccessLayer
             modelBuilder.Entity<OTPEmail>().Property(wr => wr.Id).ValueGeneratedOnAdd();
             modelBuilder.Entity<PaymentHistory>().Property(ph => ph.PaymentHistoryId).HasDefaultValueSql("NEWID()");
             modelBuilder.Entity<PaymentTransaction>().Property(pt => pt.TransactionId).HasDefaultValueSql("NEWID()");
+            modelBuilder.Entity<WarehouseTransferRequest>().Property(wr => wr.Id).ValueGeneratedOnAdd();
+            modelBuilder.Entity<WarehouseTransferProduct>().Property(wr => wr.Id).ValueGeneratedOnAdd();
 
 
             // 🔥 **Cấu hình quan hệ nhiều - nhiều**
@@ -683,6 +689,18 @@ namespace DataAccessLayer
                 .WithMany()
                 .HasForeignKey(p => p.PrePaymentId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<WarehouseTransferRequest>()
+                .HasOne(w => w.SourceWarehouse)
+                .WithMany()
+                .HasForeignKey(w => w.SourceWarehouseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<WarehouseTransferRequest>()
+                .HasOne(w => w.DestinationWarehouse)
+                .WithMany()
+                .HasForeignKey(w => w.DestinationWarehouseId)
+                .OnDelete(DeleteBehavior.Restrict);
 
         }
     }

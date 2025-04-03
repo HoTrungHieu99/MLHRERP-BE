@@ -137,5 +137,10 @@ namespace Services.Service
         {
             return await _warehouseRepo.GetProductByIdAsync(warehouseProductId);
         }
+
+        public async Task<List<WarehouseProductSummaryDto>> GetProductSummariesByWarehouseIdAsync(long warehouseId)
+        {
+            return await _warehouseRepo.GetProductSummariesByWarehouseIdAsync(warehouseId);
+        }
     }
 }

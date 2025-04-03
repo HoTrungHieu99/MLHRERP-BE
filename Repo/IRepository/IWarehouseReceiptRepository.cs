@@ -15,5 +15,11 @@ namespace Repo.IRepository
         Task<bool> ApproveAsync(long id, Guid currentUserId);
 
         Task<List<WarehouseReceipt>> GetWarehouseReceiptDTOIdAsync(long Id);
+
+        Task<WarehouseTransferRequest?> GetTransferRequestWithExportDetailsAsync(long transferRequestId);
+        Task<Guid?> GetUserIdOfWarehouseAsync(long warehouseId);
+        Task<WarehouseReceipt> CreateReceiptAsync(WarehouseReceipt receipt);
+        Task<ExportWarehouseReceipt?> GetApprovedExportReceiptByTransferIdAsync(long transferRequestId);
+
     }
 }

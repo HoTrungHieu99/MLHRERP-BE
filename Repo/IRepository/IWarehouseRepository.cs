@@ -22,5 +22,8 @@ namespace Repo.IRepository
 
         Task<WarehouseProductDto> GetProductByIdAsync(long warehouseProductId);
         Task<Guid> GetUserIdByWarehouseIdAsync(long warehouseId);
+
+        Task<List<WarehouseProductSummaryDto>> GetProductSummariesByWarehouseIdAsync(long warehouseId);
+
     }
 }

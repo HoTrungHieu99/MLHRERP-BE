@@ -1,4 +1,6 @@
-﻿using BusinessObject.DTO.Warehouse;
+﻿using BusinessObject.DTO.RequestExport;
+using System.Security.Claims;
+using BusinessObject.DTO.Warehouse;
 using BusinessObject.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -108,6 +110,26 @@ namespace MLHR.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("from-transfer")]
+        [Authorize(Roles = "3")]
+        public async Task<IActionResult> CreateFromTransfer([FromBody] ExportWarehouseTransferDTO dto)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+                    return Unauthorized("Invalid or missing user ID");
+
+                var receipt = await _service.CreateReceiptFromTransferAsync(dto, userId);
+
+                return Ok(receipt);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Internal Server Error", detail = ex.Message });
             }
         }
     }

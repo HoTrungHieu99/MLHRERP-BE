@@ -91,5 +91,21 @@ namespace MLHR.Controllers
                 return NotFound(new { message = ex.Message });
             }
         }
+
+
+        [HttpPost("from-transfer")]
+        public async Task<IActionResult> CreateFromTransfer([FromBody] WarehouseReceiptFromTransferDto dto)
+        {
+            try
+            {
+                var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+                var result = await _service.CreateReceiptFromTransferAsync(dto.WarehouseTransferRequestId, userId);
+                return Ok(new { success = true, message = "Tạo phiếu nhập từ điều phối thành công!", data = result });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
     }
 }

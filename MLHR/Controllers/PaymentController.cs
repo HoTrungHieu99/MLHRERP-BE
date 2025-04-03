@@ -144,7 +144,7 @@ namespace MLHR.Controllers
                <p>Số tiền Thanh Toán: {formattedAmount}</p>
                <p>Cảm ơn bạn đã thanh toán!</p></body></html>", "text/html");*/
 
-                    string formattedAmount = $"{amount:N0} VND";
+                    /*string formattedAmount = $"{amount:N0} VND";
                     string html = $@"
                     <html><head><meta charset='UTF-8'><title>Thanh toán thành công</title></head>
                     <body style='text-align:center;font-family:sans-serif; padding: 40px'>
@@ -158,7 +158,36 @@ namespace MLHR.Controllers
                         <p style='color:gray;'>Cảm ơn bạn đã sử dụng dịch vụ!</p>
                         </body></html>";
 
+                    return Content(html, "text/html");*/
+
+
+                    string formattedAmount = $"{amount:N0} VND";
+                    string html = $@"
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <title>Thanh toán thành công</title>
+</head>
+<body style='text-align:center;font-family:sans-serif; padding: 40px'>
+    <h1 style='color:green'>✅ BẠN ĐÃ THANH TOÁN THÀNH CÔNG</h1>
+    <p><strong>Success:</strong> true</p>
+    <p><strong>Mã đơn hàng (orderCode):</strong> {order.OrderCode}</p>
+    <p><strong>Số tiền (amount):</strong> {formattedAmount}</p>
+    <p><strong>Ngày thanh toán (createDate):</strong> {existingTransaction.PaymentDate:dd/MM/yyyy HH:mm:ss}</p>
+    <p><strong>Số serial (serialNumber):</strong> {paymentHistory?.SerieNumber ?? "N/A"}</p>
+    <hr />
+    <p style='color:gray;'>Cảm ơn bạn đã sử dụng dịch vụ!</p>
+
+    <button onclick='window.location.href=""https://clone-ui-user.vercel.app/""' 
+        style='margin-top:20px;padding:10px 20px;font-size:16px;border:none;
+               background-color:#007BFF;color:white;border-radius:5px;cursor:pointer;'>
+        Quay về trang chủ
+    </button>
+</body>
+</html>";
+
                     return Content(html, "text/html");
+
                 }
 
                 // 🔹 B4. Chuẩn bị dữ liệu xác nhận
@@ -177,7 +206,7 @@ namespace MLHR.Controllers
 
                 if (result != null && result.code == "00")
                 {
-                    string html = $@"
+                    /*string html = $@"
                     <html><head><meta charset='UTF-8'><title>Thanh toán thành công</title></head>
                     <body style='text-align:center;font-family:sans-serif; padding: 40px'>
                     <h1 style='color:green'>✅ BẠN ĐÃ THANH TOÁN THÀNH CÔNG</h1>
@@ -190,28 +219,33 @@ namespace MLHR.Controllers
                         <p style='color:gray;'>Cảm ơn bạn đã sử dụng dịch vụ!</p>
                         </body></html>";
 
+                    return Content(html, "text/html");*/
+
+                    string html = $@"
+                    <html>
+                    <head>
+                    <meta charset='UTF-8'>
+                    <title>Thanh toán thành công</title>
+                    </head>
+                    <body style='text-align:center;font-family:sans-serif; padding: 40px'>
+                    <h1 style='color:green'>✅ BẠN ĐÃ THANH TOÁN THÀNH CÔNG</h1>
+                    <p><strong>Success:</strong> true</p>
+                    <p><strong>Mã đơn hàng (orderCode):</strong> {order.OrderCode}</p>
+                    <p><strong>Số tiền (amount):</strong> {formattedAmount2}</p>
+                    <p><strong>Ngày thanh toán (createDate):</strong> {existingTransaction.PaymentDate:dd/MM/yyyy HH:mm:ss}</p>
+                    <p><strong>Số serial (serialNumber):</strong> {paymentHistory?.SerieNumber ?? "N/A"}</p>
+                    <hr />
+                    <p style='color:gray;'>Cảm ơn bạn đã sử dụng dịch vụ!</p>
+    
+                    <button onclick='window.location.href=""https://clone-ui-user.vercel.app/""' 
+                    style='margin-top:20px;padding:10px 20px;font-size:16px;border:none;
+                    background-color:#007BFF;color:white;border-radius:5px;cursor:pointer;'>
+                    Quay về trang chủ
+                    </button>
+                    </body>
+                    </html>";
+
                     return Content(html, "text/html");
-
-
-
-                    /*return Content($@"
-                <html><head><meta charset='UTF-8'><title>Thành công</title></head>
-                <body style='text-align:center;font-family:sans-serif'>
-                <h1 style='color:green'>BẠN ĐÃ THANH TOÁN THÀNH CÔNG ĐƠN HÀNG #{order.OrderCode}</h1>
-                <p>Số tiền Thanh Toán: {formattedAmount2}</p>
-                <p>Cảm ơn bạn đã thanh toán!</p></body></html>", "text/html");*/
-
-                    /*return new JsonResult(new
-                    {
-                        success = true,
-                        //message = "Thanh toán thành công",
-                        orderCode = order.OrderCode,
-                        amount = formattedAmount2,
-                        createDate = existingTransaction.PaymentDate,
-                        serialNumber = paymentHistory.SerieNumber
-                    });*/
-
-
 
                 }
 
@@ -236,18 +270,30 @@ namespace MLHR.Controllers
             <p>Giao dịch không thành công hoặc dữ liệu phản hồi không hợp lệ.</p>
             <p>Xin vui lòng thử lại hoặc liên hệ hỗ trợ.</p></body></html>", "text/html");*/
 
-            return new JsonResult(new
-            {
-                success = false,
-                message = "Thanh Toan That Bai",
-            });
+            return Content($@"
+                <html>
+                <head>
+                <meta charset='UTF-8'>
+                <title>Thất bại</title>
+                </head>
+                <body style='text-align:center;font-family:sans-serif'>
+                <h1 style='color:red'>BẠN ĐÃ THANH TOÁN THẤT BẠI</h1>
+                    <p>Giao dịch không thành công hoặc dữ liệu phản hồi không hợp lệ.</p>
+                    <p>Xin vui lòng thử lại hoặc liên hệ hỗ trợ.</p>
+                    <button onclick='window.location.href=""https://clone-ui-user.vercel.app/""' 
+                    style='margin-top:20px;padding:10px 20px;font-size:16px;border:none;background-color:#007BFF;color:white;border-radius:5px;cursor:pointer;'>
+                    Quay về trang chủ
+                    </button>
+                    </body>
+                    </html>", "text/html");
+
         }
 
-        [HttpGet("test-ping")]
+       /* [HttpGet("test-ping")]
         public IActionResult Ping()
         {
             return Ok("✅ GET thành công từ server!");
-        }
+        }*/
 
     }
 }

@@ -16,6 +16,9 @@ namespace Services.IService
 
 
         Task<WarehouseReceiptDTO?> GetWarehouseReceiptDTOIdAsync(long Id);
+
+        Task<WarehouseReceipt> CreateReceiptFromTransferAsync(long transferRequestId, Guid currentUserId);
+
     }
 
 }

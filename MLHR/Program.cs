@@ -146,6 +146,9 @@ builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IPaymentHistoryRepository, PaymentHistoryRepository>();
 builder.Services.AddScoped<IPaymentHistoryService, PaymentHistoryService>();
 
+builder.Services.AddScoped<IWarehouseTransferRepository, WarehouseTransferRepository>();
+builder.Services.AddScoped<IWarehouseTransferService, WarehouseTransferService>();
+
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddHttpContextAccessor();
 

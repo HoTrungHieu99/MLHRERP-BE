@@ -309,11 +309,16 @@ namespace DataAccessLayer.Migrations
                     b.Property<long>("WarehouseId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("WarehouseTransferRequestId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("ExportTransactionId");
 
                     b.HasIndex("RequestExportId");
 
                     b.HasIndex("WarehouseId");
+
+                    b.HasIndex("WarehouseTransferRequestId");
 
                     b.ToTable("ExportTransaction", (string)null);
                 });
@@ -408,6 +413,9 @@ namespace DataAccessLayer.Migrations
                     b.Property<long>("WarehouseId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("WarehouseTransferRequestId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("ExportWarehouseReceiptId");
 
                     b.HasIndex("ProductId");
@@ -415,6 +423,8 @@ namespace DataAccessLayer.Migrations
                     b.HasIndex("RequestExportId");
 
                     b.HasIndex("WarehouseId");
+
+                    b.HasIndex("WarehouseTransferRequestId");
 
                     b.ToTable("ExportWarehouseReceipt", (string)null);
                 });
@@ -585,7 +595,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("OTPEmail", (string)null);
+                    b.ToTable("OTPEmails");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.Order", b =>
@@ -1516,6 +1526,106 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("WarehouseRequestExport", (string)null);
                 });
 
+            modelBuilder.Entity("BusinessObject.Models.WarehouseTransferProduct", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Unit")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<long>("WarehouseTransferRequestId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("WarehouseTransferRequestId");
+
+                    b.ToTable("WarehouseTransferProduct", (string)null);
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.WarehouseTransferRequest", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<Guid?>("ApprovedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("DestinationWarehouseId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("ExpectedDeliveryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("OrderCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("PlannedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RequestCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RequestExportId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("RequestedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long?>("SourceWarehouseId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovedBy");
+
+                    b.HasIndex("DestinationWarehouseId");
+
+                    b.HasIndex("PlannedBy");
+
+                    b.HasIndex("RequestExportId");
+
+                    b.HasIndex("RequestedBy");
+
+                    b.HasIndex("SourceWarehouseId");
+
+                    b.ToTable("WarehouseTransferRequest", (string)null);
+                });
+
             modelBuilder.Entity("BusinessObject.Models.Address", b =>
                 {
                     b.HasOne("BusinessObject.Models.District", "District")
@@ -1644,9 +1754,15 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("BusinessObject.Models.WarehouseTransferRequest", "WarehouseTransferRequest")
+                        .WithMany()
+                        .HasForeignKey("WarehouseTransferRequestId");
+
                     b.Navigation("RequestExport");
 
                     b.Navigation("Warehouse");
+
+                    b.Navigation("WarehouseTransferRequest");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.ExportTransactionDetail", b =>
@@ -1694,9 +1810,15 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("BusinessObject.Models.WarehouseTransferRequest", "WarehouseTransferRequest")
+                        .WithMany("ExportWarehouseReceipts")
+                        .HasForeignKey("WarehouseTransferRequestId");
+
                     b.Navigation("RequestExport");
 
                     b.Navigation("Warehouse");
+
+                    b.Navigation("WarehouseTransferRequest");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.ExportWarehouseReceiptDetail", b =>
@@ -2130,6 +2252,71 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Warehouse");
                 });
 
+            modelBuilder.Entity("BusinessObject.Models.WarehouseTransferProduct", b =>
+                {
+                    b.HasOne("BusinessObject.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.WarehouseTransferRequest", "TransferRequest")
+                        .WithMany("TransferProducts")
+                        .HasForeignKey("WarehouseTransferRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("TransferRequest");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.WarehouseTransferRequest", b =>
+                {
+                    b.HasOne("BusinessObject.Models.User", "Approver")
+                        .WithMany()
+                        .HasForeignKey("ApprovedBy");
+
+                    b.HasOne("BusinessObject.Models.Warehouse", "DestinationWarehouse")
+                        .WithMany()
+                        .HasForeignKey("DestinationWarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.User", "Planner")
+                        .WithMany()
+                        .HasForeignKey("PlannedBy");
+
+                    b.HasOne("BusinessObject.Models.RequestExport", "RequestExport")
+                        .WithMany()
+                        .HasForeignKey("RequestExportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.User", "Requester")
+                        .WithMany()
+                        .HasForeignKey("RequestedBy")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObject.Models.Warehouse", "SourceWarehouse")
+                        .WithMany()
+                        .HasForeignKey("SourceWarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Approver");
+
+                    b.Navigation("DestinationWarehouse");
+
+                    b.Navigation("Planner");
+
+                    b.Navigation("RequestExport");
+
+                    b.Navigation("Requester");
+
+                    b.Navigation("SourceWarehouse");
+                });
+
             modelBuilder.Entity("BusinessObject.Models.Address", b =>
                 {
                     b.Navigation("AgencyAccounts");
@@ -2268,6 +2455,13 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("ExportTransactionDetails");
 
                     b.Navigation("ExportWarehouseReceiptDetails");
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.WarehouseTransferRequest", b =>
+                {
+                    b.Navigation("ExportWarehouseReceipts");
+
+                    b.Navigation("TransferProducts");
                 });
 #pragma warning restore 612, 618
         }
