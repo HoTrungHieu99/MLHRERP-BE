@@ -7,6 +7,7 @@ using Repo.IRepository;
 using Repo.Repository;
 using Services.Exceptions;
 using Services.IService;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,12 +21,14 @@ namespace Services.Service
         private readonly IWarehouseReceiptRepository _repository;
         private readonly IBatchRepository _batchRepository; // ✅ Thêm Batch Repository để kiểm tra số lượng lô đã tạo
         private readonly IWarehouseRepository _warehouseRepository;
+        private readonly IWarehouseTransferRepository _warehouseTransferRepository;
 
-        public WarehouseReceiptService(IWarehouseReceiptRepository repository, IBatchRepository batchRepository, IWarehouseRepository warehouseRepository)
+        public WarehouseReceiptService(IWarehouseReceiptRepository repository, IBatchRepository batchRepository, IWarehouseRepository warehouseRepository, IWarehouseTransferRepository warehouseTransferRepository)
         {
             _repository = repository;
             _batchRepository = batchRepository;
             _warehouseRepository = warehouseRepository;
+            _warehouseTransferRepository = warehouseTransferRepository;
         }
 
         public async Task<bool> CreateReceiptAsync(WarehouseReceiptRequest request, Guid currentUserId)
@@ -167,6 +170,61 @@ namespace Services.Service
                 
             };
         }
+
+        public async Task<WarehouseReceipt> CreateReceiptFromTransferAsync(long transferRequestId, Guid currentUserId)
+        {
+            // 🔍 Lấy yêu cầu điều phối
+            var transferRequest = await _warehouseTransferRepository.GetByIdAsync(transferRequestId);
+            if (transferRequest == null)
+                throw new Exception("Không tìm thấy yêu cầu điều phối");
+
+            if (transferRequest == null)
+                throw new Exception("Không tìm thấy yêu cầu điều phối");
+
+            // 🔐 Kiểm tra quyền tại kho đích
+            var warehouseUserId = await _repository.GetUserIdOfWarehouseAsync(transferRequest.DestinationWarehouseId);
+            if (warehouseUserId != currentUserId)
+                throw new UnauthorizedAccessException("Bạn không có quyền tạo phiếu nhập cho kho này!");
+
+            // 🔁 Lấy phiếu xuất được duyệt
+            var exportReceipt = await _repository.GetApprovedExportReceiptByTransferIdAsync(transferRequestId);
+            if (exportReceipt == null)
+                throw new Exception("Không tìm thấy phiếu xuất đã duyệt cho yêu cầu điều phối này.");
+
+            // 📦 Tạo batch từ chi tiết xuất
+            var batches = exportReceipt.ExportWarehouseReceiptDetails.Select(d => new BatchResponseDto
+            {
+                BatchCode = d.BatchNumber,
+                ProductId = d.ProductId,
+                Quantity = d.Quantity,
+                Unit = "Chưa xác định", // Optionally map từ Product.Unit
+                UnitCost = d.UnitPrice,
+                TotalAmount = d.Quantity * d.UnitPrice,
+                Status = "PENDING",
+                DateOfManufacture = DateTime.Now // hoặc tính từ meta
+            }).ToList();
+
+            var receipt = new WarehouseReceipt
+            {
+                DocumentNumber = $"IMP-TRANS-{DateTime.Now:yyyyMMddHHmmss}",
+                DocumentDate = DateTime.Now,
+                WarehouseId = transferRequest.DestinationWarehouseId,
+                ImportType = "Nhập Điều Phối",
+                Supplier = "Nội Bộ",
+                DateImport = DateTime.Now,
+                TotalQuantity = batches.Sum(b => b.Quantity),
+                TotalPrice = batches.Sum(b => b.TotalAmount),
+                BatchesJson = JsonConvert.SerializeObject(batches, Formatting.Indented),
+                Note = $"Nhập theo phiếu xuất #{exportReceipt.DocumentNumber} từ yêu cầu điều phối #{transferRequestId}",
+                IsApproved = false
+            };
+
+            transferRequest.Status = "Completed";
+            await _warehouseTransferRepository.UpdateAsync(transferRequest);
+
+            return await _repository.CreateReceiptAsync(receipt);
+        }
+
 
     }
 

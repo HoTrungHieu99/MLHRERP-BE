@@ -117,5 +117,13 @@ namespace MLHR.Controllers
             var result = _warehouseService.GetAllWarehouseInfo();
             return Ok(result);
         }
+
+        [Authorize(Roles = "6")]
+        [HttpGet("{warehouseId}/summary")]
+        public async Task<IActionResult> GetProductSummary(long warehouseId)
+        {
+            var result = await _warehouseService.GetProductSummariesByWarehouseIdAsync(warehouseId);
+            return Ok(result);
+        }
     }
 }

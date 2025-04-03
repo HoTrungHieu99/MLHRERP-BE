@@ -38,6 +38,12 @@ namespace BusinessObject.Models
         public Warehouse Warehouse { get; set; }
 
         // 🔹 Danh sách chi tiết sản phẩm (Liên kết với `ExportWarehouseReceiptDetail`)
+        [ForeignKey("WarehouseTransferRequest")]
+        public long? WarehouseTransferRequestId { get; set; }
+        public WarehouseTransferRequest? WarehouseTransferRequest { get; set; }
+
+
+
         public ICollection<ExportWarehouseReceiptDetail> ExportWarehouseReceiptDetails { get; set; }
     }
 

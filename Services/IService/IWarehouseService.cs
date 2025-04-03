@@ -19,5 +19,8 @@ namespace Services.IService
         Task<IEnumerable<WarehouseProductDto>> GetProductsByWarehouseIdAsync(long warehouseId, string sortBy = null);
         Task<WarehouseProductDto> GetProductByIdAsync(long warehouseProductId);
 
+        Task<List<WarehouseProductSummaryDto>> GetProductSummariesByWarehouseIdAsync(long warehouseId);
+
+
     }
 }

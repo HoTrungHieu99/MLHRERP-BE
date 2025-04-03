@@ -4,6 +4,7 @@ using DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(MinhLongDbContext))]
-    partial class MinhLongDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250402165710_UpdateTable1")]
+    partial class UpdateTable1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -309,16 +312,11 @@ namespace DataAccessLayer.Migrations
                     b.Property<long>("WarehouseId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("WarehouseTransferRequestId")
-                        .HasColumnType("bigint");
-
                     b.HasKey("ExportTransactionId");
 
                     b.HasIndex("RequestExportId");
 
                     b.HasIndex("WarehouseId");
-
-                    b.HasIndex("WarehouseTransferRequestId");
 
                     b.ToTable("ExportTransaction", (string)null);
                 });
@@ -413,9 +411,6 @@ namespace DataAccessLayer.Migrations
                     b.Property<long>("WarehouseId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("WarehouseTransferRequestId")
-                        .HasColumnType("bigint");
-
                     b.HasKey("ExportWarehouseReceiptId");
 
                     b.HasIndex("ProductId");
@@ -423,8 +418,6 @@ namespace DataAccessLayer.Migrations
                     b.HasIndex("RequestExportId");
 
                     b.HasIndex("WarehouseId");
-
-                    b.HasIndex("WarehouseTransferRequestId");
 
                     b.ToTable("ExportWarehouseReceipt", (string)null);
                 });
@@ -1754,15 +1747,9 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("BusinessObject.Models.WarehouseTransferRequest", "WarehouseTransferRequest")
-                        .WithMany()
-                        .HasForeignKey("WarehouseTransferRequestId");
-
                     b.Navigation("RequestExport");
 
                     b.Navigation("Warehouse");
-
-                    b.Navigation("WarehouseTransferRequest");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.ExportTransactionDetail", b =>
@@ -1810,15 +1797,9 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("BusinessObject.Models.WarehouseTransferRequest", "WarehouseTransferRequest")
-                        .WithMany("ExportWarehouseReceipts")
-                        .HasForeignKey("WarehouseTransferRequestId");
-
                     b.Navigation("RequestExport");
 
                     b.Navigation("Warehouse");
-
-                    b.Navigation("WarehouseTransferRequest");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.ExportWarehouseReceiptDetail", b =>
@@ -2459,8 +2440,6 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("BusinessObject.Models.WarehouseTransferRequest", b =>
                 {
-                    b.Navigation("ExportWarehouseReceipts");
-
                     b.Navigation("TransferProducts");
                 });
 #pragma warning restore 612, 618

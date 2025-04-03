@@ -151,6 +151,10 @@ namespace Repo.Repository
                         {
                             roleId = 5;
                         }
+                        if (registerAccount.Department.Equals("WAREHOUSE PLANNER", StringComparison.OrdinalIgnoreCase))
+                        {
+                            roleId = 6;
+                        }
                     }
                     // ✅ Nếu UserType là AGENCY, lưu vào bảng AgencyAccount
                     else if (registerAccount.UserType.Equals("AGENCY", StringComparison.OrdinalIgnoreCase))

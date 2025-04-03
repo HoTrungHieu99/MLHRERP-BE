@@ -46,6 +46,8 @@ namespace BusinessObject.Models
         // 🔹 Khóa ngoại đến WarehouseProduct (Thay thế ProductId)
         [ForeignKey("WarehouseProductId")]
         public WarehouseProduct WarehouseProduct { get; set; }
+
+       
     }
 
 }

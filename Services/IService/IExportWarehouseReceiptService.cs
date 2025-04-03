@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO.Warehouse;
+﻿using BusinessObject.DTO.RequestExport;
+using BusinessObject.DTO.Warehouse;
 using BusinessObject.Models;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,9 @@ namespace Services.IService
 
         Task<ExportWarehouseReceipt> CreateFromRequestAsync(int requestExportId, long warehouseId, Guid approvedBy);
         Task<bool> UpdateExportReceiptAsync(UpdateExportWarehouseReceiptFullDto dto);
+
+        Task<ExportWarehouseReceipt> CreateReceiptFromTransferAsync(ExportWarehouseTransferDTO dto, Guid userId);
+
     }
 
 }
