@@ -29,6 +29,7 @@ namespace Services.Service
                 throw new KeyNotFoundException($"Không tìm thấy lịch sử thanh toán với ID = {id}");
             }
 
+            var dueDate = payment.CreatedAt.AddMonths(3);
             return new PaymentHistoryDto
             {
                 PaymentHistoryId = payment.PaymentHistoryId,
@@ -47,7 +48,9 @@ namespace Services.Service
                 PaymentAmount = payment.PaymentAmount,
                 CreatedAt = payment.CreatedAt,
                 UpdatedAt = payment.UpdatedAt,
-                TransactionReference = payment.PaymentTransactions?.FirstOrDefault()?.TransactionReference ?? "N/A" // 👈 Lấy TransactionReference
+                TransactionReference = payment.PaymentTransactions?.FirstOrDefault()?.TransactionReference ?? "N/A", // 👈 Lấy TransactionReference
+                DueDate = dueDate,
+                DebtStatus = GetDebtStatus(dueDate)
             };
         }
 
@@ -56,23 +59,29 @@ namespace Services.Service
         {
             var histories = await _repository.GetAllAsync();
 
-            return histories.Select(ph => new PaymentHistoryDto
+            return histories.Select(ph =>
             {
-                PaymentHistoryId = ph.PaymentHistoryId,
-                OrderId = ph.OrderId,
-                OrderCode = ph.Order?.OrderCode ?? "N/A",
-                AgencyId = ph.Order?.RequestProduct?.AgencyId ?? 0,
-                AgencyName = ph.Order?.RequestProduct?.AgencyAccount?.AgencyName ?? "Unknown",
-                PaymentMethod = ph.PaymentMethod,
-                PaymentDate = ph.PaymentDate,
-                SerieNumber = ph.SerieNumber,
-                Status = ph.Status,
-                TotalAmountPayment = ph.TotalAmountPayment,
-                RemainingDebtAmount = ph.RemainingDebtAmount,
-                PaymentAmount = ph.PaymentAmount,
-                CreatedAt = ph.CreatedAt,
-                UpdatedAt = ph.UpdatedAt,
-                TransactionReference = ph.PaymentTransactions?.FirstOrDefault()?.TransactionReference ?? "N/A"
+                var dueDate = ph.CreatedAt.AddMonths(3);
+                return new PaymentHistoryDto
+                {
+                    PaymentHistoryId = ph.PaymentHistoryId,
+                    OrderId = ph.OrderId,
+                    OrderCode = ph.Order?.OrderCode ?? "N/A",
+                    AgencyId = ph.Order?.RequestProduct?.AgencyId ?? 0,
+                    AgencyName = ph.Order?.RequestProduct?.AgencyAccount?.AgencyName ?? "Unknown",
+                    PaymentMethod = ph.PaymentMethod,
+                    PaymentDate = ph.PaymentDate,
+                    SerieNumber = ph.SerieNumber,
+                    Status = ph.Status,
+                    TotalAmountPayment = ph.TotalAmountPayment,
+                    RemainingDebtAmount = ph.RemainingDebtAmount,
+                    PaymentAmount = ph.PaymentAmount,
+                    CreatedAt = ph.CreatedAt,
+                    UpdatedAt = ph.UpdatedAt,
+                    TransactionReference = ph.PaymentTransactions?.FirstOrDefault()?.TransactionReference ?? "N/A",
+                    DueDate = dueDate,
+                    DebtStatus = GetDebtStatus(dueDate)
+                };
             }).ToList();
         }
 
@@ -80,24 +89,42 @@ namespace Services.Service
         {
             var payments = await _repository.GetPaymentHistoryByUserIdAsync(userId);
 
-            return payments.Select(ph => new PaymentHistoryDto
+            return payments.Select(ph =>
             {
-                PaymentHistoryId = ph.PaymentHistoryId,
-                OrderId = ph.OrderId,
-                OrderCode = ph.Order?.OrderCode ?? "N/A",
-                AgencyId = ph.Order?.RequestProduct?.AgencyId ?? 0,
-                AgencyName = ph.Order?.RequestProduct?.AgencyAccount?.AgencyName ?? "Unknown",
-                PaymentMethod = ph.PaymentMethod,
-                PaymentDate = ph.PaymentDate,
-                SerieNumber = ph.SerieNumber,
-                Status = ph.Status,
-                TotalAmountPayment = ph.TotalAmountPayment,
-                RemainingDebtAmount = ph.RemainingDebtAmount,
-                PaymentAmount = ph.PaymentAmount,
-                CreatedAt = ph.CreatedAt,
-                UpdatedAt = ph.UpdatedAt,
-                TransactionReference = ph.PaymentTransactions?.FirstOrDefault()?.TransactionReference ?? "N/A"
+                var dueDate = ph.CreatedAt.AddMonths(3);
+                return new PaymentHistoryDto
+                {
+                    PaymentHistoryId = ph.PaymentHistoryId,
+                    OrderId = ph.OrderId,
+                    OrderCode = ph.Order?.OrderCode ?? "N/A",
+                    AgencyId = ph.Order?.RequestProduct?.AgencyId ?? 0,
+                    AgencyName = ph.Order?.RequestProduct?.AgencyAccount?.AgencyName ?? "Unknown",
+                    PaymentMethod = ph.PaymentMethod,
+                    PaymentDate = ph.PaymentDate,
+                    SerieNumber = ph.SerieNumber,
+                    Status = ph.Status,
+                    TotalAmountPayment = ph.TotalAmountPayment,
+                    RemainingDebtAmount = ph.RemainingDebtAmount,
+                    PaymentAmount = ph.PaymentAmount,
+                    CreatedAt = ph.CreatedAt,
+                    UpdatedAt = ph.UpdatedAt,
+                    TransactionReference = ph.PaymentTransactions?.FirstOrDefault()?.TransactionReference ?? "N/A",
+                    DueDate = dueDate,
+                    DebtStatus = GetDebtStatus(dueDate)
+                };
             }).ToList();
+        }
+
+        private string GetDebtStatus(DateTime dueDate)
+        {
+            var daysLeft = (dueDate - DateTime.UtcNow).TotalDays;
+
+            if (daysLeft > 10)
+                return "Còn hạn";
+            else if (daysLeft <= 10 && daysLeft >= 0)
+                return "Gần hạn";
+            else
+                return "Quá hạn";
         }
 
     }

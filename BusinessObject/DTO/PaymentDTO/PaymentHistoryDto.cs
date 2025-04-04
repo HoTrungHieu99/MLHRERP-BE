@@ -28,6 +28,9 @@
             public DateTime CreatedAt { get; set; }
             public DateTime UpdatedAt { get; set; }
 
+        public DateTime DueDate { get; set; } // 👈 Ngày hết hạn thanh toán
+        public string DebtStatus { get; set; } // 👈 Trạng thái nợ
+
         public string TransactionReference { get; set; }
     }
 
