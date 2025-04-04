@@ -154,8 +154,8 @@ namespace Services.Service
                 var returnurlfail = _configuration["PayOS:ReturnUrlFail"];
 
                 // ✅ returnUrl chỉ cần OrderId
-                string returnUrl = $"http://localhost:5214/api/Payment/paymentconfirm" +
-                //string returnUrl = $"https://minhlong.mlhr.org/api/Payment/paymentconfirm" +
+                //string returnUrl = $"http://localhost:5214/api/Payment/paymentconfirm" +
+                string returnUrl = $"https://minhlong.mlhr.org/api/Payment/paymentconfirm" +
                    $"?orderCode={orderCode}" +
                    $"&accountId={accountId}" +
                    $"&amount={request.Price}"+
@@ -216,42 +216,7 @@ namespace Services.Service
 
             try
             {
-                //// 🔍 1. Check nếu transaction đã tồn tại → không xử lý lại
-                /*var existedTransaction = await _paymentRepository.GetTransactionByReferenceAsync(requestquery.Paymentlink.ToString());
-                if (existedTransaction != null)
-                {
-                    return new StatusPayment
-                    {
-                        code = "00",
-                        Data = new data
-                        {
-                            status = "PAID",
-                            amount = existedTransaction.Amount
-                        }
-                    };
-                }*/
-
-                /*if (Guid.TryParse(requestquery.Paymentlink, out Guid referenceId))
-                {
-                    var existedTransaction = await _paymentRepository.GetTransactionByReferenceAsync(referenceId);
-                    if (existedTransaction != null)
-                    {
-                        return new StatusPayment
-                        {
-                            code = "00",
-                            Data = new data
-                            {
-                                status = "PAID",
-                                amount = existedTransaction.Amount
-                            }
-                        };
-                    }
-                }
-                else
-                {
-                    throw new Exception("PaymentLink không hợp lệ (không phải GUID)");
-                }*/
-
+                
 
                 var getUrl = $"https://api-merchant.payos.vn/v2/payment-requests/{requestquery.Paymentlink}";
 
