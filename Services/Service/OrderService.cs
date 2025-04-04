@@ -186,9 +186,21 @@ namespace Services.Service
                 await _orderRepository.UpdateOrderAsync(order);
                 await _orderRepository.SaveChangesAsync();
 
-                // Gửi cho Sale
+                /*// Gửi cho Sale
                 await _hub.Clients.Group("4")
-                    .SendAsync("ReceiveNotification", $"🚚 Có Đơn Hàng Mới Được Thanh Toán!");
+                    .SendAsync("ReceiveNotification", $"🚚 Có Đơn Hàng Mới Được Thanh Toán!");*/
+
+                var notification = new
+                {
+                    title = "Thông báo Đại lý đã thanh toán cho Sales", // Tiêu đề thông báo
+                    message = "🚚 Có Đơn Hàng Mới Được Thanh Toán!", // Nội dung thông báo
+                    payload = order.OrderCode // Có thể thêm mã đơn hàng hoặc thông tin chi tiết nếu cần
+                };
+
+                // Gửi thông báo qua SignalR cho Sale
+                await _hub.Clients.Group("4")
+                    .SendAsync("ReceiveNotification", notification);
+
                 return true;
             }
             catch (DbUpdateException ex) // ✅ Bắt lỗi từ Entity Framework

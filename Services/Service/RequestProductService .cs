@@ -258,96 +258,25 @@ namespace Services.Service
             await _requestProductRepository.SaveChangesAsync();
 
             var agencyName = await _userRepository.GetAgencyNameByUserIdAsync(userId);
-            Debug.WriteLine(_hub == null ? "hub is NULL" : "hub is OK");
+            /*Debug.WriteLine(_hub == null ? "hub is NULL" : "hub is OK");
 
             await _hub.Clients.Group("4")
-                .SendAsync("ReceiveNotification", $"📦 Đơn hàng mới từ {agencyName}");
+                .SendAsync("ReceiveNotification", $"📦 Đơn hàng mới từ {agencyName}");*/
+
+            // Tạo object notification theo yêu cầu
+            var notification = new
+            {
+                title = " Gui Cho Sales", // Tiêu đề thông báo
+                message = $"📦 Đơn hàng mới từ {agencyName}", // Nội dung thông báo
+                payload = agencyName, // Bạn có thể thay bằng thông tin chi tiết nếu muốn
+            };
+
+            // Gửi thông báo qua SignalR
+            await _hub.Clients.Group("4")
+                .SendAsync("ReceiveNotification", notification);
+
 
         }
-
-
-        /*public async Task ApproveRequestAsync(Guid requestId, long approvedBy)
-        {
-            try
-            {
-                var requestProduct = await _requestProductRepository.GetRequestByIdAsync(requestId);
-                long requestOrderCode = Math.Abs(requestProduct.RequestProductId.GetHashCode()) % 10000000;
-
-                if (requestProduct == null) throw new Exception("Request not found!");
-
-                // ✅ Kiểm tra nếu đơn hàng đã được duyệt trước đó
-                if (requestProduct.RequestStatus == "Approved")
-                {
-                    throw new Exception("This request has already been approved and cannot be approved again.");
-                }
-
-                // **Cập nhật trạng thái RequestProduct**
-                requestProduct.ApprovedBy = approvedBy;
-                requestProduct.RequestStatus = "Approved";
-                requestProduct.UpdatedAt = DateTime.Now;
-
-                await _requestProductRepository.UpdateRequestAsync(requestProduct);
-                await _requestProductRepository.SaveChangesAsync(); // ✅ Lưu lại trạng thái RequestProduct
-
-                // **Tạo Order từ RequestProduct**
-                var order = new Order
-                {
-                    OrderCode = requestOrderCode,
-                    OrderDate = DateTime.Now,
-                    SalesAgentId = approvedBy,
-                    Status = "WaitPaid",
-                    RequestId = requestId,
-                    Discount = 0,
-                    FinalPrice = 0
-                };
-
-                await _orderRepository.AddOrderAsync(order);
-                await _orderRepository.SaveChangesAsync(); // ✅ Lưu để lấy OrderId
-
-                decimal finalPrice = 0;
-                var orderDetails = new List<OrderDetail>();
-
-                // **Tạo từng OrderDetail và tính tổng giá trị đơn hàng**
-                foreach (var detail in requestProduct.RequestProductDetails)
-                {
-                    var unitPrice = detail.Price; // 🔹 Lấy từ bảng Product nếu cần
-                    var totalAmount = detail.Quantity * unitPrice;
-
-                    var orderDetail = new OrderDetail
-                    {
-                        OrderId = order.OrderId,
-                        ProductId = detail.ProductId,
-                        Quantity = detail.Quantity,
-                        UnitPrice = unitPrice,
-                        TotalAmount = totalAmount,
-                        Unit = detail.Unit,
-                        CreatedAt = DateTime.Now
-                    };
-
-                    finalPrice += totalAmount;
-                    orderDetails.Add(orderDetail);
-                }
-
-                // ✅ Kiểm tra xem danh sách có rỗng không trước khi thêm vào database
-                if (orderDetails.Count > 0)
-                {
-                    await _orderRepository.AddOrderDetailAsync(orderDetails); // ✅ Thêm danh sách OrderDetail
-                }
-
-                order.FinalPrice = finalPrice;
-
-                await _orderRepository.UpdateOrderAsync(order); // ✅ Cập nhật tổng giá trị đơn hàng
-                await _orderRepository.SaveChangesAsync();
-            }
-            catch (DbUpdateException ex) // ✅ Bắt lỗi từ Entity Framework
-            {
-                throw new Exception($"Database update failed: {ex.InnerException?.Message}", ex);
-            }
-            catch (Exception ex) // ✅ Bắt lỗi tổng quát
-            {
-                throw new Exception($"An error occurred: {ex.Message}", ex);
-            }
-        }*/
 
         public async Task ApproveRequestAsync(Guid requestId, long approvedBy)
         {
@@ -453,9 +382,21 @@ namespace Services.Service
                 await _orderRepository.UpdateOrderAsync(order);
                 await _orderRepository.SaveChangesAsync();
 
-                // Gửi cho AGENCY
+                /*// Gửi cho AGENCY
                 await _hub.Clients.Group("2")
-                    .SendAsync("ReceiveNotification", $"✅ Đơn hàng {requestProduct.RequestCode} đã được duyệt!");
+                    .SendAsync("ReceiveNotification", $"✅ Đơn hàng {requestProduct.RequestCode} đã được duyệt!");*/
+
+                var notification = new
+                {
+                    title = "Thông báo duyệt đơn cho Agency", // Tiêu đề thông báo
+                    message = $"✅ Đơn hàng {requestProduct.RequestCode} đã được duyệt!", // Nội dung thông báo
+                    payload = requestProduct.RequestCode // Có thể thay bằng dữ liệu chi tiết nếu cần
+                };
+
+                // Gửi thông báo qua SignalR cho AGENCY
+                await _hub.Clients.Group("2")
+                    .SendAsync("ReceiveNotification", notification);
+
             }
             catch (DbUpdateException ex)
             {
