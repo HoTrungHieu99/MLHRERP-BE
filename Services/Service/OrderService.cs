@@ -192,7 +192,7 @@ namespace Services.Service
 
                 var notification = new
                 {
-                    title = "Thông báo Đại lý đã thanh toán cho Sales", // Tiêu đề thông báo
+                    title = "Sales", // Tiêu đề thông báo
                     message = "🚚 Có Đơn Hàng Mới Được Thanh Toán!", // Nội dung thông báo
                     payload = order.OrderCode // Có thể thêm mã đơn hàng hoặc thông tin chi tiết nếu cần
                 };

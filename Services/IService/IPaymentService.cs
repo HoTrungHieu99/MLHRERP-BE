@@ -1,4 +1,5 @@
 ﻿using BusinessObject.DTO.PaymentDTO;
+using BusinessObject.Models;
 using Net.payOS.Types;
 using System;
 using System.Collections.Generic;
@@ -13,5 +14,8 @@ namespace Services.IService
         Task<StatusPayment> ConfirmPayment(string queryString, QueryRequest requestquery);
 
         Task<CreatePaymentResult> SendPaymentLink(Guid accountId, CreatePaymentRequest request);
+
+        Task<PaymentTransaction?> GetTransactionByReferenceAsync(Guid paymentHistoryId);
+        Task<PaymentHistory?> GetPaymentHistoryByOrderIdAsync(Guid orderId);
     }
 }

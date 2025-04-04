@@ -216,20 +216,7 @@ namespace Services.Service
 
             try
             {
-                //// 🔍 1. Check nếu transaction đã tồn tại → không xử lý lại
-                //var existedTransaction = await _paymentRepository.GetTransactionByReferenceAsync(requestquery.Paymentlink);
-                //if (existedTransaction != null)
-                //{
-                //    return new StatusPayment
-                //    {
-                //        code = "00",
-                //        Data = new data
-                //        {
-                //            status = "PAID",
-                //            amount = existedTransaction.Amount
-                //        }
-                //    };
-                //}
+                
 
                 var getUrl = $"https://api-merchant.payos.vn/v2/payment-requests/{requestquery.Paymentlink}";
 
@@ -345,6 +332,14 @@ namespace Services.Service
             }
         }
 
+        public async Task<PaymentTransaction?> GetTransactionByReferenceAsync(Guid paymentHistoryId)
+        {
+            return await _paymentRepository.GetTransactionByReferenceAsync(paymentHistoryId);
+        }
 
+        public async Task<PaymentHistory?> GetPaymentHistoryByOrderIdAsync(Guid orderId)
+        {
+            return await _paymentRepository.GetPaymentHistoryByOrderIdAsync(orderId);
+        }
     }
 }

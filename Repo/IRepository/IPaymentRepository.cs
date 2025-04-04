@@ -22,7 +22,7 @@ namespace Repo.IRepository
         Task UpdatePaymentHistoryAsync(PaymentHistory history);
         Task InsertPaymentTransactionAsync(PaymentTransaction transaction);
 
-        Task<PaymentTransaction?> GetTransactionByReferenceAsync(string reference);
+        Task<PaymentTransaction?> GetTransactionByReferenceAsync(Guid paymentHistoryId);
 
     }
 }

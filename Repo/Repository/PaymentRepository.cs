@@ -96,10 +96,10 @@ namespace Repo.Repository
             await _context.PaymentTransactions.AddAsync(transaction);
         }
 
-        public async Task<PaymentTransaction?> GetTransactionByReferenceAsync(string reference)
+        public async Task<PaymentTransaction?> GetTransactionByReferenceAsync(Guid paymentHistoryId)
         {
             return await _context.PaymentTransactions
-                                 .FirstOrDefaultAsync(t => t.TransactionReference == reference);
+                                 .FirstOrDefaultAsync(t => t.PaymentHistoryId == paymentHistoryId);
         }
     }
 

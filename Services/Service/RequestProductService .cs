@@ -266,7 +266,7 @@ namespace Services.Service
             // Tạo object notification theo yêu cầu
             var notification = new
             {
-                title = " Gui Cho Sales", // Tiêu đề thông báo
+                title = "Sales", // Tiêu đề thông báo
                 message = $"📦 Đơn hàng mới từ {agencyName}", // Nội dung thông báo
                 payload = agencyName, // Bạn có thể thay bằng thông tin chi tiết nếu muốn
             };
@@ -388,7 +388,7 @@ namespace Services.Service
 
                 var notification = new
                 {
-                    title = "Thông báo duyệt đơn cho Agency", // Tiêu đề thông báo
+                    title = "Agency", // Tiêu đề thông báo
                     message = $"✅ Đơn hàng {requestProduct.RequestCode} đã được duyệt!", // Nội dung thông báo
                     payload = requestProduct.RequestCode // Có thể thay bằng dữ liệu chi tiết nếu cần
                 };
