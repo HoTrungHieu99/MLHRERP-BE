@@ -17,13 +17,11 @@ namespace MLHR.Controllers
     {
         private readonly IPaymentService _paymentService;
         private readonly IOrderService _orderService;
-        private readonly IPaymentRepository _paymentRepository;
 
-        public PaymentController(IPaymentService paymentService, IOrderService orderService, IPaymentRepository paymentRepository)
+        public PaymentController(IPaymentService paymentService, IOrderService orderService)
         {
             _paymentService = paymentService;
             _orderService = orderService;
-            _paymentRepository = paymentRepository;
         }
 
 
@@ -113,40 +111,21 @@ namespace MLHR.Controllers
                 if (order == null)
                     throw new Exception("Không tìm thấy đơn hàng tương ứng với orderCode.");
 
+                var paymentHistory = await _paymentService.GetPaymentHistoryByOrderIdAsync(orderId);
                 // 🔹 B2. Kiểm tra nếu Transaction đã xử lý rồi
-                var existingTransaction = await _paymentRepository.GetTransactionByReferenceAsync(orderCode.ToString());
-                var paymentHistory = await _paymentRepository.GetPaymentHistoryByOrderIdAsync(orderId);
-
+                //var existingTransaction = await _paymentService.GetTransactionByReferenceAsync(paymentHistory.PaymentHistoryId);
+                DateTime existingTransactionDate = DateTime.Now;
                 /*if (existingTransaction != null)
                 {
+
+
                     string formattedAmount = $"{amount:N0} VND";
-                    // ✅ Đã xử lý rồi → Chuyển hướng đến trang giao diện thành công
-                    return new JsonResult(new
-                    {
-                        success = true,
-                        //message = "Thanh toán thành công",
-                        orderCode = order.OrderCode,
-                        amount = formattedAmount,
-                        createDate = existingTransaction.PaymentDate,
-                        serialNumber = paymentHistory.SerieNumber
-                    });
-
-                }*/
-
-                if (existingTransaction != null)
-                {
-                    /*// ✅ Đã xử lý rồi → Trả giao diện luôn
-                    string formattedAmount = $"{amount:N0} VND";
-                    return Content($@"
-               <html><head><meta charset='UTF-8'><title>Thành công</title></head>
-               <body style='text-align:center;font-family:sans-serif'>
-               <h1 style='color:green'>BẠN ĐÃ THANH TOÁN THÀNH CÔNG ĐƠN HÀNG #{orderCode}</h1>
-               <p>Số tiền Thanh Toán: {formattedAmount}</p>
-               <p>Cảm ơn bạn đã thanh toán!</p></body></html>", "text/html");*/
-
-                    /*string formattedAmount = $"{amount:N0} VND";
                     string html = $@"
-                    <html><head><meta charset='UTF-8'><title>Thanh toán thành công</title></head>
+                    <html>
+                    <head>
+                    <meta charset='UTF-8'>
+                    <title>Thanh toán thành công</title>
+                    </head>
                     <body style='text-align:center;font-family:sans-serif; padding: 40px'>
                     <h1 style='color:green'>✅ BẠN ĐÃ THANH TOÁN THÀNH CÔNG</h1>
                     <p><strong>Success:</strong> true</p>
@@ -154,41 +133,20 @@ namespace MLHR.Controllers
                     <p><strong>Số tiền (amount):</strong> {formattedAmount}</p>
                     <p><strong>Ngày thanh toán (createDate):</strong> {existingTransaction.PaymentDate:dd/MM/yyyy HH:mm:ss}</p>
                     <p><strong>Số serial (serialNumber):</strong> {paymentHistory?.SerieNumber ?? "N/A"}</p>
-                     <hr />
-                        <p style='color:gray;'>Cảm ơn bạn đã sử dụng dịch vụ!</p>
-                        </body></html>";
+                    <hr />
+                    <p style='color:gray;'>Cảm ơn bạn đã sử dụng dịch vụ!</p>
 
-                    return Content(html, "text/html");*/
-
-
-                    string formattedAmount = $"{amount:N0} VND";
-                    string html = $@"
-<html>
-<head>
-    <meta charset='UTF-8'>
-    <title>Thanh toán thành công</title>
-</head>
-<body style='text-align:center;font-family:sans-serif; padding: 40px'>
-    <h1 style='color:green'>✅ BẠN ĐÃ THANH TOÁN THÀNH CÔNG</h1>
-    <p><strong>Success:</strong> true</p>
-    <p><strong>Mã đơn hàng (orderCode):</strong> {order.OrderCode}</p>
-    <p><strong>Số tiền (amount):</strong> {formattedAmount}</p>
-    <p><strong>Ngày thanh toán (createDate):</strong> {existingTransaction.PaymentDate:dd/MM/yyyy HH:mm:ss}</p>
-    <p><strong>Số serial (serialNumber):</strong> {paymentHistory?.SerieNumber ?? "N/A"}</p>
-    <hr />
-    <p style='color:gray;'>Cảm ơn bạn đã sử dụng dịch vụ!</p>
-
-    <button onclick='window.location.href=""https://clone-ui-user.vercel.app/""' 
-        style='margin-top:20px;padding:10px 20px;font-size:16px;border:none;
-               background-color:#007BFF;color:white;border-radius:5px;cursor:pointer;'>
-        Quay về trang chủ
-    </button>
-</body>
-</html>";
+                    <button onclick='window.location.href=""https://clone-ui-user.vercel.app/""' 
+                    style='margin-top:20px;padding:10px 20px;font-size:16px;border:none;
+                    background-color:#007BFF;color:white;border-radius:5px;cursor:pointer;'>
+                    Quay về trang chủ
+                    </button>
+                    </body>
+                    </html>";
 
                     return Content(html, "text/html");
 
-                }
+                }*/
 
                 // 🔹 B4. Chuẩn bị dữ liệu xác nhận
                 var queryRequest = new QueryRequest
@@ -206,20 +164,6 @@ namespace MLHR.Controllers
 
                 if (result != null && result.code == "00")
                 {
-                    /*string html = $@"
-                    <html><head><meta charset='UTF-8'><title>Thanh toán thành công</title></head>
-                    <body style='text-align:center;font-family:sans-serif; padding: 40px'>
-                    <h1 style='color:green'>✅ BẠN ĐÃ THANH TOÁN THÀNH CÔNG</h1>
-                    <p><strong>Success:</strong> true</p>
-                    <p><strong>Mã đơn hàng (orderCode):</strong> {order.OrderCode}</p>
-                    <p><strong>Số tiền (amount):</strong> {formattedAmount2}</p>
-                    <p><strong>Ngày thanh toán (createDate):</strong> {existingTransaction.PaymentDate:dd/MM/yyyy HH:mm:ss}</p>
-                    <p><strong>Số serial (serialNumber):</strong> {paymentHistory?.SerieNumber ?? "N/A"}</p>
-                     <hr />
-                        <p style='color:gray;'>Cảm ơn bạn đã sử dụng dịch vụ!</p>
-                        </body></html>";
-
-                    return Content(html, "text/html");*/
 
                     string html = $@"
                     <html>
@@ -229,11 +173,9 @@ namespace MLHR.Controllers
                     </head>
                     <body style='text-align:center;font-family:sans-serif; padding: 40px'>
                     <h1 style='color:green'>✅ BẠN ĐÃ THANH TOÁN THÀNH CÔNG</h1>
-                    <p><strong>Success:</strong> true</p>
                     <p><strong>Mã đơn hàng (orderCode):</strong> {order.OrderCode}</p>
                     <p><strong>Số tiền (amount):</strong> {formattedAmount2}</p>
-                    <p><strong>Ngày thanh toán (createDate):</strong> {existingTransaction.PaymentDate:dd/MM/yyyy HH:mm:ss}</p>
-                    <p><strong>Số serial (serialNumber):</strong> {paymentHistory?.SerieNumber ?? "N/A"}</p>
+                    <p><strong>Ngày thanh toán (createDate):</strong> {existingTransactionDate:dd/MM/yyyy HH:mm:ss}</p>
                     <hr />
                     <p style='color:gray;'>Cảm ơn bạn đã sử dụng dịch vụ!</p>
     
