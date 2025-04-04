@@ -154,5 +154,32 @@ namespace Repo.Repository
                 })
                 .ToListAsync();
         }
+
+        public async Task<List<WarehouseProduct>> GetByWarehouseIdAndBatchAsync(long warehouseId, IEnumerable<(long ProductId, string BatchCode)> batchPairs)
+        {
+            var productIds = batchPairs.Select(x => x.ProductId).Distinct();
+            var batchCodes = batchPairs.Select(x => x.BatchCode).Distinct();
+
+            return await _context.WarehouseProduct
+                .Include(wp => wp.Product)
+                .Include(wp => wp.Batch)
+                .Where(wp => wp.WarehouseId == warehouseId &&
+                             productIds.Contains(wp.ProductId) &&
+                             batchCodes.Contains(wp.Batch.BatchCode))
+                .ToListAsync();
+        }
+
+        public async Task<List<Product>> GetProductsByIdsAsync(IEnumerable<long> productIds)
+        {
+            if (productIds == null || !productIds.Any())
+            {
+                return new List<Product>();
+            }
+
+            return await _context.Products
+                .Where(p => productIds.Contains(p.ProductId))
+                .ToListAsync();
+        }
+
     }
 }

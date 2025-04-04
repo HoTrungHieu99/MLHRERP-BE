@@ -237,7 +237,7 @@ namespace Services.Service
                 DocumentDate = DateTime.Now,
                 ExportDate = DateTime.Now,
                 ExportType = "Xuất Bán",
-                TotalQuantity = requestExport.RequestExportDetails.Sum(d => d.RequestedQuantity),
+                TotalQuantity = 0,
                 TotalAmount = 0,
                 RequestExportId = requestExportId,
                 AgencyName = requestExport.Order?.RequestProduct?.AgencyAccount?.AgencyName,
@@ -248,14 +248,15 @@ namespace Services.Service
             };
 
             decimal totalAmount = 0;
+            int totalQuantity = 0;
+            bool isPartial = false;
 
             foreach (var detail in requestExport.RequestExportDetails)
             {
                 int quantityNeeded = detail.RequestedQuantity;
-                var availableProducts = await _repository.GetAvailableWarehouseProductsAsync(detail.ProductId, warehouseId);
+                int quantityExported = 0;
 
-                if (!availableProducts.Any())
-                    throw new InvalidOperationException($"No available stock for ProductId = {detail.ProductId} in WarehouseId = {warehouseId}");
+                var availableProducts = await _repository.GetAvailableWarehouseProductsAsync(detail.ProductId, warehouseId);
 
                 foreach (var wp in availableProducts)
                 {
@@ -277,21 +278,42 @@ namespace Services.Service
                         ExpiryDate = wp.Batch.ExpiryDate
                     });
 
-                    totalAmount += amount;
                     quantityNeeded -= quantityToExport;
+                    quantityExported += quantityToExport;
+                    totalAmount += amount;
+                    totalQuantity += quantityToExport;
                 }
 
+                // Đánh dấu nếu không đủ hàng
                 if (quantityNeeded > 0)
-                    throw new InvalidOperationException($"Not enough stock for ProductId = {detail.ProductId}. Missing: {quantityNeeded}");
+                {
+                    isPartial = true;
+                }
             }
 
+            if (receipt.ExportWarehouseReceiptDetails.Count == 0)
+                throw new InvalidOperationException("Không có sản phẩm nào đủ tồn kho để tạo phiếu xuất.");
+
             receipt.TotalAmount = totalAmount;
+            receipt.TotalQuantity = totalQuantity;
+            receipt.Status = "Pending";
 
             await _repository.AddExportReceiptAsync(receipt);
 
-            // ✅ Tự động duyệt phiếu vừa tạo
-            //ko xoa dc approved nen de do
+            // ✅ Duyệt luôn phiếu vừa tạo
             await ApproveReceiptAsync(receipt.ExportWarehouseReceiptId, approvedBy);
+
+            // ✅ Cập nhật trạng thái RequestExport nếu thiếu hàng
+            if (isPartial)
+            {
+                var reqExport = await _context.RequestExports.FirstOrDefaultAsync(x => x.RequestExportId == requestExportId);
+                if (reqExport != null)
+                {
+                    reqExport.Status = "Partially_Exported";
+                    _context.RequestExports.Update(reqExport);
+                    await _context.SaveChangesAsync();
+                }
+            }
 
             return receipt;
         }

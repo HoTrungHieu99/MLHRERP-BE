@@ -174,12 +174,8 @@ namespace Services.Service
         public async Task<WarehouseReceipt> CreateReceiptFromTransferAsync(long transferRequestId, Guid currentUserId)
         {
             // 🔍 Lấy yêu cầu điều phối
-            var transferRequest = await _warehouseTransferRepository.GetByIdAsync(transferRequestId);
-            if (transferRequest == null)
-                throw new Exception("Không tìm thấy yêu cầu điều phối");
-
-            if (transferRequest == null)
-                throw new Exception("Không tìm thấy yêu cầu điều phối");
+            var transferRequest = await _warehouseTransferRepository.GetByIdAsync(transferRequestId)
+                                        ?? throw new Exception("Không tìm thấy yêu cầu điều phối");
 
             // 🔐 Kiểm tra quyền tại kho đích
             var warehouseUserId = await _repository.GetUserIdOfWarehouseAsync(transferRequest.DestinationWarehouseId);
@@ -187,23 +183,56 @@ namespace Services.Service
                 throw new UnauthorizedAccessException("Bạn không có quyền tạo phiếu nhập cho kho này!");
 
             // 🔁 Lấy phiếu xuất được duyệt
-            var exportReceipt = await _repository.GetApprovedExportReceiptByTransferIdAsync(transferRequestId);
-            if (exportReceipt == null)
-                throw new Exception("Không tìm thấy phiếu xuất đã duyệt cho yêu cầu điều phối này.");
+            var exportReceipt = await _repository.GetApprovedExportReceiptByTransferIdAsync(transferRequestId)
+                                    ?? throw new Exception("Không tìm thấy phiếu xuất đã duyệt cho yêu cầu điều phối này.");
 
-            // 📦 Tạo batch từ chi tiết xuất
-            var batches = exportReceipt.ExportWarehouseReceiptDetails.Select(d => new BatchResponseDto
+            var sourceWarehouseId = exportReceipt.WarehouseId;
+
+            // 🔄 Tạo key để lấy dữ liệu warehouse sản phẩm
+            var batchProductPairs = exportReceipt.ExportWarehouseReceiptDetails
+                .Select(d => new { d.ProductId, d.BatchNumber })
+                .Distinct()
+                .ToList();
+
+            var warehouseProducts = await _warehouseRepository
+                .GetByWarehouseIdAndBatchAsync(sourceWarehouseId,
+                    batchProductPairs.Select(x => (x.ProductId, x.BatchNumber)));
+
+            var warehouseProductDict = warehouseProducts
+                .ToDictionary(x => (x.ProductId, x.Batch.BatchCode), x => x);
+
+            // 🧠 Lấy thông tin sản phẩm
+            var productIds = batchProductPairs.Select(p => p.ProductId).Distinct().ToList();
+            var productInfos = await _warehouseRepository.GetProductsByIdsAsync(productIds); // Phương thức cần được thêm trong repository
+            var productInfoDict = productInfos.ToDictionary(p => p.ProductId, p => p);
+
+            // 📦 Tạo batches
+            var batches = exportReceipt.ExportWarehouseReceiptDetails.Select(d =>
             {
-                BatchCode = d.BatchNumber,
-                ProductId = d.ProductId,
-                Quantity = d.Quantity,
-                Unit = "Chưa xác định", // Optionally map từ Product.Unit
-                UnitCost = d.UnitPrice,
-                TotalAmount = d.Quantity * d.UnitPrice,
-                Status = "PENDING",
-                DateOfManufacture = DateTime.Now // hoặc tính từ meta
+                var key = (d.ProductId, d.BatchNumber);
+                warehouseProductDict.TryGetValue(key, out var wp);
+                productInfoDict.TryGetValue(d.ProductId, out var product);
+
+                var dateOfManufacture = wp?.Batch?.DateOfManufacture ?? DateTime.Now;
+                var defaultExpiration = product?.DefaultExpiration ?? 12; // tháng
+                var expiryDate = dateOfManufacture.AddMonths(defaultExpiration);
+
+                return new BatchResponseDto
+                {
+                    BatchCode = d.BatchNumber,
+                    ProductId = d.ProductId,
+                    ProductName = product?.ProductName ?? "Không rõ",
+                    Unit = product?.Unit ?? "Chưa xác định",
+                    Quantity = d.Quantity,
+                    UnitCost = d.UnitPrice,
+                    TotalAmount = d.Quantity * d.UnitPrice,
+                    Status = "PENDING",
+                    DateOfManufacture = dateOfManufacture,
+                    ExpiryDate = expiryDate
+                };
             }).ToList();
 
+            // 📑 Tạo phiếu nhập
             var receipt = new WarehouseReceipt
             {
                 DocumentNumber = $"IMP-TRANS-{DateTime.Now:yyyyMMddHHmmss}",
@@ -219,11 +248,17 @@ namespace Services.Service
                 IsApproved = false
             };
 
+            // 💾 Lưu & duyệt phiếu nhập
+            var createdReceipt = await _repository.CreateReceiptAsync(receipt);
+
             transferRequest.Status = "Completed";
             await _warehouseTransferRepository.UpdateAsync(transferRequest);
 
-            return await _repository.CreateReceiptAsync(receipt);
+            await _repository.ApproveAsync(createdReceipt.WarehouseReceiptId, currentUserId);
+
+            return createdReceipt;
         }
+
 
 
     }
