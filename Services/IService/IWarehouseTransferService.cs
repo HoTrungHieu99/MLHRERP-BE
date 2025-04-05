@@ -17,5 +17,7 @@ namespace Services.IService
         Task<bool> PlanTransferRequestAsync(long requestId, long sourceWarehouseId, Guid plannerId);
         Task<List<WarehouseTransferRequestDetailDto>> GetRequestsToExportAsync(long sourceWarehouseId);
 
+        Task<WarehouseTransferRequestDetailDto> AutoCreateTransferRequestFromRemainingAsync(AutoCreateTransferRequestDto dto, Guid requestedBy);
+
     }
 }

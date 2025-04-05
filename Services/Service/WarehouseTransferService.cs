@@ -148,6 +148,59 @@ namespace Services.Service
             }).ToList();
         }
 
+        public async Task<WarehouseTransferRequestDetailDto> AutoCreateTransferRequestFromRemainingAsync(AutoCreateTransferRequestDto dto, Guid requestedBy)
+        {
+            var requestExport = await _repository.GetRequestExportWithOrderAsync(dto.RequestExportId);
+            if (requestExport == null)
+                throw new Exception("RequestExport không tồn tại.");
+
+            var remainingItems = await _repository.GetRemainingRequestExportsAsync(dto.RequestExportId);
+            if (remainingItems == null || remainingItems.Count == 0)
+                throw new Exception("Không có sản phẩm còn thiếu.");
+
+            var transferRequest = new WarehouseTransferRequest
+            {
+                RequestCode = $"REQ-{DateTime.UtcNow.Ticks}",
+                DestinationWarehouseId = dto.DestinationWarehouseId,
+                ExpectedDeliveryDate = dto.ExpectedDeliveryDate,
+                RequestedBy = requestedBy,
+                RequestDate = DateTime.UtcNow,
+                Status = "Pending",
+                Notes = dto.Notes,
+                RequestExportId = dto.RequestExportId,
+                OrderCode = requestExport.Order?.OrderCode,
+                TransferProducts = remainingItems.Select(x => new WarehouseTransferProduct
+                {
+                    ProductId = x.ProductId,
+                    Quantity = x.RemainingQuantity,
+                    Unit = x.Product.Unit, // có thể cải tiến sau
+                    Notes = "Auto from remaining quantity"
+                }).ToList()
+            };
+
+            var created = await _repository.CreateAsync(transferRequest);
+
+            return new WarehouseTransferRequestDetailDto
+            {
+                Id = created.Id,
+                RequestCode = created.RequestCode,
+                SourceWarehouseId = created.SourceWarehouseId,
+                DestinationWarehouseId = created.DestinationWarehouseId,
+                RequestDate = created.RequestDate,
+                Status = created.Status,
+                Notes = created.Notes,
+                OrderCode = created.OrderCode,
+                Products = created.TransferProducts.Select(tp => new WarehouseTransferProductDto
+                {
+                    ProductId = tp.ProductId,
+                    Quantity = tp.Quantity,
+                    Unit = tp.Unit,
+                    Notes = tp.Notes
+                }).ToList()
+            };
+        }
+
+
 
     }
 

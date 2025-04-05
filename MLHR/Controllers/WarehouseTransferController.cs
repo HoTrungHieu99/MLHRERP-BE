@@ -64,6 +64,26 @@ namespace MLHR.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "3")]
+        [HttpPost("auto-create-from-remaining")]
+        public async Task<IActionResult> AutoCreateFromRemaining([FromBody] AutoCreateTransferRequestDto dto)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized();
+
+            var requestedBy = Guid.Parse(userIdClaim);
+
+            try
+            {
+                var result = await _service.AutoCreateTransferRequestFromRemainingAsync(dto, requestedBy);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
     }
 
