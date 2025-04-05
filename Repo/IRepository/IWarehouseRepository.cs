@@ -25,5 +25,10 @@ namespace Repo.IRepository
 
         Task<List<WarehouseProductSummaryDto>> GetProductSummariesByWarehouseIdAsync(long warehouseId);
 
+        Task<List<WarehouseProduct>> GetByWarehouseIdAndBatchAsync(long warehouseId, IEnumerable<(long ProductId, string BatchCode)> batchPairs);
+
+        Task<List<Product>> GetProductsByIdsAsync(IEnumerable<long> productIds);
+
+
     }
 }

@@ -75,6 +75,7 @@ namespace Repo.Repository
         {
             return await _context.WarehouseTransferRequests
                 .Include(x => x.TransferProducts)
+                    .ThenInclude(tp => tp.Product) // 🔍 Cần dòng này
                 .Include(x => x.ExportWarehouseReceipts.Where(e => e.Status == "Approved"))
                     .ThenInclude(e => e.ExportWarehouseReceiptDetails)
                 .FirstOrDefaultAsync(x => x.Id == id);
@@ -84,6 +85,15 @@ namespace Repo.Repository
         {
             _context.WarehouseTransferRequests.Update(request);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<WarehouseRequestExport>> GetRemainingRequestExportsAsync(int requestExportId)
+        {
+            return await _context.WarehouseRequestExports
+                .AsNoTracking()
+                .Include(x => x.Product) // để lấy Unit
+                .Where(x => x.RequestExportId == requestExportId && x.RemainingQuantity > 0)
+                .ToListAsync();
         }
     }
 }

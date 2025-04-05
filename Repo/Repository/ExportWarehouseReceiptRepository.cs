@@ -268,7 +268,7 @@ namespace Repo.Repository
         public async Task<bool> ReceiptExistsAsync(int requestExportId)
         {
             return await _context.ExportWarehouseReceipts
-                .AnyAsync(x => x.RequestExportId == requestExportId);
+                .AnyAsync(r => r.RequestExportId == requestExportId && r.ExportType == "Xuất Bán");
         }
 
         public async Task<RequestExport> GetRequestExportWithDetailsAsync(int requestExportId)
