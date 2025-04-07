@@ -216,6 +216,12 @@ namespace Services.Service
             var creditLimit = await _repository.GetCreditLimitByUserIdAsync(userId);
             if (!creditLimit.HasValue) return;
 
+            var totalDebt = await _repository.GetTotalRemainingDebtAmountByUserIdAsync(userId);
+            if (totalDebt >= creditLimit.Value)
+            {
+                throw new BusinessException("Tổng công nợ hiện tại đã vượt quá hạn mức cho phép. Vui lòng thanh toán trước khi tiếp tục.", 404);
+            }
+
             // 🧾 Lấy số tiền cần thanh toán của đơn hàng (không phải tổng nợ toàn bộ)
             var order = await _orderRepository.SingleOrDefaultAsync(p => p.OrderId == orderId);
             if (order == null)
