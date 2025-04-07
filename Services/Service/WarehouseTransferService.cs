@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BusinessObject.DTO.Warehouse;
 using BusinessObject.Models;
+using Microsoft.AspNetCore.SignalR;
 using Repo.IRepository;
 using Services.IService;
 
@@ -13,10 +14,12 @@ namespace Services.Service
     public class WarehouseTransferService : IWarehouseTransferService
     {
         private readonly IWarehouseTransferRepository _repository;
+        private readonly IHubContext<NotificationHub> _hub;
 
-        public WarehouseTransferService(IWarehouseTransferRepository repository)
+        public WarehouseTransferService(IWarehouseTransferRepository repository, IHubContext<NotificationHub> hub)
         {
             _repository = repository;
+            _hub = hub;
         }
 
         public async Task<WarehouseTransferRequestDetailDto> CreateTransferRequestAsync(WarehouseTransferRequestCreateDto dto, Guid requestedBy)
@@ -180,6 +183,17 @@ namespace Services.Service
 
             var created = await _repository.CreateAsync(transferRequest);
 
+            // ✅ Gửi thông báo cho KHO (GroupId = 6)
+            var notification = new
+            {
+                title = "Kho Tổng", // Tiêu đề thông báo
+                message = $"🚚 Yêu cầu điều phối xuất kho mới!", // Nội dung thông báo
+                payload = created.RequestCode // hoặc thêm thông tin khác nếu cần
+            };
+
+            await _hub.Clients.Group("6")
+                .SendAsync("ReceiveNotification", notification);
+
             return new WarehouseTransferRequestDetailDto
             {
                 Id = created.Id,
@@ -199,8 +213,6 @@ namespace Services.Service
                 }).ToList()
             };
         }
-
-
 
     }
 

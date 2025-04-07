@@ -30,9 +30,22 @@ namespace Services.Service
         {
             var result = await _repository.CreateWarehouseRequestExportAsync(warehouseId, requestExportId);
 
-            // ✅ Gửi thông báo cho KHO (GroupId = 3)
+            /*// ✅ Gửi thông báo cho KHO (GroupId = 3)
             await _hub.Clients.Group("3").SendAsync("ReceiveNotification",
-                $"🚚 Yêu cầu xuất kho mới!");
+                $"🚚 Yêu cầu xuất kho mới!");*/
+
+            // ✅ Gửi thông báo cho KHO (GroupId = 3)
+            var notification = new
+            {
+                title = "Kho", // Tiêu đề thông báo
+                message = $"🚚 Yêu cầu xuất kho mới!", // Nội dung thông báo
+                payload = "Yêu cầu xuất kho", // Bạn có thể thay bằng thông tin chi tiết nếu muốn
+            };
+
+            // Gửi thông báo qua SignalR
+            await _hub.Clients.Group("3")
+                .SendAsync("ReceiveNotification", notification);
+
 
             return result;
         }
