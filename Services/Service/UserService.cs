@@ -24,12 +24,16 @@ namespace Services.Service
         private readonly IUserRepository _userRepository;
         private readonly JwtService _jwtService;
         private readonly IEmailService _mailService;
+        private readonly IAgencyAccountRepository _agencyAccountRepository;
+        private readonly IAgencyAccountLevelRepository _agencyAccountLevelRepository;
 
-        public UserService(IUserRepository userRepository, JwtService jwtService, IEmailService mailService)
+        public UserService(IUserRepository userRepository, JwtService jwtService, IEmailService mailService, IAgencyAccountRepository agencyAccountRepository, IAgencyAccountLevelRepository agencyAccountLevelRepository)
         {
             _userRepository = userRepository;
             _jwtService = jwtService;
             _mailService = mailService;
+            _agencyAccountRepository = agencyAccountRepository;
+            _agencyAccountLevelRepository = agencyAccountLevelRepository;
         }
 
 
@@ -237,7 +241,37 @@ namespace Services.Service
             if (registerUser == null)
                 throw new KeyNotFoundException($"RegisterAccount with ID {registerId} not found.");
 
-            // ✅ Gửi email theo loại tài khoản
+            // ✅ Duyệt tài khoản trước (tạo User + AgencyAccount nếu là AGENCY)
+            var approved = await _userRepository.ApproveUserAsync(registerId);
+            if (!approved)
+                throw new Exception("Failed to approve user.");
+
+            // ❗ Gọi lại để lấy thông tin vừa cập nhật
+            registerUser = await _userRepository.GetRegisterAccountByIdAsync(registerId);
+
+            // ✅ Nếu là AGENCY thì gán cấp mặc định (Level 3)
+            if (registerUser.UserType?.ToUpper() == "AGENCY")
+            {
+                // Lấy AgencyAccount bằng Username
+                var agencyAccount = await _agencyAccountRepository.GetByUsernameAsync(registerUser.Username);
+                if (agencyAccount == null)
+                    throw new Exception($"AgencyAccount not found for Username: {registerUser.Username}");
+
+                var agencyAccountLevel = new AgencyAccountLevel
+                {
+                    AgencyId = agencyAccount.AgencyId,
+                    LevelId = 1, // Gán mặc định Level 3
+                    TotalDebtValue = 0,
+                    OrderDiscount = 0,
+                    MonthlyRevenue = 0,
+                    OrderRevenue = 0,
+                    ChangeDate = DateTime.Now
+                };
+
+                await _agencyAccountLevelRepository.AddAsync(agencyAccountLevel);
+            }
+
+            // ✅ Gửi email sau khi xử lý xong
             switch (registerUser.UserType?.ToUpper())
             {
                 case "AGENCY":
@@ -263,9 +297,15 @@ namespace Services.Service
                     throw new InvalidOperationException($"Unsupported UserType: {registerUser.UserType}");
             }
 
-            // ✅ Duyệt tài khoản trong DB
-            return await _userRepository.ApproveUserAsync(registerId);
+            return true;
         }
+
+
+
+
+
+
+
 
 
         //Logout

@@ -1675,7 +1675,7 @@ namespace DataAccessLayer.Migrations
             modelBuilder.Entity("BusinessObject.Models.AgencyAccountLevel", b =>
                 {
                     b.HasOne("BusinessObject.Models.AgencyAccount", "Agency")
-                        .WithMany()
+                        .WithMany("AgencyAccountLevels")
                         .HasForeignKey("AgencyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2325,6 +2325,11 @@ namespace DataAccessLayer.Migrations
 
                     b.Navigation("Warehouse")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("BusinessObject.Models.AgencyAccount", b =>
+                {
+                    b.Navigation("AgencyAccountLevels");
                 });
 
             modelBuilder.Entity("BusinessObject.Models.AgencyLevel", b =>
