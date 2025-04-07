@@ -56,13 +56,13 @@ namespace MLHR.Controllers
             return success ? Ok("Kho nguồn đã được chọn thành công.") : NotFound("Yêu cầu không tồn tại.");
         }
 
-        [Authorize(Roles = "3, 6")]
+      /*  [Authorize(Roles = "3, 6")]
         [HttpGet("to-export/{sourceWarehouseId}")]
         public async Task<IActionResult> GetRequestsToExport(long sourceWarehouseId)
         {
             var result = await _service.GetRequestsToExportAsync(sourceWarehouseId);
             return Ok(result);
-        }
+        }*/
 
         [Authorize(Roles = "3")]
         [HttpPost("auto-create-from-remaining")]
@@ -83,6 +83,22 @@ namespace MLHR.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+        }
+
+        [Authorize(Roles = "3")]
+        [HttpGet("by-source/{sourceWarehouseId}")]
+        public async Task<IActionResult> GetBySourceWarehouse(long sourceWarehouseId)
+        {
+            var result = await _service.GetBySourceWarehouseAsync(sourceWarehouseId);
+            return Ok(result);
+        }
+
+        [Authorize(Roles = "3")]
+        [HttpGet("by-destination/{destinationWarehouseId}")]
+        public async Task<IActionResult> GetByDestinationWarehouse(long destinationWarehouseId)
+        {
+            var result = await _service.GetByDestinationWarehouseAsync(destinationWarehouseId);
+            return Ok(result);
         }
 
     }

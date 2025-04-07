@@ -213,6 +213,43 @@ namespace Services.Service
                 }).ToList()
             };
         }
+
+        public async Task<List<WarehouseTransferRequestDetailDto>> GetBySourceWarehouseAsync(long sourceWarehouseId)
+        {
+            var list = await _repository.GetBySourceWarehouseAsync(sourceWarehouseId);
+            return list.Select(MapToDto).ToList();
+        }
+
+        public async Task<List<WarehouseTransferRequestDetailDto>> GetByDestinationWarehouseAsync(long destinationWarehouseId)
+        {
+            var list = await _repository.GetByDestinationWarehouseAsync(destinationWarehouseId);
+            return list.Select(MapToDto).ToList();
+        }
+
+        private WarehouseTransferRequestDetailDto MapToDto(WarehouseTransferRequest r)
+        {
+            return new WarehouseTransferRequestDetailDto
+            {
+                Id = r.Id,
+                RequestCode = r.RequestCode,
+                SourceWarehouseId = r.SourceWarehouseId,
+                DestinationWarehouseId = r.DestinationWarehouseId,
+                RequestDate = r.RequestDate,
+                OrderCode = r.OrderCode,
+                Status = r.Status,
+                Notes = r.Notes,
+                Products = r.TransferProducts.Select(p => new WarehouseTransferProductDto
+                {
+                    ProductId = p.ProductId,
+                    Quantity = p.Quantity,
+                    Unit = p.Unit,
+                    Notes = p.Notes
+                }).ToList()
+            };
+        }
+
+
+
     }
 
 }
