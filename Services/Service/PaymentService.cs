@@ -229,6 +229,16 @@ namespace Services.Service
 
             var totalOrderAmount = (int)order.FinalPrice; // hoặc order.TotalDebt nếu có cột riêng
 
+            int minimumAcceptable = (int)Math.Ceiling(totalOrderAmount * 0.10); // Làm tròn lên nếu cần
+            if (amountToPay <= 0 || amountToPay < minimumAcceptable)
+            {
+                throw new BusinessException(
+                    $"Số tiền thanh toán không hợp lệ. Bạn cần thanh toán tối thiểu {minimumAcceptable:N0}đ (10% giá trị đơn hàng).",
+                    400
+                );
+            }
+
+
             var remainingDebt = totalOrderAmount - amountToPay;
 
             if (remainingDebt >= creditLimit.Value)
