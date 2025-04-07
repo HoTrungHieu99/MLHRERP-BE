@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Repo.IRepository;
 using Repo.Repository;
+using Services.Exceptions;
 using Services.IService;
 using Services.Service;
 
@@ -29,13 +30,28 @@ namespace MLHR.Controllers
         [Route("{userId:Guid}")]
         public async Task<IActionResult> SendPaymentLink(Guid userId, CreatePaymentRequest request)
         {
-            var result = await _paymentService.SendPaymentLink(userId, request);
-            if (result == null)
+            try
             {
-                return BadRequest();
+                var result = await _paymentService.SendPaymentLink(userId, request);
+                if (result == null)
+                {
+                    return BadRequest(new { message = "Không thể tạo liên kết thanh toán." });
+                }
+                return Ok(result);
             }
-            return Ok(result);
+            catch (BusinessException ex)
+            {
+                // Trả về mã lỗi do bạn chỉ định, ví dụ 404 hoặc 400
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Log lại lỗi thật nếu cần
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, new { message = "Lỗi hệ thống. Vui lòng thử lại sau." });
+            }
         }
+
 
         /*[HttpGet("Payment-confirm")]
         public async Task<IActionResult> PaymentConfirm()
