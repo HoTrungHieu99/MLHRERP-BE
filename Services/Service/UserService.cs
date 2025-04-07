@@ -260,7 +260,7 @@ namespace Services.Service
                 var agencyAccountLevel = new AgencyAccountLevel
                 {
                     AgencyId = agencyAccount.AgencyId,
-                    LevelId = 1, // Gán mặc định Level 3
+                    LevelId = 3, // Gán mặc định Level 3
                     TotalDebtValue = 0,
                     OrderDiscount = 0,
                     MonthlyRevenue = 0,

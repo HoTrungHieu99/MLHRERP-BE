@@ -53,12 +53,15 @@ namespace Repo.Repository
 
         public async Task<decimal?> GetCreditLimitByUserIdAsync(Guid userId)
         {
-            return await _context.AgencyAccounts
-                .Where(aa => aa.UserId == userId)
-                .SelectMany(aa => aa.AgencyAccountLevels)
-                .OrderByDescending(aal => aal.ChangeDate)
+            var creditLimit = await _context.AgencyAccountLevels
+                .Include(aal => aal.Level)
+                .Include(aal => aal.Agency)
+                .Where(aal => aal.Agency.UserId == userId)
+                .OrderByDescending(aal => aal.ChangeDate) // Nếu có nhiều cấp, lấy mới nhất
                 .Select(aal => aal.Level.CreditLimit)
                 .FirstOrDefaultAsync();
+
+            return creditLimit;
         }
 
         public async Task<int?> GetPaymentTermByUserIdAsync(Guid userId)

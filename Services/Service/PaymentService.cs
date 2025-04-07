@@ -30,6 +30,7 @@ namespace Services.Service
         private readonly IUserRepository _userRepository;
         private readonly IOrderService _orderService;
         private readonly HttpClient _client;
+        private readonly IPaymentHistoryRepository _paymentHistoryRepository;
 
         // Constructor có đầy đủ các dependency
         public PaymentService(IOptions<PayOSSettings> payOSSettings,
@@ -38,7 +39,8 @@ namespace Services.Service
                               IConfiguration configuration,
                               IUserRepository userRepository,
                               HttpClient client,
-                              IOrderService orderService)
+                              IOrderService orderService,
+                              IPaymentHistoryRepository paymentHistoryRepository)
         {
             // Kiểm tra nếu payOSSettings bị null
             _payOSSettings = payOSSettings?.Value ?? throw new ArgumentNullException(nameof(payOSSettings));
@@ -56,6 +58,7 @@ namespace Services.Service
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
+            _paymentHistoryRepository = paymentHistoryRepository ?? throw new ArgumentNullException(nameof(paymentHistoryRepository));
             _client = client;
         }
         /*public async Task<CreatePaymentResult> SendPaymentLink(Guid accountId, CreatePaymentRequest request)
@@ -223,6 +226,15 @@ namespace Services.Service
 
                 Guid? userId = Guid.TryParse(requestquery.userId, out var accountGuid) ? accountGuid : (Guid?)null;
                 var agency = await _userRepository.GetAgencyAccountByUserIdAsync(userId);
+
+
+                var totalDebt = await _paymentHistoryRepository.GetTotalRemainingDebtAmountByUserIdAsync(userId.Value);
+                var creditLimit = await _paymentHistoryRepository.GetCreditLimitByUserIdAsync(userId.Value);
+
+                if (creditLimit.HasValue && totalDebt >= creditLimit.Value && requestquery.price == 0)
+                {
+                    throw new Exception("Bạn đang có công nợ vượt giới hạn và chưa thanh toán. Vui lòng thanh toán công nợ trước khi thực hiện giao dịch mới.");
+                }
 
                 // Gửi request đến PayOS
                 var request = new HttpRequestMessage(HttpMethod.Get, getUrl);
