@@ -153,6 +153,8 @@ builder.Services.AddScoped<IAgencyLevelRepository, AgencyLevelRepository>();
 builder.Services.AddScoped<IAgencyLevelService, AgencyLevelService>();
 
 builder.Services.AddScoped<IAgencyAccountRepository, AgencyAccountRepository>();
+
+
 builder.Services.AddScoped<IAgencyAccountLevelRepository, AgencyAccountLevelRepository>();
 
 

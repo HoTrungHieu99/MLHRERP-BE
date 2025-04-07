@@ -37,6 +37,9 @@ namespace Repo.IRepository
         Task<OrderDetail?> GetOrderDetailAsync(Guid orderId, long productId);
         Task UpdateOrderDetailAsync(OrderDetail detail);
         Task<string> GenerateRequestExportCodeAsync();
-        
+
+       
+
+
     }
 }

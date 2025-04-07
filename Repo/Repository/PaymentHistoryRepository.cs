@@ -51,5 +51,33 @@ namespace Repo.Repository
                 .ToListAsync();
         }
 
+        public async Task<decimal?> GetCreditLimitByUserIdAsync(Guid userId)
+        {
+            return await _context.AgencyAccounts
+                .Where(aa => aa.UserId == userId)
+                .SelectMany(aa => aa.AgencyAccountLevels)
+                .OrderByDescending(aal => aal.ChangeDate)
+                .Select(aal => aal.Level.CreditLimit)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<int?> GetPaymentTermByUserIdAsync(Guid userId)
+        {
+            return await _context.AgencyAccounts
+                .Where(aa => aa.UserId == userId)
+                .SelectMany(aa => aa.AgencyAccountLevels)
+                .OrderByDescending(aal => aal.ChangeDate)
+                .Select(aal => aal.Level.PaymentTerm)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<decimal> GetTotalRemainingDebtAmountByUserIdAsync(Guid userId)
+        {
+            return await _context.PaymentHistories
+                .Where(ph => ph.UserId == userId)
+                .SumAsync(ph => ph.RemainingDebtAmount);
+        }
+
+
     }
 }
