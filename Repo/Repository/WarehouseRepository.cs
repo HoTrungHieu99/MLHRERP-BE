@@ -181,5 +181,29 @@ namespace Repo.Repository
                 .ToListAsync();
         }
 
+        public async Task<List<ProductWarehouseSummaryDto>> GetWarehousesByProductIdAsync(long productId)
+        {
+            return await _context.WarehouseProduct
+                .Where(wp => wp.ProductId == productId)
+                .GroupBy(wp => new
+                {
+                    wp.ProductId,
+                    wp.Product.ProductName,
+                    wp.WarehouseId,
+                    wp.Warehouse.WarehouseName
+                })
+                .Select(g => new ProductWarehouseSummaryDto
+                {
+                    ProductId = g.Key.ProductId,
+                    ProductName = g.Key.ProductName,
+                    WarehouseId = g.Key.WarehouseId,
+                    WarehouseName = g.Key.WarehouseName,
+                    TotalQuantity = g.Sum(x => x.Quantity)
+                })
+                .ToListAsync();
+        }
+
+
+
     }
 }

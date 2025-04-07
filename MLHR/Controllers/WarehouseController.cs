@@ -125,5 +125,19 @@ namespace MLHR.Controllers
             var result = await _warehouseService.GetProductSummariesByWarehouseIdAsync(warehouseId);
             return Ok(result);
         }
+
+        [Authorize(Roles = "6")]
+        [HttpGet("product/{productId}/warehouses-summary")]
+        public async Task<IActionResult> GetWarehousesByProductId(long productId)
+        {
+            var result = await _warehouseService.GetWarehousesByProductIdAsync(productId);
+            if (result == null || !result.Any())
+            {
+                return NotFound("No warehouses found for this product.");
+            }
+
+            return Ok(result);
+        }
+
     }
 }

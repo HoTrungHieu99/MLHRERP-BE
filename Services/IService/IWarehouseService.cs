@@ -21,6 +21,9 @@ namespace Services.IService
 
         Task<List<WarehouseProductSummaryDto>> GetProductSummariesByWarehouseIdAsync(long warehouseId);
 
+        Task<List<ProductWarehouseSummaryDto>> GetWarehousesByProductIdAsync(long productId);
+
+
 
     }
 }
