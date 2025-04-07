@@ -238,6 +238,19 @@ namespace Repo.Repository
         {
             return await _context.AgencyAccounts.FirstOrDefaultAsync(a => a.UserId == userId);
         }
+
+        public async Task<Guid?> GetUserIdByAgencyIdAsync(long agencyId)
+        {
+            var agencyAccount = await _context.AgencyAccounts
+                .Where(a => a.AgencyId == agencyId)
+                .Select(a => a.UserId)
+                .FirstOrDefaultAsync();
+
+            return agencyAccount;
+        }
+
+
+
         public async Task<Address> GetAddressByIdAsync(int addressId)
         {
             return await _context.Addresses.FirstOrDefaultAsync(a => a.AddressId == addressId);

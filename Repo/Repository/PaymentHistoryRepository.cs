@@ -51,5 +51,36 @@ namespace Repo.Repository
                 .ToListAsync();
         }
 
+        public async Task<decimal?> GetCreditLimitByUserIdAsync(Guid userId)
+        {
+            var creditLimit = await _context.AgencyAccountLevels
+                .Include(aal => aal.Level)
+                .Include(aal => aal.Agency)
+                .Where(aal => aal.Agency.UserId == userId)
+                .OrderByDescending(aal => aal.ChangeDate) // Nếu có nhiều cấp, lấy mới nhất
+                .Select(aal => aal.Level.CreditLimit)
+                .FirstOrDefaultAsync();
+
+            return creditLimit;
+        }
+
+        public async Task<int?> GetPaymentTermByUserIdAsync(Guid userId)
+        {
+            return await _context.AgencyAccounts
+                .Where(aa => aa.UserId == userId)
+                .SelectMany(aa => aa.AgencyAccountLevels)
+                .OrderByDescending(aal => aal.ChangeDate)
+                .Select(aal => aal.Level.PaymentTerm)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<decimal> GetTotalRemainingDebtAmountByUserIdAsync(Guid userId)
+        {
+            return await _context.PaymentHistories
+                .Where(ph => ph.UserId == userId)
+                .SumAsync(ph => ph.RemainingDebtAmount);
+        }
+
+
     }
 }

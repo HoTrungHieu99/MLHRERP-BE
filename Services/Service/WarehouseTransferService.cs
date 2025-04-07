@@ -213,7 +213,6 @@ namespace Services.Service
                 }).ToList()
             };
         }
-
     }
 
 }

@@ -8,6 +8,8 @@ using Net.payOS.Types;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Repo.IRepository;
+using Repo.Repository;
+using Services.Exceptions;
 using Services.IService;
 using System;
 using System.Collections.Generic;
@@ -30,6 +32,7 @@ namespace Services.Service
         private readonly IUserRepository _userRepository;
         private readonly IOrderService _orderService;
         private readonly HttpClient _client;
+        private readonly IPaymentHistoryRepository _repository;
 
         // Constructor có đầy đủ các dependency
         public PaymentService(IOptions<PayOSSettings> payOSSettings,
@@ -38,7 +41,8 @@ namespace Services.Service
                               IConfiguration configuration,
                               IUserRepository userRepository,
                               HttpClient client,
-                              IOrderService orderService)
+                              IOrderService orderService,
+                              IPaymentHistoryRepository repository)
         {
             // Kiểm tra nếu payOSSettings bị null
             _payOSSettings = payOSSettings?.Value ?? throw new ArgumentNullException(nameof(payOSSettings));
@@ -57,6 +61,7 @@ namespace Services.Service
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
             _client = client;
+            _repository = repository;
         }
         /*public async Task<CreatePaymentResult> SendPaymentLink(Guid accountId, CreatePaymentRequest request)
         {
@@ -136,6 +141,12 @@ namespace Services.Service
         {
             try
             {
+
+                int amountToPay = (int)request.Price;
+                await ValidateDebtBeforePaymentAsync(accountId, request.OrderId ?? Guid.Empty, amountToPay);
+
+
+
                 var order = await _orderRepository.SingleOrDefaultAsync(p => p.OrderId == request.OrderId);
                 if (order == null)
                     throw new Exception("Không tìm thấy đơn hàng.");
@@ -199,6 +210,36 @@ namespace Services.Service
                 throw;
             }
         }
+
+        private async Task ValidateDebtBeforePaymentAsync(Guid userId, Guid orderId, int amountToPay)
+        {
+            var creditLimit = await _repository.GetCreditLimitByUserIdAsync(userId);
+            if (!creditLimit.HasValue) return;
+
+            // 🧾 Lấy số tiền cần thanh toán của đơn hàng (không phải tổng nợ toàn bộ)
+            var order = await _orderRepository.SingleOrDefaultAsync(p => p.OrderId == orderId);
+            if (order == null)
+                throw new BusinessException("Không tìm thấy đơn hàng.", 404);
+
+            var totalOrderAmount = (int)order.FinalPrice; // hoặc order.TotalDebt nếu có cột riêng
+
+            var remainingDebt = totalOrderAmount - amountToPay;
+
+            if (remainingDebt >= creditLimit.Value)
+            {
+                var minRequiredPayment = totalOrderAmount - creditLimit.Value + 1;
+                throw new BusinessException(
+                    $"Bạn cần thanh toán tối thiểu {minRequiredPayment:N0}đ để công nợ đơn hàng không vượt quá hạn mức {creditLimit.Value:N0}đ.",
+                    404
+                );
+            }
+        }
+
+
+
+
+
+
 
 
         private string ComputeHmacSha256(string data, string checksumKey)
@@ -299,6 +340,20 @@ namespace Services.Service
                     await _paymentRepository.SaveChangesAsync(); // 👈 Lúc này Id mới được sinh
                     await _orderService.ProcessPaymentAsync(order.OrderId);
 
+                }
+
+
+                if (newRemainingDebt > 0 && agency != null)
+                {
+                    var agencyLevel = await _paymentRepository.GetAgencyAccountLevelByAgencyIdAsync(agency.AgencyId);
+                    if (agencyLevel == null)
+                        throw new Exception("AgencyAccountLevel not found.");
+
+                    agencyLevel.TotalDebtValue += newRemainingDebt;
+                    agencyLevel.ChangeDate = DateTime.Now;
+
+                    await _paymentRepository.UpdateAgencyAccountLevelAsync(agencyLevel);
+                    await _paymentRepository.SaveChangesAsync();
                 }
 
                 // ✅ newHistory.PaymentHistoryId đã được sinh tự động, dùng được ở đây:

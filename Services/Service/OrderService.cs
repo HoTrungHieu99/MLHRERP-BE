@@ -21,19 +21,22 @@ namespace Services.Service
         private readonly IRequestProductRepository _requestProductRepository;
         private readonly IUserRepository _userRepository;
         private readonly IHubContext<NotificationHub> _hub;
+        private readonly IPaymentHistoryRepository _paymentHistoryRepository;
 
         public OrderService(
             IOrderRepository orderRepository,
             IExportRepository exportRepository,
             IRequestProductRepository requestProductRepository,
             IUserRepository agencyRepository,
-            IHubContext<NotificationHub> hub)
+            IHubContext<NotificationHub> hub,
+            IPaymentHistoryRepository paymentHistoryRepository)
         {
             _orderRepository = orderRepository;
             _exportRepository = exportRepository;
             _requestProductRepository = requestProductRepository;
             _userRepository = agencyRepository;
-            _hub = hub; 
+            _hub = hub;
+            _paymentHistoryRepository = paymentHistoryRepository;
         }
         public async Task<List<OrderDto>> GetAllOrdersAsync()
         {
@@ -138,11 +141,27 @@ namespace Services.Service
 
                 // ✅ Lấy `AgencyId` từ RequestProduct (RequestBy)
                 long requestBy = requestProduct.AgencyId; // ✅ Lưu vào RequestExport.RequestedBy
-/*
-                // ✅ Lấy UserId từ JWT Token
-                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
-                    throw new Exception("User ID not found in token.");*/
+                /*
+                                // ✅ Lấy UserId từ JWT Token
+                                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                                if (string.IsNullOrEmpty(userId))
+                                    throw new Exception("User ID not found in token.");*/
+
+                var userId = await _userRepository.GetUserIdByAgencyIdAsync(requestBy);
+                if (userId == null)
+                    throw new Exception("User not found for the given AgencyId.");
+
+                // ✅ Kiểm tra tổng nợ hiện tại
+                var totalDebt = await _paymentHistoryRepository.GetTotalRemainingDebtAmountByUserIdAsync(userId.Value);
+
+                // ✅ Kiểm tra giới hạn công nợ
+                var creditLimit = await _paymentHistoryRepository.GetCreditLimitByUserIdAsync(userId.Value);
+
+                // Nếu tổng nợ vượt hoặc bằng giới hạn công nợ, từ chối thanh toán
+                if (creditLimit.HasValue && totalDebt >= creditLimit.Value)
+                    throw new Exception("Bạn cần thanh toán các công nợ hiện tại trước khi tiếp tục.");
+
+
 
                 // ✅ Lấy EmployeeId từ UserId thông qua UserRepository
                 var employeeId = requestProduct.ApprovedBy;

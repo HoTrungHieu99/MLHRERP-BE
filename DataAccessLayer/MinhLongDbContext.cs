@@ -273,6 +273,13 @@ namespace DataAccessLayer
                 .HasForeignKey(p => p.UpdatedBy)
                 .OnDelete(DeleteBehavior.NoAction);
 
+
+            modelBuilder.Entity<AgencyAccountLevel>()
+    .HasOne(aal => aal.Agency)
+    .WithMany(a => a.AgencyAccountLevels) // thêm chỗ này
+    .HasForeignKey(aal => aal.AgencyId);
+
+
             // 🔥 **Cấu hình giá trị decimal**
             modelBuilder.Entity<AgencyAccountLevel>()
                 .Property(aal => aal.MonthlyRevenue)

@@ -162,5 +162,26 @@ namespace Repo.Repository
 
             return requestCode;
         }
+
+        public async Task<decimal?> GetCreditLimitByUserIdAsync(Guid userId)
+        {
+            return await _context.AgencyAccounts
+                .Where(aa => aa.UserId == userId)
+                .SelectMany(aa => aa.AgencyAccountLevels)
+                .OrderByDescending(aal => aal.ChangeDate)
+                .Select(aal => aal.Level.CreditLimit)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<int?> GetPaymentTermByUserIdAsync(Guid userId)
+        {
+            return await _context.AgencyAccounts
+                .Where(aa => aa.UserId == userId)
+                .SelectMany(aa => aa.AgencyAccountLevels)
+                .OrderByDescending(aal => aal.ChangeDate)
+                .Select(aal => aal.Level.PaymentTerm)
+                .FirstOrDefaultAsync();
+        }
+
     }
 }

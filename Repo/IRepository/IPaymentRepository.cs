@@ -24,5 +24,8 @@ namespace Repo.IRepository
 
         Task<PaymentTransaction?> GetTransactionByReferenceAsync(Guid paymentHistoryId);
 
+        Task<AgencyAccountLevel?> GetAgencyAccountLevelByAgencyIdAsync(long agencyId);
+        Task UpdateAgencyAccountLevelAsync(AgencyAccountLevel level);
+
     }
 }

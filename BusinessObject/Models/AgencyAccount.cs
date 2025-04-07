@@ -30,5 +30,8 @@ namespace BusinessObject.Models
         /*public int LocationId { get; set; }
         [ForeignKey("LocationId")]
         public Location Location { get; set; }*/
+
+        public ICollection<AgencyAccountLevel> AgencyAccountLevels { get; set; }
+
     }
 }
