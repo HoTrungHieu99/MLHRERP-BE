@@ -336,14 +336,19 @@ namespace Services.Service
             if (!transferRequest.TransferProducts.Any())
                 throw new Exception("Yêu cầu điều phối không có sản phẩm.");
 
+            if (transferRequest.SourceWarehouseId == null)
+                throw new Exception("Yêu cầu điều phối chưa được chỉ định kho nguồn.");
+
+            var sourceWarehouseId = transferRequest.SourceWarehouseId.Value;
+
             // ✅ Tạo phiếu xuất
             var receipt = new ExportWarehouseReceipt
             {
                 DocumentNumber = $"EXP-TRANS-{DateTime.Now:yyyyMMddHHmmss}",
                 DocumentDate = DateTime.Now,
-                ExportDate = dto.ExportDate,
+                ExportDate = DateTime.Now,
                 ExportType = "Xuất Điều Phối",
-                WarehouseId = dto.SourceWarehouseId,
+                WarehouseId = sourceWarehouseId,
                 RequestExportId = transferRequest.RequestExportId,
                 OrderCode = transferRequest.OrderCode,
                 AgencyName = null,
@@ -363,7 +368,7 @@ namespace Services.Service
                     .Include(p => p.Product)
                     .Include(p => p.Batch)
                     .FirstOrDefaultAsync(w => w.ProductId == item.ProductId &&
-                                              w.WarehouseId == dto.SourceWarehouseId &&
+                                              w.WarehouseId == sourceWarehouseId &&
                                               w.Quantity >= item.Quantity);
 
                 if (wp == null)
@@ -394,16 +399,17 @@ namespace Services.Service
             // ✅ Lưu phiếu xuất
             await _repository.AddExportReceiptAsync(receipt);
 
+            // ✅ Cập nhật trạng thái điều phối
             transferRequest.Status = "Approved";
             transferRequest.ApprovedBy = userId;
             await _transferRequestRepo.UpdateAsync(transferRequest);
-
 
             // ✅ Duyệt luôn phiếu
             await ApproveReceiptAsync(receipt.ExportWarehouseReceiptId, userId);
 
             return receipt;
         }
-    }
 
     }
+
+}
