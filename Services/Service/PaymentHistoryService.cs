@@ -141,8 +141,8 @@ namespace Services.Service
 
             foreach (var payment in payments)
             {
-                var dueDate = payment.PaymentDate.AddMonths(3);
-                //var dueDate = new DateTime(2025, 4, 15);
+                //var dueDate = payment.PaymentDate.AddMonths(3);
+                var dueDate = new DateTime(2025, 4, 15);
                 var daysLeft = (dueDate - DateTime.UtcNow.Date).TotalDays;
 
                 if (daysLeft <= 10 && daysLeft >= 0)
