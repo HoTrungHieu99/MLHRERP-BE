@@ -120,11 +120,11 @@ namespace Services.Service
             var daysLeft = (dueDate - DateTime.UtcNow).TotalDays;
 
             if (daysLeft > 10)
-                return "Còn hạn";
+                return "StillValid";
             else if (daysLeft <= 10 && daysLeft >= 0)
-                return "Gần hạn";
+                return "NearDue";
             else
-                return "Quá hạn";
+                return "Overdue";
         }
 
     }
