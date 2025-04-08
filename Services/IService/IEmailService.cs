@@ -12,5 +12,6 @@ namespace Services.IService
         Task<bool> SendEmailRegisterAccountAsync(string emailRequest, string subjectEmail, string fullName, string userNameUser, string passwordUser);
         Task<bool> CheckOtpEmail(CheckOtpRequest checkOtpRequest);
         Task<bool> SendEmailAsync(SendOtpEmailRequest sendEmailRequest);
+        Task<bool> SendEmailDebtReminderAsync(string emailRequest, string fullName, string orderId, DateTime dueDate);
     }
 }

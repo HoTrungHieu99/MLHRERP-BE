@@ -13,6 +13,7 @@ using Services.Service;
 using System.Security.Claims;
 using System.Text;
 using Services.Exceptions;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -96,6 +97,11 @@ var connectionString = builder.Configuration.GetConnectionString("ServerConnecti
 builder.Services.AddDbContext<MinhLongDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+// 📌 Hangfire Configuration
+builder.Services.AddHangfire(config =>
+    config.UseSqlServerStorage(connectionString));
+builder.Services.AddHangfireServer();
+
 // ✅ Đăng ký Services và Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -157,6 +163,8 @@ builder.Services.AddScoped<IAgencyLevelService, AgencyLevelService>();
 
 builder.Services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
 builder.Services.AddScoped<IPaymentTransactionService, PaymentTransactionService>();
+builder.Services.AddMemoryCache(); // hoặc services.AddMemoryCache() nếu dùng Startup
+builder.Services.AddScoped<ICacheService, MemoryCacheService>();
 
 
 builder.Services.AddScoped<IAgencyAccountRepository, AgencyAccountRepository>();
@@ -216,6 +224,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSignalR();
 
+
+
 var app = builder.Build();
 
 // ✅ Cấu hình Middleware cho Swagger (chỉ trong môi trường Development)
@@ -240,6 +250,13 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 // ✅ Bật Authorization
 app.UseAuthorization();
+
+// ✅ Hangfire Dashboard & Recurring Job
+app.UseHangfireDashboard("/hangfire"); // Giao diện quản lý job
+RecurringJob.AddOrUpdate<IPaymentHistoryService>(
+    x => x.SendDebtRemindersAsync(),
+    Cron.Daily() // 🕒 Gửi mỗi ngày - bạn có thể test nhanh bằng Cron.Minutely
+);
 
 // ✅ Kích hoạt API Controllers
 app.UseEndpoints(endpoints =>

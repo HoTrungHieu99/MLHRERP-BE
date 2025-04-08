@@ -13,5 +13,6 @@ namespace Services.IService
         Task<PaymentHistoryDto> GetPaymentHistoryByIdAsync(Guid id);
         Task<List<PaymentHistoryDto>> GetAllPaymentHistoriesAsync();
         Task<List<PaymentHistoryDto>> GetPaymentHistoriesByUserIdAsync(Guid userId);
+        Task SendDebtRemindersAsync();
     }
 }

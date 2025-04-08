@@ -14,10 +14,18 @@ namespace Services.Service
     public class PaymentHistoryService : IPaymentHistoryService
     {
         private readonly IPaymentHistoryRepository _repository;
+        private readonly ICacheService _cacheService;
+        private readonly IEmailService _mailService;
+        private readonly IUserRepository _userRepository;
+        private readonly IOrderRepository _orderRepository;
 
-        public PaymentHistoryService(IPaymentHistoryRepository repository)
+        public PaymentHistoryService(IPaymentHistoryRepository repository, ICacheService cacheService, IEmailService mailService, IUserRepository userRepository, IOrderRepository orderRepository)
         {
             _repository = repository;
+            _cacheService = cacheService;
+            _mailService = mailService;
+            _userRepository = userRepository;
+            _orderRepository = orderRepository;
         }
 
         public async Task<PaymentHistoryDto> GetPaymentHistoryByIdAsync(Guid id)
@@ -125,6 +133,50 @@ namespace Services.Service
                 return "NearDue";
             else
                 return "OverDue";
+        }
+
+        public async Task SendDebtRemindersAsync()
+        {
+            var payments = await _repository.GetAllPaymentHistoryAsync(); // Đã include User (Email)
+
+            foreach (var payment in payments)
+            {
+                var dueDate = payment.PaymentDate.AddMonths(3);
+                //var dueDate = new DateTime(2025, 4, 15);
+                var daysLeft = (dueDate - DateTime.UtcNow.Date).TotalDays;
+
+                if (daysLeft <= 10 && daysLeft >= 0)
+                {
+                    string cacheKey = $"DebtReminder:{payment.OrderId}:{DateTime.UtcNow:yyyy-MM-dd}";
+                    if (!await _cacheService.ExistsAsync(cacheKey))
+                    {
+                        // 🔥 Lấy Email từ bảng User
+                        var email = payment.User?.Email;
+                        if (string.IsNullOrEmpty(email) || payment.UserId == Guid.Empty)
+                            continue;
+
+                        // 🔥 Truy vấn AgencyAccount để lấy AgencyName theo UserId
+                        var agencyAccount = await _userRepository.GetAgencyAccountByUserIdAsync(payment.UserId);
+                        var agencyName = agencyAccount?.AgencyName;
+
+                        var order = await _orderRepository.GetOrderByIdAsync(payment.OrderId);
+                        var orderCode = order?.OrderCode;
+
+
+                        if (!string.IsNullOrEmpty(agencyName))
+                        {
+                            await _mailService.SendEmailDebtReminderAsync(
+                                email,
+                                agencyName,
+                                orderCode,
+                                dueDate
+                            );
+
+                            await _cacheService.SetAsync(cacheKey, true, TimeSpan.FromDays(1));
+                        }
+                    }
+                }
+            }
         }
 
     }

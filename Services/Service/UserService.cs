@@ -341,15 +341,6 @@ namespace Services.Service
             return true;
         }
 
-
-
-
-
-
-
-
-
-
         //Logout
         public async Task<bool> LogoutAsync(string email)
         {
@@ -521,57 +512,6 @@ namespace Services.Service
             }
         }
 
-        //ChangePassword
-        /*public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
-        {
-            // ✅ 1. Lấy User từ database
-            var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null)
-            {
-                throw new ArgumentException("User not found.");
-            }
-
-
-
-            // ✅ 2. Kiểm tra mật khẩu cũ có đúng không
-            if (!BCrypt.Net.BCrypt.Verify(request.OldPassword, user.Password))
-            {
-                throw new ArgumentException("Old password is incorrect.");
-            }
-
-            // ✅ 3. Kiểm tra mật khẩu mới không được trùng với mật khẩu cũ
-            if (BCrypt.Net.BCrypt.Verify(request.NewPassword, user.Password))
-            {
-                throw new ArgumentException("New password cannot be the same as the old password.");
-            }
-
-            // ✅ 4. Kiểm tra độ mạnh của mật khẩu mới
-            if (!IsValidPassword(request.NewPassword))
-            {
-                throw new ArgumentException("New password must be at least 9 characters long, contain at least one uppercase letter, and one special character.");
-            }
-
-            // ✅ 5. Kiểm tra mật khẩu mới có khớp với xác nhận mật khẩu không
-            if (request.NewPassword != request.ConfirmPassword)
-            {
-                throw new ArgumentException("New password and confirm password do not match.");
-            }
-
-            // ✅ 6. Hash mật khẩu mới trước khi lưu
-            user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
-
-            // ✅ 7. Cập nhật mật khẩu vào database
-            return await _userRepository.UpdateUserAsync(user);
-        }
-
-
-        // ✅ Hàm kiểm tra độ mạnh của mật khẩu
-        private bool IsValidPassword(string password)
-        {
-            return password.Length >= 9 && // Ít nhất 9 ký tự
-                   Regex.IsMatch(password, @"[A-Z]") && // Ít nhất một chữ hoa
-                   Regex.IsMatch(password, @"[\W_]"); // Ít nhất một ký tự đặc biệt
-        }*/
 
         public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest request)
         {
@@ -750,19 +690,6 @@ namespace Services.Service
 
             return (true, message);
         }
-
-
-        /*public async Task<bool> ActiveUser(Guid userId)
-        {
-            User user = await _userRepository.GetUserByIdAsync(userId);
-            if (user.Status = false)
-            {
-                user.Status = true;
-                await _userRepository.UpdateUserAsync(user);
-                await _userRepository.SaveAsync();
-            }
-            return true;
-        }*/
 
         
     }

@@ -18,6 +18,8 @@ namespace Repo.IRepository
 
         Task<decimal> GetTotalRemainingDebtAmountByUserIdAsync(Guid userId);
 
+        Task<List<PaymentHistory>> GetAllPaymentHistoryAsync();
+
     }
 
 }

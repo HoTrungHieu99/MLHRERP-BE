@@ -64,6 +64,49 @@ namespace Services.Service
                 return false;
             }
         }
+
+        public async Task<bool> SendEmailDebtReminderAsync(string emailRequest, string fullName, string orderId, DateTime dueDate)
+        {
+            try
+            {
+                // 🔄 Đọc và thay thế nội dung HTML từ appsettings
+                var emailBody = _configuration["EmailSetting:EmailDebtReminder"];
+                emailBody = emailBody.Replace("{PROJECT_NAME}", _configuration["EmailSetting:PROJECT_NAME"]);
+                emailBody = emailBody.Replace("{FULL_NAME}", fullName);
+                emailBody = emailBody.Replace("{ORDER_ID}", orderId);
+                emailBody = emailBody.Replace("{DUE_DATE}", dueDate.ToString("dd/MM/yyyy"));
+                emailBody = emailBody.Replace("{PHONE_NUMBER}", _configuration["EmailSetting:PHONE_NUMBER"]);
+                emailBody = emailBody.Replace("{EMAIL_ADDRESS}", _configuration["EmailSetting:EMAIL_ADDRESS"]);
+
+                // 🔐 Cấu hình thông tin email server
+                var emailHost = _configuration["EmailSetting:EmailHost"];
+                var userName = _configuration["EmailSetting:EmailUsername"];
+                var password = _configuration["EmailSetting:EmailPassword"];
+
+                // ✉️ Tạo nội dung email
+                var email = new MimeMessage();
+                email.From.Add(MailboxAddress.Parse(emailHost));
+                email.To.Add(MailboxAddress.Parse(emailRequest));
+                email.Subject = "Nhắc nhở thanh toán sắp đến hạn";
+                email.Body = new TextPart(TextFormat.Html) { Text = emailBody };
+
+                // 📤 Gửi mail thông qua SMTP
+                using var smtp = new SmtpClient();
+                await smtp.ConnectAsync(emailHost, 587, SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync(userName, password);
+                await smtp.SendAsync(email);
+                await smtp.DisconnectAsync(true);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // ❌ Log lỗi nếu cần
+                Console.WriteLine($"[Lỗi gửi mail nhắc nợ]: {ex.Message}");
+                return false;
+            }
+        }
+
         private string GenerateOTP(int n)
         {
             string numbers = "1234567890";
@@ -141,5 +184,8 @@ namespace Services.Service
             await _userRepo.SaveAsync();
             return true;
         }
+
+        
+
     }
 }

@@ -29,6 +29,17 @@ namespace Repo.Repository
                 .FirstOrDefaultAsync(ph => ph.PaymentHistoryId == id);
         }
 
+        public async Task<List<PaymentHistory>> GetAllPaymentHistoryAsync()
+        {
+            return await _context.PaymentHistories
+                .Include(ph => ph.Order)
+                    .ThenInclude(o => o.RequestProduct)
+                        .ThenInclude(rp => rp.AgencyAccount)
+                .Include(ph => ph.PaymentTransactions)
+                .Include(ph => ph.User) // ✅ Include user trực tiếp
+                    .ThenInclude(u => u.AgencyAccount) // ✅ Nếu UserType là AGENCY
+                .ToListAsync();
+        }
 
         public async Task<List<PaymentHistory>> GetAllAsync()
         {

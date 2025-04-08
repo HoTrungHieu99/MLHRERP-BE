@@ -56,7 +56,12 @@ namespace MLHR.Controllers
             return Guid.TryParse(userIdClaim.Value, out var id) ? id : null;
         }
 
-
+        [HttpPost("test-reminder")]
+        public async Task<IActionResult> TestSendReminder()
+        {
+            await _service.SendDebtRemindersAsync();
+            return Ok("Gửi nhắc hạn xong!");
+        }
     }
 
 }
