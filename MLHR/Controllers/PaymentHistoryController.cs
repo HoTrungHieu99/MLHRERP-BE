@@ -41,10 +41,10 @@ namespace MLHR.Controllers
             }
 
             var histories = await _service.GetPaymentHistoriesByUserIdAsync(userId.Value);
-            if (histories == null || !histories.Any())
+           /* if (histories == null || !histories.Any())
             {
                 return NotFound(new { message = "Không có lịch sử thanh toán nào." });
-            }
+            }*/
 
             return Ok(histories);
         }
