@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO.AgencyLevel;
+﻿using System.Security.Claims;
+using BusinessObject.DTO.AgencyLevel;
 using BusinessObject.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ namespace MLHR.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "4")]
+    
     public class AgencyLevelController : ControllerBase
     {
         private readonly IAgencyLevelService _service;
@@ -56,5 +57,22 @@ namespace MLHR.Controllers
             await _service.DeleteLevelAsync(id);
             return NoContent();
         }
+
+        [HttpGet("current")]
+        public async Task<IActionResult> GetCurrentLevelOfAgency()
+        {
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+
+            if (userId == Guid.Empty)
+                return Unauthorized();
+
+            var result = await _service.GetCurrentLevelByUserIdAsync(userId);
+
+            if (result == null)
+                return NotFound("Không tìm thấy cấp đại lý hiện tại");
+
+            return Ok(result);
+        }
+
     }
 }

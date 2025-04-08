@@ -395,6 +395,17 @@ namespace Repo.Repository
             return agencyName ?? "Không xác định";
         }
 
+
+        public async Task<AgencyAccountLevel?> GetLatestLevelByAgencyIdAsync(long agencyId)
+        {
+            return await _context.AgencyAccountLevels
+                .Include(a => a.Level)
+                .Where(a => a.AgencyId == agencyId)
+                .OrderByDescending(a => a.ChangeDate)
+                .FirstOrDefaultAsync();
+        }
+
+
     }
 
 

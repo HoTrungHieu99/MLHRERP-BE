@@ -18,12 +18,14 @@ namespace Services.Service
         private readonly IExportWarehouseReceiptRepository _repository;
         private readonly IWarehouseTransferRepository _transferRequestRepo;
         private readonly MinhLongDbContext _context;
+        private readonly PdfService _pdfService;
 
-        public ExportWarehouseReceiptService(IExportWarehouseReceiptRepository repository,  MinhLongDbContext context, IWarehouseTransferRepository transferRequestRepo)
+        public ExportWarehouseReceiptService(IExportWarehouseReceiptRepository repository,  MinhLongDbContext context, IWarehouseTransferRepository transferRequestRepo, PdfService pdfService)
         {
             _repository = repository;
             _context = context;
             _transferRequestRepo = transferRequestRepo;
+            _pdfService = pdfService;
         }
 
         public async Task<ExportWarehouseReceipt> CreateReceiptAsync(ExportWarehouseReceiptDTO dto)
@@ -336,14 +338,19 @@ namespace Services.Service
             if (!transferRequest.TransferProducts.Any())
                 throw new Exception("Yêu cầu điều phối không có sản phẩm.");
 
+            if (transferRequest.SourceWarehouseId == null)
+                throw new Exception("Yêu cầu điều phối chưa được chỉ định kho nguồn.");
+
+            var sourceWarehouseId = transferRequest.SourceWarehouseId.Value;
+
             // ✅ Tạo phiếu xuất
             var receipt = new ExportWarehouseReceipt
             {
                 DocumentNumber = $"EXP-TRANS-{DateTime.Now:yyyyMMddHHmmss}",
                 DocumentDate = DateTime.Now,
-                ExportDate = dto.ExportDate,
+                ExportDate = DateTime.Now,
                 ExportType = "Xuất Điều Phối",
-                WarehouseId = dto.SourceWarehouseId,
+                WarehouseId = sourceWarehouseId,
                 RequestExportId = transferRequest.RequestExportId,
                 OrderCode = transferRequest.OrderCode,
                 AgencyName = null,
@@ -363,7 +370,7 @@ namespace Services.Service
                     .Include(p => p.Product)
                     .Include(p => p.Batch)
                     .FirstOrDefaultAsync(w => w.ProductId == item.ProductId &&
-                                              w.WarehouseId == dto.SourceWarehouseId &&
+                                              w.WarehouseId == sourceWarehouseId &&
                                               w.Quantity >= item.Quantity);
 
                 if (wp == null)
@@ -394,16 +401,73 @@ namespace Services.Service
             // ✅ Lưu phiếu xuất
             await _repository.AddExportReceiptAsync(receipt);
 
+            // ✅ Cập nhật trạng thái điều phối
             transferRequest.Status = "Approved";
             transferRequest.ApprovedBy = userId;
             await _transferRequestRepo.UpdateAsync(transferRequest);
-
 
             // ✅ Duyệt luôn phiếu
             await ApproveReceiptAsync(receipt.ExportWarehouseReceiptId, userId);
 
             return receipt;
         }
-    }
+
+
+        public async Task<byte[]> ExportReceiptToPdfAsync(long id)
+        {
+            var receipt = await _repository.GetReceiptByIdAsync(id);
+            if (receipt == null)
+                throw new Exception("Không tìm thấy phiếu xuất kho.");
+
+            var html = new StringBuilder();
+            html.AppendLine("<html><head><style>");
+            html.AppendLine("body { font-family: Arial; font-size: 14px; }");
+            html.AppendLine("table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; }");
+            html.AppendLine("th { background-color: #f2f2f2; }");
+            html.AppendLine("</style></head><body>");
+
+            html.AppendLine("<h2 style='text-align:center;'>PHIẾU XUẤT KHO</h2>");
+            html.AppendLine($"<p><b>Số chứng từ:</b> {receipt.DocumentNumber}</p>");
+            html.AppendLine($"<p><b>Ngày chứng từ:</b> {receipt.DocumentDate:dd/MM/yyyy}</p>");
+            html.AppendLine($"<p><b>Ngày xuất:</b> {receipt.ExportDate:dd/MM/yyyy}</p>");
+            html.AppendLine($"<p><b>Loại xuất:</b> {receipt.ExportType}</p>");
+            html.AppendLine($"<p><b>Kho:</b> {receipt.WarehouseId}</p>");
+            html.AppendLine($"<p><b>Đơn hàng:</b> {receipt.OrderCode}</p>");
+            html.AppendLine($"<p><b>Đại lý:</b> {receipt.AgencyName}</p>");
+
+            html.AppendLine("<h4>Danh sách sản phẩm xuất</h4>");
+            html.AppendLine("<table width='100%'>");
+            html.AppendLine("<tr><th>STT</th><th>Mã lô</th><th>Sản phẩm</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th><th>HSD</th></tr>");
+
+            int stt = 1;
+            foreach (var item in receipt.ExportWarehouseReceiptDetails)
+            {
+                html.AppendLine("<tr>");
+                html.AppendLine($"<td>{stt++}</td>");
+                html.AppendLine($"<td>{item.BatchNumber}</td>");
+                html.AppendLine($"<td>{item.ProductName}</td>");
+                html.AppendLine($"<td>{item.Quantity}</td>");
+                html.AppendLine($"<td>{item.UnitPrice:N0}</td>");
+                html.AppendLine($"<td>{item.TotalProductAmount:N0}</td>");
+                html.AppendLine($"<td>{item.ExpiryDate:dd/MM/yyyy}</td>");
+                html.AppendLine("</tr>");
+            }
+
+            html.AppendLine("</table>");
+            html.AppendLine($"<p><b>Tổng số lượng:</b> {receipt.TotalQuantity}</p>");
+            html.AppendLine($"<p><b>Tổng tiền:</b> {receipt.TotalAmount:N0} VND</p>");
+
+            html.AppendLine("<br/><br/><table width='100%'><tr>");
+            html.AppendLine("<td style='text-align:center;'>Người lập phiếu<br/><br/><br/>[Ký tên]</td>");
+            html.AppendLine("<td style='text-align:center;'>Người duyệt<br/><br/><br/>[Ký tên]</td>");
+            html.AppendLine("</tr></table>");
+
+            html.AppendLine("</body></html>");
+
+            return _pdfService.GeneratePdf(html.ToString());
+        }
+
 
     }
+
+}

@@ -20,6 +20,11 @@ namespace Repo.IRepository
         Task UpdateAsync(WarehouseTransferRequest request);
 
         Task<List<WarehouseRequestExport>> GetRemainingRequestExportsAsync(int requestExportId);
+        Task<List<WarehouseTransferRequest>> GetBySourceWarehouseAsync(long sourceWarehouseId);
+
+        Task<List<WarehouseTransferRequest>> GetByDestinationWarehouseAsync(long destinationWarehouseId);
+
+
 
     }
 }

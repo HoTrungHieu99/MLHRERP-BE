@@ -22,13 +22,15 @@ namespace Services.Service
         private readonly IBatchRepository _batchRepository; // ✅ Thêm Batch Repository để kiểm tra số lượng lô đã tạo
         private readonly IWarehouseRepository _warehouseRepository;
         private readonly IWarehouseTransferRepository _warehouseTransferRepository;
+        private readonly PdfService _pdfService;
 
-        public WarehouseReceiptService(IWarehouseReceiptRepository repository, IBatchRepository batchRepository, IWarehouseRepository warehouseRepository, IWarehouseTransferRepository warehouseTransferRepository)
+        public WarehouseReceiptService(IWarehouseReceiptRepository repository, IBatchRepository batchRepository, IWarehouseRepository warehouseRepository, IWarehouseTransferRepository warehouseTransferRepository, PdfService pdfService)
         {
             _repository = repository;
             _batchRepository = batchRepository;
             _warehouseRepository = warehouseRepository;
             _warehouseTransferRepository = warehouseTransferRepository;
+            _pdfService = pdfService;
         }
 
         public async Task<bool> CreateReceiptAsync(WarehouseReceiptRequest request, Guid currentUserId)
@@ -257,6 +259,66 @@ namespace Services.Service
             await _repository.ApproveAsync(createdReceipt.WarehouseReceiptId, currentUserId);
 
             return createdReceipt;
+        }
+
+
+        public async Task<byte[]> ExportReceiptToPdfAsync(long id)
+        {
+            var receipt = await GetWarehouseReceiptDTOIdAsync(id);
+            if (receipt == null) throw new Exception("Không tìm thấy phiếu.");
+
+            var productIds = receipt.Batches.Select(b => b.ProductId).Distinct().ToList();
+            var products = await _warehouseRepository.GetProductsByIdsAsync(productIds);
+            var productDict = products.ToDictionary(p => p.ProductId, p => p.ProductName);
+
+            var html = new StringBuilder();
+            html.AppendLine("<html><head><style>");
+            html.AppendLine("body { font-family: Arial; font-size: 14px; }");
+            html.AppendLine("table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; }");
+            html.AppendLine("th { background-color: #f2f2f2; }");
+            html.AppendLine("</style></head><body>");
+
+            html.AppendLine("<h2 style='text-align:center;'>PHIẾU NHẬP KHO</h2>");
+            html.AppendLine($"<p><b>Số chứng từ:</b> {receipt.DocumentNumber}</p>");
+            html.AppendLine($"<p><b>Ngày chứng từ:</b> {receipt.DocumentDate:dd/MM/yyyy}</p>");
+            html.AppendLine($"<p><b>Ngày nhập thực tế:</b> {receipt.DateImport:dd/MM/yyyy}</p>");
+            html.AppendLine($"<p><b>Kho:</b> {receipt.WarehouseId}</p>");
+            html.AppendLine($"<p><b>Nhà cung cấp:</b> {receipt.Supplier}</p>");
+            html.AppendLine($"<p><b>Loại nhập:</b> {receipt.ImportType}</p>");
+
+            html.AppendLine("<h4>Danh sách lô hàng</h4>");
+            html.AppendLine("<table width='100%'>");
+            html.AppendLine("<tr><th>STT</th><th>Mã lô</th><th>Sản phẩm</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th><th>NSX</th></tr>");
+
+            int stt = 1;
+            foreach (var batch in receipt.Batches)
+            {
+                var productName = productDict.ContainsKey(batch.ProductId)
+                    ? productDict[batch.ProductId]
+                    : "Không rõ";
+
+                html.AppendLine("<tr>");
+                html.AppendLine($"<td>{stt++}</td>");
+                html.AppendLine($"<td>{batch.BatchCode}</td>");
+                html.AppendLine($"<td>{productName}</td>");
+                html.AppendLine($"<td>{batch.Quantity}</td>");
+                html.AppendLine($"<td>{batch.UnitCost:N0}</td>");
+                html.AppendLine($"<td>{batch.TotalAmount:N0}</td>");
+                html.AppendLine($"<td>{batch.DateOfManufacture:dd/MM/yyyy}</td>");
+                html.AppendLine("</tr>");
+            }
+
+            html.AppendLine("</table>");
+            html.AppendLine($"<p><b>Tổng số lượng:</b> {receipt.TotalQuantity}</p>");
+            html.AppendLine($"<p><b>Tổng tiền:</b> {receipt.TotalPrice:N0} VND</p>");
+
+            html.AppendLine("<br/><br/><table width='100%'><tr>");
+            html.AppendLine("<td style='text-align:center;'>Người lập phiếu<br/><br/><br/>[Ký tên]</td>");
+            html.AppendLine("<td style='text-align:center;'>Người duyệt<br/><br/><br/>[Ký tên]</td>");
+            html.AppendLine("</tr></table>");
+            html.AppendLine("</body></html>");
+
+            return _pdfService.GeneratePdf(html.ToString());
         }
 
 

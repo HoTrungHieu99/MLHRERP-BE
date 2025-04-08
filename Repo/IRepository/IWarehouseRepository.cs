@@ -29,6 +29,10 @@ namespace Repo.IRepository
 
         Task<List<Product>> GetProductsByIdsAsync(IEnumerable<long> productIds);
 
+        Task<List<ProductWarehouseSummaryDto>> GetWarehousesByProductIdAsync(long productId);
+
+        Task<List<Product>> GetProductsByIdsAsync(List<long> productIds);
+
 
     }
 }

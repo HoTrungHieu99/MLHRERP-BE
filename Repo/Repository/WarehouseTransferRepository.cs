@@ -95,5 +95,27 @@ namespace Repo.Repository
                 .Where(x => x.RequestExportId == requestExportId && x.RemainingQuantity > 0)
                 .ToListAsync();
         }
+
+        public async Task<List<WarehouseTransferRequest>> GetBySourceWarehouseAsync(long sourceWarehouseId)
+        {
+            return await _context.WarehouseTransferRequests
+                .Include(r => r.TransferProducts)
+                .Include(r => r.SourceWarehouse)            // 🔹 Kho nguồn
+                .Include(r => r.DestinationWarehouse)       // 🔸 Kho đích — thêm dòng này!
+                .Where(r => r.SourceWarehouseId == sourceWarehouseId)
+                .ToListAsync();
+        }
+
+        public async Task<List<WarehouseTransferRequest>> GetByDestinationWarehouseAsync(long destinationWarehouseId)
+        {
+            return await _context.WarehouseTransferRequests
+                .Include(r => r.TransferProducts)
+                .Include(r => r.SourceWarehouse)            // 🔹 Kho nguồn — thêm dòng này!
+                .Include(r => r.DestinationWarehouse)       // 🔸 Kho đích
+                .Where(r => r.DestinationWarehouseId == destinationWarehouseId)
+                .ToListAsync();
+        }
+
+
     }
 }

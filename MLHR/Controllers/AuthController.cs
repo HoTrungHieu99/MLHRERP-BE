@@ -178,7 +178,17 @@ namespace MLHR.Controllers
             return Ok(result);
         }
 
+
         [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetById(Guid userId)
+        {
+            var userDto = await _userService.GetAgencyUserByIdAsync(userId);
+            return Ok(userDto);
+        }
+
+
+
+     /*   [HttpGet("user/{userId}")]
         public async Task<ActionResult<UserDto>> GetProduct(Guid userId)
         {
             var user = await _userService.GetUserByIdAsync(userId);
@@ -187,7 +197,7 @@ namespace MLHR.Controllers
                 return NotFound();
             }
             return Ok(user);
-        }
+        }*/
 
         [HttpPut("{userId}/UnActive")]
         public async Task<IActionResult> UnActiveUser(Guid userId)
