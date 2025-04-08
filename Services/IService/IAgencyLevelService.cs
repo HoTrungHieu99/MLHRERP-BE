@@ -15,6 +15,8 @@ namespace Services.IService
         Task CreateLevelAsync(CreateAgencyLevelDto dto);
         Task UpdateLevelAsync(long id, UpdateAgencyLevelDto dto);
         Task DeleteLevelAsync(long id);
+
+        Task<CurrentAgencyLevelDto?> GetCurrentLevelByUserIdAsync(Guid userId);
     }
 
 }

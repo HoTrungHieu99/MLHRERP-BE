@@ -203,6 +203,12 @@ namespace Repo.Repository
                 .ToListAsync();
         }
 
+        public async Task<List<Product>> GetProductsByIdsAsync(List<long> productIds)
+        {
+            return await _context.Products
+                .Where(p => productIds.Contains(p.ProductId))
+                .ToListAsync();
+        }
 
 
     }

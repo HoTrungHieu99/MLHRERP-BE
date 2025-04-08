@@ -12,6 +12,8 @@ namespace Repo.IRepository
         Task<AgencyAccount> CreateAgencyAccountAsync(AgencyAccount account);
         Task<AgencyAccount> GetByUserIdAsync(Guid userId);
         Task<AgencyAccount?> GetByUsernameAsync(string username);
+        Task<AgencyAccount?> GetByUserIdWithLevelsAsync(Guid userId);
+
 
     }
 

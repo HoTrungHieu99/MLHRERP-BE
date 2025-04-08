@@ -38,6 +38,14 @@ namespace Repo.Repository
                 .FirstOrDefaultAsync(a => a.User.Username == username);
         }
 
+        public async Task<AgencyAccount?> GetByUserIdWithLevelsAsync(Guid userId)
+        {
+            return await _context.AgencyAccounts
+                .Include(a => a.AgencyAccountLevels)
+                    .ThenInclude(al => al.Level)
+                .FirstOrDefaultAsync(a => a.UserId == userId);
+        }
+
     }
 
 }

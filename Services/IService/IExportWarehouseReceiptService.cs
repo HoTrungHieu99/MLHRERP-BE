@@ -21,6 +21,8 @@ namespace Services.IService
 
         Task<ExportWarehouseReceipt> CreateReceiptFromTransferAsync(ExportWarehouseTransferDTO dto, Guid userId);
 
+        Task<byte[]> ExportReceiptToPdfAsync(long id);
+
     }
 
 }
