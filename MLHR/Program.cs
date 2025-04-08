@@ -178,11 +178,30 @@ builder.Services.AddScoped<IAgencyAccountLevelRepository, AgencyAccountLevelRepo
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddHttpContextAccessor();
 
-/*builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));*/
+if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+{
+    var path = "/usr/local/lib/libwkhtmltox.so";
+    if (File.Exists(path))
+    {
+        var context = new CustomAssemblyLoadContext();
+        context.LoadUnmanagedLibrary(path);
+        Console.WriteLine("✅ libwkhtmltox.so loaded in Program.cs");
+    }
+    else
+    {
+        Console.WriteLine("❌ Không tìm thấy libwkhtmltox.so tại " + path);
+    }
+}
 
+// ✅ Sau đó mới tạo PdfTools
 var pdfTools = new PdfTools();
 var converter = new SynchronizedConverter(pdfTools);
 builder.Services.AddSingleton<IConverter>(converter);
+
+
+/*var pdfTools = new PdfTools();
+var converter = new SynchronizedConverter(pdfTools);
+builder.Services.AddSingleton<IConverter>(converter);*/
 
 // 🔹 Đăng ký các service khác
 builder.Services.AddScoped<PdfService>();
