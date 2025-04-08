@@ -31,6 +31,7 @@ namespace Services.IService
         Task<(bool IsSuccess, string Message)> UnActiveUser(Guid userId);
         Task<User> GetUserByIdAsync(Guid userId);
 
+        Task<UserDetailDto> GetAgencyUserByIdAsync(Guid userId);
     }
 
 

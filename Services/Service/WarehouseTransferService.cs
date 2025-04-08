@@ -233,7 +233,9 @@ namespace Services.Service
                 Id = r.Id,
                 RequestCode = r.RequestCode,
                 SourceWarehouseId = r.SourceWarehouseId,
+                SourceWarehouseName = r.SourceWarehouse?.WarehouseName, 
                 DestinationWarehouseId = r.DestinationWarehouseId,
+                DestinationWarehouseName = r.DestinationWarehouse?.WarehouseName, 
                 RequestDate = r.RequestDate,
                 OrderCode = r.OrderCode,
                 Status = r.Status,
@@ -247,6 +249,7 @@ namespace Services.Service
                 }).ToList()
             };
         }
+
 
 
 

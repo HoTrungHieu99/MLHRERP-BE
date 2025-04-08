@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BusinessObject.Models;
 using DataAccessLayer;
+using Microsoft.EntityFrameworkCore;
 using Repo.IRepository;
 
 namespace Repo.Repository
@@ -28,6 +29,16 @@ namespace Repo.Repository
         {
             await _context.SaveChangesAsync();
         }
+
+        public async Task<AgencyAccountLevel?> GetLatestLevelByAgencyIdAsync(long agencyId)
+        {
+            return await _context.AgencyAccountLevels
+                .Include(a => a.Level)
+                .Where(a => a.AgencyId == agencyId)
+                .OrderByDescending(a => a.ChangeDate)
+                .FirstOrDefaultAsync();
+        }
+
     }
 
 }

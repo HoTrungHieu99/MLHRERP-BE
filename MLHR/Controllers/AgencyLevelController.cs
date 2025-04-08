@@ -35,7 +35,6 @@ namespace MLHR.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "4")]
         public async Task<IActionResult> Create([FromBody] CreateAgencyLevelDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -44,7 +43,6 @@ namespace MLHR.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "4")]
         public async Task<IActionResult> Update(long id, [FromBody] UpdateAgencyLevelDto dto)
         {
             await _service.UpdateLevelAsync(id, dto);
@@ -54,7 +52,6 @@ namespace MLHR.Controllers
 
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "4")]
         public async Task<IActionResult> Delete(long id)
         {
             await _service.DeleteLevelAsync(id);
@@ -62,7 +59,6 @@ namespace MLHR.Controllers
         }
 
         [HttpGet("current")]
-        [Authorize(Roles = "2")]
         public async Task<IActionResult> GetCurrentLevelOfAgency()
         {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());

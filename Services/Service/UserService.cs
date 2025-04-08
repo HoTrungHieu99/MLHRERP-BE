@@ -71,6 +71,43 @@ namespace Services.Service
             return user;
         }
 
+        public async Task<UserDetailDto> GetAgencyUserByIdAsync(Guid userId)
+        {
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+                throw new Exception("User not found");
+
+            var dto = new UserDetailDto
+            {
+                UserId = user.UserId,
+                Username = user.Username,
+                UserType = user.UserType,
+                Email = user.Email,
+                Phone = user.Phone,
+                AgencyLevelName = null,
+                CreditLimit = null
+            };
+
+            if (user.UserType?.ToUpper() == "AGENCY")
+            {
+                var agency = await _userRepository.GetAgencyAccountByUserIdAsync(userId);
+                if (agency != null)
+                {
+                    var level = await _agencyAccountLevelRepository
+                        .GetLatestLevelByAgencyIdAsync(agency.AgencyId);
+
+                    if (level != null)
+                    {
+                        dto.AgencyLevelName = level.Level?.LevelName;
+                        dto.CreditLimit = level.Level?.CreditLimit;
+                    }
+                }
+            }
+
+            return dto;
+        }
+
+
         // Hàm kiểm tra User có RoleId = 1 không
         private bool UserHasRole(Guid userId, int roleId)
         {

@@ -100,6 +100,8 @@ namespace Repo.Repository
         {
             return await _context.WarehouseTransferRequests
                 .Include(r => r.TransferProducts)
+                .Include(r => r.SourceWarehouse)            // 🔹 Kho nguồn
+                .Include(r => r.DestinationWarehouse)       // 🔸 Kho đích — thêm dòng này!
                 .Where(r => r.SourceWarehouseId == sourceWarehouseId)
                 .ToListAsync();
         }
@@ -108,6 +110,8 @@ namespace Repo.Repository
         {
             return await _context.WarehouseTransferRequests
                 .Include(r => r.TransferProducts)
+                .Include(r => r.SourceWarehouse)            // 🔹 Kho nguồn — thêm dòng này!
+                .Include(r => r.DestinationWarehouse)       // 🔸 Kho đích
                 .Where(r => r.DestinationWarehouseId == destinationWarehouseId)
                 .ToListAsync();
         }

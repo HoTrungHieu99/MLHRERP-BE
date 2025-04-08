@@ -51,7 +51,8 @@ namespace Repo.IRepository
         Task<User> GetUserByUserName(string userName);
         Task<string> GetAgencyNameByUserIdAsync(Guid userId);
 
-        
+        Task<AgencyAccountLevel?> GetLatestLevelByAgencyIdAsync(long agencyId);
+
     }
 
 }
