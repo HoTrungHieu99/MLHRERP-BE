@@ -14,6 +14,9 @@ namespace BusinessObject.DTO
         public string Email { get; set; }
         public string Phone { get; set; }
 
+        public bool Status { get; set; }
+        public bool VerifyEmail { get; set; }
+
         // Nếu là AGENCY
         public string AgencyLevelName { get; set; }
         public decimal? CreditLimit { get; set; }

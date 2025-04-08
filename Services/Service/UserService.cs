@@ -85,7 +85,9 @@ namespace Services.Service
                 Email = user.Email,
                 Phone = user.Phone,
                 AgencyLevelName = null,
-                CreditLimit = null
+                CreditLimit = null,
+                Status = user.Status,
+                VerifyEmail = user.VerifyEmail
             };
 
             if (user.UserType?.ToUpper() == "AGENCY")
