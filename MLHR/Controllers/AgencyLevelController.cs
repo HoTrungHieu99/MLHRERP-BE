@@ -1,4 +1,5 @@
-﻿using BusinessObject.DTO.AgencyLevel;
+﻿using System.Security.Claims;
+using BusinessObject.DTO.AgencyLevel;
 using BusinessObject.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ namespace MLHR.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "4")]
+    
     public class AgencyLevelController : ControllerBase
     {
         private readonly IAgencyLevelService _service;
@@ -34,6 +35,7 @@ namespace MLHR.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "4")]
         public async Task<IActionResult> Create([FromBody] CreateAgencyLevelDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -42,6 +44,7 @@ namespace MLHR.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "4")]
         public async Task<IActionResult> Update(long id, [FromBody] UpdateAgencyLevelDto dto)
         {
             await _service.UpdateLevelAsync(id, dto);
@@ -51,10 +54,29 @@ namespace MLHR.Controllers
 
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "4")]
         public async Task<IActionResult> Delete(long id)
         {
             await _service.DeleteLevelAsync(id);
             return NoContent();
         }
+
+        [HttpGet("current")]
+        [Authorize(Roles = "2")]
+        public async Task<IActionResult> GetCurrentLevelOfAgency()
+        {
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
+
+            if (userId == Guid.Empty)
+                return Unauthorized();
+
+            var result = await _service.GetCurrentLevelByUserIdAsync(userId);
+
+            if (result == null)
+                return NotFound("Không tìm thấy cấp đại lý hiện tại");
+
+            return Ok(result);
+        }
+
     }
 }

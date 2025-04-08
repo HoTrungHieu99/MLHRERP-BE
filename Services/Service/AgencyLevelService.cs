@@ -13,10 +13,12 @@ namespace Services.Service
     public class AgencyLevelService : IAgencyLevelService
     {
         private readonly IAgencyLevelRepository _repo;
+        private readonly IAgencyAccountRepository _accountRepo;
 
-        public AgencyLevelService(IAgencyLevelRepository repo)
+        public AgencyLevelService(IAgencyLevelRepository repo, IAgencyAccountRepository accountRepo)
         {
             _repo = repo;
+            _accountRepo = accountRepo;
         }
 
         public async Task<IEnumerable<AgencyLevel>> GetAllLevelsAsync()
@@ -59,6 +61,29 @@ namespace Services.Service
         public async Task DeleteLevelAsync(long id)
         {
             await _repo.DeleteAsync(id);
+        }
+
+        public async Task<CurrentAgencyLevelDto?> GetCurrentLevelByUserIdAsync(Guid userId)
+        {
+            var agency = await _accountRepo.GetByUserIdWithLevelsAsync(userId);
+
+            if (agency == null || agency.AgencyAccountLevels == null || !agency.AgencyAccountLevels.Any())
+                return null;
+
+            var latestLevel = agency.AgencyAccountLevels
+                .OrderByDescending(al => al.ChangeDate)
+                .FirstOrDefault();
+
+            if (latestLevel?.Level == null)
+                return null;
+
+            return new CurrentAgencyLevelDto
+            {
+                LevelName = latestLevel.Level.LevelName,
+                CreditLimit = latestLevel.Level.CreditLimit,
+                PaymentTerm = latestLevel.Level.PaymentTerm,
+                DiscountPercentage = latestLevel.Level.DiscountPercentage
+            };
         }
     }
 

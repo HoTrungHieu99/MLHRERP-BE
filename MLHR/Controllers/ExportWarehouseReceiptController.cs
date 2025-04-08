@@ -132,5 +132,20 @@ namespace MLHR.Controllers
                 return StatusCode(500, new { message = "Internal Server Error", detail = ex.Message });
             }
         }
+
+        [HttpGet("export-pdf/{id}")]
+        public async Task<IActionResult> ExportPdf(long id)
+        {
+            try
+            {
+                var pdfBytes = await _service.ExportReceiptToPdfAsync(id);
+                return File(pdfBytes, "application/pdf", $"PhieuXuatKho_{id}.pdf");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

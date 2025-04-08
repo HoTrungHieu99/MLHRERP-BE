@@ -31,7 +31,7 @@ namespace Repo.IRepository
 
         Task<List<ProductWarehouseSummaryDto>> GetWarehousesByProductIdAsync(long productId);
 
-
+        Task<List<Product>> GetProductsByIdsAsync(List<long> productIds);
 
 
     }

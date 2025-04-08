@@ -1,5 +1,7 @@
 ﻿using BusinessObject.DTO.PaymentDTO;
 using DataAccessLayer;
+using DinkToPdf.Contracts;
+using DinkToPdf;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,6 +12,7 @@ using Services.IService;
 using Services.Service;
 using System.Security.Claims;
 using System.Text;
+using Services.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -152,6 +155,10 @@ builder.Services.AddScoped<IWarehouseTransferService, WarehouseTransferService>(
 builder.Services.AddScoped<IAgencyLevelRepository, AgencyLevelRepository>();
 builder.Services.AddScoped<IAgencyLevelService, AgencyLevelService>();
 
+builder.Services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
+builder.Services.AddScoped<IPaymentTransactionService, PaymentTransactionService>();
+
+
 builder.Services.AddScoped<IAgencyAccountRepository, AgencyAccountRepository>();
 
 
@@ -160,6 +167,10 @@ builder.Services.AddScoped<IAgencyAccountLevelRepository, AgencyAccountLevelRepo
 
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+builder.Services.AddScoped<PdfService>();
+
 
 var configuration = builder.Configuration;
 builder.Services.Configure<PayOSSettings>(configuration.GetSection("PayOS"));
