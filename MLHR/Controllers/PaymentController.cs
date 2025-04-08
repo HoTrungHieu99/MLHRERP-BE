@@ -52,6 +52,33 @@ namespace MLHR.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("debt-pay/{userId:Guid}")]
+        public async Task<IActionResult> SendPaymentLinkDebtPay(Guid userId, CreatePaymentRequest request)
+        {
+            try
+            {
+                var result = await _paymentService.SendPaymentLinkDebtPay(userId, request);
+                if (result == null)
+                {
+                    return BadRequest(new { message = "Không thể tạo liên kết thanh toán." });
+                }
+                return Ok(result);
+            }
+            catch (BusinessException ex)
+            {
+                // Trả về mã lỗi do bạn chỉ định, ví dụ 404 hoặc 400
+                return StatusCode(ex.StatusCode, new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Log lại lỗi thật nếu cần
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, new { message = "Lỗi hệ thống. Vui lòng thử lại sau." });
+            }
+        }
+
+
 
         /*[HttpGet("Payment-confirm")]
         public async Task<IActionResult> PaymentConfirm()

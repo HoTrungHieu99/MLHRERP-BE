@@ -252,7 +252,74 @@ namespace Services.Service
         }
 
 
+        public async Task<CreatePaymentResult> SendPaymentLinkDebtPay(Guid accountId, CreatePaymentRequest request)
+        {
+            try
+            {
 
+                var order = await _orderRepository.SingleOrDefaultAsync(p => p.OrderId == request.OrderId);
+                if (order == null)
+                    throw new Exception("Không tìm thấy đơn hàng.");
+
+                // ✅ Dùng OrderCode đã có
+                long orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+                var agency = await _userRepository.GetAgencyAccountByUserIdAsync(accountId);
+                if (agency == null) throw new Exception("Tài khoản không hợp lệ.");
+
+                int amount = (int)request.Price;
+                string description = request.Description;
+                string? clientId = _configuration["PayOS:ClientId"];
+                var apikey = _configuration["PayOS:APIKey"];
+                var checksumkey = _configuration["PayOS:ChecksumKey"];
+                var returnurlfail = _configuration["PayOS:ReturnUrlFail"];
+
+                // ✅ returnUrl chỉ cần OrderId
+                //string returnUrl = $"http://localhost:5214/api/Payment/paymentconfirm" +
+                string returnUrl = $"https://minhlong.mlhr.org/api/Payment/paymentconfirm" +
+                   $"?orderCode={orderCode}" +
+                   $"&accountId={accountId}" +
+                   $"&amount={request.Price}" +
+                   $"&orderId={request.OrderId}";
+
+
+                var signatureData = new Dictionary<string, object>
+                {
+                    { "amount", amount },
+                    { "cancelUrl", returnurlfail },
+                    { "description", description },
+                    { "expiredAt", DateTimeOffset.Now.ToUnixTimeSeconds() },
+                    { "orderCode", orderCode },
+                    { "returnUrl", returnUrl }
+                    };
+
+                var sortedSignatureData = new SortedDictionary<string, object>(signatureData);
+                var dataForSignature = string.Join("&", sortedSignatureData.Select(p => $"{p.Key}={p.Value}"));
+                var signature = ComputeHmacSha256(dataForSignature, checksumkey);
+
+                PayOS pos = new PayOS(clientId, apikey, checksumkey);
+
+                var paymentData = new PaymentData(
+                    orderCode: orderCode,
+                    amount: amount,
+                    description: description,
+                    items: new List<ItemData> { new ItemData(agency.AgencyName, 1, amount) },
+                    cancelUrl: returnurlfail,
+                    returnUrl: returnUrl,
+                    signature: signature,
+                    buyerName: agency.AgencyName,
+                    expiredAt: (int)DateTimeOffset.Now.AddMinutes(10).ToUnixTimeSeconds()
+                );
+
+                var createPaymentResult = await pos.createPaymentLink(paymentData);
+                return createPaymentResult;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Lỗi tạo liên kết thanh toán: {ex.Message}");
+                throw;
+            }
+        }
 
 
 

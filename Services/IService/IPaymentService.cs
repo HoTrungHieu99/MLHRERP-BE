@@ -15,6 +15,8 @@ namespace Services.IService
 
         Task<CreatePaymentResult> SendPaymentLink(Guid accountId, CreatePaymentRequest request);
 
+        Task<CreatePaymentResult> SendPaymentLinkDebtPay(Guid accountId, CreatePaymentRequest request);
+
         Task<PaymentTransaction?> GetTransactionByReferenceAsync(Guid paymentHistoryId);
         Task<PaymentHistory?> GetPaymentHistoryByOrderIdAsync(Guid orderId);
     }
