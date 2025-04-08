@@ -12,15 +12,16 @@ namespace Services.Exceptions
     {
         public IntPtr LoadUnmanagedLibrary(string absolutePath)
         {
-            return LoadUnmanagedDll(absolutePath);
+            return LoadUnmanagedDllFromPath(absolutePath);
         }
 
-        protected override IntPtr LoadUnmanagedDll(String unmanagedDllName)
+        // Bắt buộc override, nhưng không cần implement
+        protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
         {
-            return LoadUnmanagedDllFromPath(unmanagedDllName);
+            return IntPtr.Zero;
         }
 
-        protected override Assembly Load(AssemblyName assemblyName)
+        protected override System.Reflection.Assembly Load(System.Reflection.AssemblyName assemblyName)
         {
             return null;
         }

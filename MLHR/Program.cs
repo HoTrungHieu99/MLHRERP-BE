@@ -14,12 +14,20 @@ using System.Security.Claims;
 using System.Text;
 using Services.Exceptions;
 using Hangfire;
+using System.Runtime.InteropServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Lấy cấu hình JWT từ appsettings.json
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
+
+if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+{
+    var context = new CustomAssemblyLoadContext();
+    string libraryPath = "/usr/local/lib/libwkhtmltox.so";
+    context.LoadUnmanagedLibrary(libraryPath);
+}
 
 // Cấu hình JWT Bearer Authentication cho Swagger
 builder.Services.AddSwaggerGen(options =>
@@ -177,6 +185,12 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+
+var pdfTools = new PdfTools();
+var converter = new SynchronizedConverter(pdfTools);
+builder.Services.AddSingleton<IConverter>(converter);
+
+// 🔹 Đăng ký các service khác
 builder.Services.AddScoped<PdfService>();
 
 
