@@ -184,7 +184,7 @@ builder.Services.AddScoped<IAgencyAccountLevelRepository, AgencyAccountLevelRepo
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+/*builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));*/
 
 var pdfTools = new PdfTools();
 var converter = new SynchronizedConverter(pdfTools);
