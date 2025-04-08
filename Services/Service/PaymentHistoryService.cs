@@ -124,7 +124,7 @@ namespace Services.Service
             else if (daysLeft <= 10 && daysLeft >= 0)
                 return "NearDue";
             else
-                return "Overdue";
+                return "OverDue";
         }
 
     }
