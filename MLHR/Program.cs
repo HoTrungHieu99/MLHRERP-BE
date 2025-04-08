@@ -22,12 +22,6 @@ var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
 
-if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-{
-    var context = new CustomAssemblyLoadContext();
-    string libraryPath = "/usr/local/lib/libwkhtmltox.so";
-    context.LoadUnmanagedLibrary(libraryPath);
-}
 
 // Cấu hình JWT Bearer Authentication cho Swagger
 builder.Services.AddSwaggerGen(options =>
