@@ -61,6 +61,7 @@ namespace Services.Service
                 RequestExportId = re.RequestExportId,
                 OrderId = re.OrderId,
                 AgencyName = re.RequestedByAgency?.AgencyName ?? "Unknown",
+                RequestDate = re.RequestDate,
                 ApprovedByName = re.ApprovedByEmployee?.FullName ?? "Chưa duyệt",
                 Status = re.Status,
                 ApprovedDate = re.ApprovedDate,
@@ -92,6 +93,7 @@ namespace Services.Service
                 RequestExportId = requestExport.RequestExportId,
                 OrderId = requestExport.OrderId,
                 AgencyName = requestExport.RequestedByAgency?.AgencyName ?? "Unknown", // 👈 Gán tên đại lý
+                RequestDate = requestExport.RequestDate,
                 ApprovedByName = requestExport.ApprovedByEmployee?.FullName ?? "Chưa duyệt",
                 Status = requestExport.Status,
                 ApprovedDate = requestExport.ApprovedDate,

@@ -13,6 +13,8 @@ namespace BusinessObject.DTO.RequestExport
         public string RequestExportCode { get; set; }
         public string AgencyName { get; set; }
         public string ApprovedByName { get; set; }
+
+        public DateTime RequestDate { get; set; }
         //public long RequestedBy { get; set; }
         //public long? ApprovedBy { get; set; }
         public string Status { get; set; }
