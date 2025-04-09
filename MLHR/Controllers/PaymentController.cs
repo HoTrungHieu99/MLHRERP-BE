@@ -79,62 +79,6 @@ namespace MLHR.Controllers
         }
 
 
-
-        /*[HttpGet("Payment-confirm")]
-        public async Task<IActionResult> PaymentConfirm()
-        {
-            if (Request.Query.Count == 0)
-            {
-                Console.WriteLine("❌ Không có query string.");
-                return Redirect("https://minhlong.mlhr.org/api/Payment/payment-fail");
-            }
-
-            try
-            {
-                string status = Request.Query["status"]!;
-                string code = Request.Query["code"]!;
-                string des = Request.Query["desc"]!;
-                string accountid = Request.Query["accountId"]!;
-                string amountStr = Request.Query["amount"]!;
-                string orderIdStr = Request.Query["orderid"]!;
-
-                decimal price = decimal.TryParse(amountStr, out var parsedAmount) ? parsedAmount : 0;
-                Guid orderId = Guid.TryParse(orderIdStr, out var parsedGuid) ? parsedGuid : Guid.Empty;
-
-                var request = new QueryRequest
-                {
-                    userId = accountid,
-                    Code = code,
-                    des = des,
-                    OrderId = orderId,
-                    price = price,
-                    Status = status
-                };
-
-
-                var result = await _paymentService.ConfirmPayment(Request.QueryString.Value!, request);
-                string formattedAmount = $"{price:N0} VND";
-
-                if (result != null && request.Code == "00")
-                {
-                    return Content($@"
-            <html><head><meta charset='UTF-8'><title>Thành công</title></head>
-            <body style='text-align:center;font-family:sans-serif'>
-            <h1 style='color:green'>THÀNH CÔNG RÙI NÈ</h1>
-            <p>Mã giao dịch: {request.Code}</p>
-            <p>Số tiền: {formattedAmount}</p>
-            <p>Cảm ơn bạn đã thanh toán!</p></body></html>", "text/html");
-                }
-
-                return Redirect("https://minhlong.mlhr.org/api/payment/fail");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("ERR: " + ex.Message);
-                return Redirect("https://minhlong.mlhr.org/api/payment/fail");
-            }
-        }*/
-
         [HttpGet("paymentconfirm")]
         public async Task<IActionResult> PaymentConfirm()
         {
@@ -155,42 +99,9 @@ namespace MLHR.Controllers
                     throw new Exception("Không tìm thấy đơn hàng tương ứng với orderCode.");
 
                 var paymentHistory = await _paymentService.GetPaymentHistoryByOrderIdAsync(orderId);
-                // 🔹 B2. Kiểm tra nếu Transaction đã xử lý rồi
-                //var existingTransaction = await _paymentService.GetTransactionByReferenceAsync(paymentHistory.PaymentHistoryId);
+                
                 DateTime existingTransactionDate = DateTime.Now;
-                /*if (existingTransaction != null)
-                {
-
-
-                    string formattedAmount = $"{amount:N0} VND";
-                    string html = $@"
-                    <html>
-                    <head>
-                    <meta charset='UTF-8'>
-                    <title>Thanh toán thành công</title>
-                    </head>
-                    <body style='text-align:center;font-family:sans-serif; padding: 40px'>
-                    <h1 style='color:green'>✅ BẠN ĐÃ THANH TOÁN THÀNH CÔNG</h1>
-                    <p><strong>Success:</strong> true</p>
-                    <p><strong>Mã đơn hàng (orderCode):</strong> {order.OrderCode}</p>
-                    <p><strong>Số tiền (amount):</strong> {formattedAmount}</p>
-                    <p><strong>Ngày thanh toán (createDate):</strong> {existingTransaction.PaymentDate:dd/MM/yyyy HH:mm:ss}</p>
-                    <p><strong>Số serial (serialNumber):</strong> {paymentHistory?.SerieNumber ?? "N/A"}</p>
-                    <hr />
-                    <p style='color:gray;'>Cảm ơn bạn đã sử dụng dịch vụ!</p>
-
-                    <button onclick='window.location.href=""https://clone-ui-user.vercel.app/""' 
-                    style='margin-top:20px;padding:10px 20px;font-size:16px;border:none;
-                    background-color:#007BFF;color:white;border-radius:5px;cursor:pointer;'>
-                    Quay về trang chủ
-                    </button>
-                    </body>
-                    </html>";
-
-                    return Content(html, "text/html");
-
-                }*/
-
+            
                 // 🔹 B4. Chuẩn bị dữ liệu xác nhận
                 var queryRequest = new QueryRequest
                 {
@@ -222,7 +133,7 @@ namespace MLHR.Controllers
                     <hr />
                     <p style='color:gray;'>Cảm ơn bạn đã sử dụng dịch vụ!</p>
     
-                    <button onclick='window.location.href=""https://clone-ui-user.vercel.app/""' 
+                    <button onclick='window.location.href=""https://clone-ui-user.vercel.app/agency/payment""' 
                     style='margin-top:20px;padding:10px 20px;font-size:16px;border:none;
                     background-color:#007BFF;color:white;border-radius:5px;cursor:pointer;'>
                     Quay về trang chủ
@@ -265,7 +176,7 @@ namespace MLHR.Controllers
                 <h1 style='color:red'>BẠN ĐÃ THANH TOÁN THẤT BẠI</h1>
                     <p>Giao dịch không thành công hoặc dữ liệu phản hồi không hợp lệ.</p>
                     <p>Xin vui lòng thử lại hoặc liên hệ hỗ trợ.</p>
-                    <button onclick='window.location.href=""https://clone-ui-user.vercel.app/""' 
+                    <button onclick='window.location.href=""https://clone-ui-user.vercel.app/agency/payment""' 
                     style='margin-top:20px;padding:10px 20px;font-size:16px;border:none;background-color:#007BFF;color:white;border-radius:5px;cursor:pointer;'>
                     Quay về trang chủ
                     </button>
