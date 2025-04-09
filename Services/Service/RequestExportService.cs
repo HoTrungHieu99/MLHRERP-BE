@@ -53,6 +53,17 @@ namespace Services.Service
                             .OrderBy(re => re.ApprovedDate ?? DateTime.MinValue)
                             .ToList();
                         break;
+                    case "requestdate_desc":
+                        requestExports = requestExports
+                            .OrderByDescending(re => re.RequestDate)
+                            .ToList();
+                        break;
+
+                    case "requestdate_asc":
+                        requestExports = requestExports
+                            .OrderBy(re => re.RequestDate)
+                            .ToList();
+                        break;
                 }
             }
 
