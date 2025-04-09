@@ -54,6 +54,16 @@ namespace Services.Service
 
             var created = await _repository.CreateAsync(request);
 
+            // ✅ Gửi thông báo cho KHO (GroupId = 6)
+            var notification = new
+            {
+                title = "Kho Tổng", // Tiêu đề thông báo
+                message = $"🚚 Yêu cầu điều phối xuất kho mới!", // Nội dung thông báo
+                payload = created.RequestCode // hoặc thêm thông tin khác nếu cần
+            };
+
+            await _hub.Clients.Group("6")
+                .SendAsync("ReceiveNotification", notification);
             return new WarehouseTransferRequestDetailDto
             {
                 Id = created.Id,
