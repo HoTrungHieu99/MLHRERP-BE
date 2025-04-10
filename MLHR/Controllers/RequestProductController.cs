@@ -42,10 +42,10 @@ namespace MLHR.Controllers
 
             var orders = await _requestProductService.GetRequestProductsByAgencyIdAsync(agencyId.Value);
 
-            if (orders == null || !orders.Any())
+           /* if (orders == null || !orders.Any())
             {
                 return NotFound(new { message = "No orders found for this agency" });
-            }
+            }*/
 
             return Ok(orders);
         }
