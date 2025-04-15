@@ -27,6 +27,13 @@ namespace BusinessObject.Models
         [ForeignKey("AddressId")]
         public Address Address { get; set; }
 
+        public long? ManagedByEmployeeId { get; set; }
+
+        [ForeignKey("ManagedByEmployeeId")]
+        public Employee ManagedByEmployee { get; set; }
+
+
+
         /*public int LocationId { get; set; }
         [ForeignKey("LocationId")]
         public Location Location { get; set; }*/

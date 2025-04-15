@@ -37,7 +37,7 @@ namespace DataAccessLayer
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile("appsettings.json")
                 .Build();
-            optionsBuilder.UseSqlServer(configuration.GetConnectionString("ServerConnection"));
+            optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
         }
 
 
@@ -708,6 +708,12 @@ namespace DataAccessLayer
                 .WithMany()
                 .HasForeignKey(w => w.DestinationWarehouseId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<AgencyAccount>()
+    .HasOne(a => a.ManagedByEmployee)
+    .WithMany(e => e.ManagedAgencies)
+    .HasForeignKey(a => a.ManagedByEmployeeId)
+    .OnDelete(DeleteBehavior.Restrict);
 
         }
     }

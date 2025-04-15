@@ -405,6 +405,22 @@ namespace Repo.Repository
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<List<Employee>> GetEmployeesByRoleAsync(string roleName)
+        {
+            return await _context.Employees
+                .Where(e => e.User.UserRoles.Any(ur => ur.Role.RoleName.ToUpper() == roleName.ToUpper()))
+                .ToListAsync();
+        }
+
+        public async Task<Employee> GetByUserIdAsync(Guid userId)
+        {
+            return await _context.Employees
+                .FirstOrDefaultAsync(e => e.UserId == userId);
+        }
+
+
+
+
 
     }
 
